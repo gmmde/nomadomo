@@ -1,19 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "./lib/supabase";
 
-const guides = [
-  { id: 1, name: "Yuki", emoji: "🧑", uni: "Kyoto Univ · 3rd yr", tags: ["Temples", "Food", "EN/JP"], rate: "¥2,500/hr", stars: "4.9" },
-  { id: 2, name: "Hana", emoji: "👩", uni: "Ritsumeikan · 2nd yr", tags: ["Nightlife", "Art", "EN"], rate: "¥2,000/hr", stars: "4.8" },
-  { id: 3, name: "Ren", emoji: "🧑", uni: "Doshisha · 4th yr", tags: ["Hidden", "Cycling", "EN/ZH"], rate: "¥3,000/hr", stars: "5.0" },
-  { id: 4, name: "Kenji", emoji: "👨", uni: "Kyoto Univ · 2nd yr", tags: ["Gion", "History", "EN/JP"], rate: "¥2,800/hr", stars: "4.9" },
-  { id: 5, name: "Mio", emoji: "👩", uni: "Ritsumeikan · 1st yr", tags: ["Food", "Cafes", "EN"], rate: "¥2,200/hr", stars: "4.8" },
-];
+type Guide = {
+  id: string;
+  name: string;
+  emoji: string;
+  uni: string;
+  tags: string[];
+  languages: string[];
+  rate: string;
+  stars: string;
+  bio: string;
+  tour_count: number;
+};
 
 const filters = ["All", "🍜 Food", "⛩ Temples", "🌙 Nightlife", "🚲 Hidden spots", "🎨 Art"];
 
+const filterKeyword: Record<string, string> = {
+  "🍜 Food": "Food",
+  "⛩ Temples": "Temples",
+  "🌙 Nightlife": "Nightlife",
+  "🚲 Hidden spots": "Hidden",
+  "🎨 Art": "Art",
+};
+
 export default function Home() {
   const [screen, setScreen] = useState("home");
-  const [selectedGuide, setSelectedGuide] = useState(guides[0]);
+  const [guides, setGuides] = useState<Guide[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [messages, setMessages] = useState([
     { from: "them", text: "Hey! Saw your request. What kind of vibe are you going for tomorrow? 🌿" },
@@ -21,6 +37,45 @@ export default function Home() {
     { from: "them", text: "Perfect 🙌 10am? I'll show you spots that aren't even on Google Maps 😎" },
   ]);
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    async function fetchGuides() {
+      const { data, error } = await supabase
+        .from("guides")
+        .select("id, name, emoji, university, tags, languages, rate_per_hour, rating, bio, tour_count")
+        .order("rating", { ascending: false });
+
+      if (error) {
+        console.error("Supabase error:", error.message);
+        setLoading(false);
+        return;
+      }
+
+      const mapped: Guide[] = (data ?? []).map((g) => ({
+        id: g.id,
+        name: g.name,
+        emoji: g.emoji ?? "🧑",
+        uni: g.university ?? "",
+        tags: g.tags ?? [],
+        languages: g.languages ?? [],
+        rate: `¥${Number(g.rate_per_hour).toLocaleString()}/hr`,
+        stars: Number(g.rating).toFixed(1),
+        bio: g.bio ?? "",
+        tour_count: g.tour_count ?? 0,
+      }));
+
+      setGuides(mapped);
+      if (mapped.length > 0) setSelectedGuide(mapped[0]);
+      setLoading(false);
+    }
+
+    fetchGuides();
+  }, []);
+
+  const visibleGuides =
+    activeFilter === "All"
+      ? guides
+      : guides.filter((g) => g.tags.includes(filterKeyword[activeFilter] ?? ""));
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -58,7 +113,6 @@ export default function Home() {
                 <g transform="translate(200,75)"><circle cx="0" cy="0" r="8" fill="#ad001c" opacity="0.7"/><circle cx="0" cy="0" r="4" fill="#fff"/></g>
                 <text x="155" y="120" fontSize="8" fill="#5a9ab5" fontWeight="700" opacity="0.9">Kamo River</text>
               </svg>
-              {/* SAKURA */}
               <svg style={{ position: "absolute", top: -8, right: -8, opacity: 0.88, pointerEvents: "none" }} width="140" height="140" viewBox="0 0 160 160">
                 <path d="M160 0 C145 20 125 35 105 55" stroke="#7a5230" strokeWidth="9" fill="none" strokeLinecap="round"/>
                 <path d="M160 0 C148 25 140 40 130 60" stroke="#7a5230" strokeWidth="7" fill="none" strokeLinecap="round"/>
@@ -97,22 +151,29 @@ export default function Home() {
               <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>Available now ✨</div>
               <div style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>See all</div>
             </div>
-            <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
-              {guides.map(g => (
-                <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer" }}>
-                  <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a" }}>{g.emoji}</div>
-                  <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
-                  <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
-                    {g.tags.map(t => <span key={t} style={{ background: "#ffefd5", border: "1.5px solid #e8c99a", borderRadius: 6, padding: "3px 7px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>)}
+
+            {loading ? (
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>Loading guides...</div>
+            ) : visibleGuides.length === 0 ? (
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>No guides found</div>
+            ) : (
+              <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
+                {visibleGuides.map(g => (
+                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer" }}>
+                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a" }}>{g.emoji}</div>
+                    <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
+                    <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
+                      {[...g.tags, ...g.languages].map(t => <span key={t} style={{ background: "#ffefd5", border: "1.5px solid #e8c99a", borderRadius: 6, padding: "3px 7px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>)}
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 13, color: "#ad001c", fontWeight: 800 }}>{g.rate}</span>
+                      <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>★ {g.stars}</span>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: "#ad001c", fontWeight: 800 }}>{g.rate}</span>
-                    <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>★ {g.stars}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div style={{ height: 100 }}/>
 
@@ -129,7 +190,7 @@ export default function Home() {
         )}
 
         {/* GUIDE PROFILE */}
-        {screen === "profile" && (
+        {screen === "profile" && selectedGuide && (
           <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
@@ -142,18 +203,18 @@ export default function Home() {
               <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>{selectedGuide.uni}</div>
             </div>
             <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
-              {[["47", "Tours"], ["4.9", "Rating"], ["EN/JP", "Languages"]].map(([n, l]) => (
-                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: "2px solid #e8c99a" }}>
+              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i) => (
+                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < 2 ? "2px solid #e8c99a" : "none" }}>
                   <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
                 </div>
               ))}
             </div>
             <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
-              "Born and raised in Kyoto. I know every temple, every hidden alley, every ramen spot the guidebooks miss. Not a tour guide — just someone who loves showing people the real city. Let's hang 👋"
+              "{selectedGuide.bio}"
             </div>
             <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {["⛩ Temples", "🍜 Local food", "🚲 Cycling", "📸 Photography", "🌙 Night walks"].map(t => (
+              {selectedGuide.tags.map(t => (
                 <span key={t} style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "7px 14px", fontSize: 12, color: "#2e8b57", fontWeight: 700 }}>{t}</span>
               ))}
             </div>
@@ -166,7 +227,7 @@ export default function Home() {
         )}
 
         {/* CHAT */}
-        {screen === "chat" && (
+        {screen === "chat" && selectedGuide && (
           <div style={{ background: "#ffefd5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("profile")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
