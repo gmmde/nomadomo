@@ -1,6 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
-import { supabase } from "./lib/supabase";
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { createClient } from "./lib/supabase/client";
+import { signout } from "./actions/auth";
 
 type Guide = {
   id: string;
@@ -31,12 +33,25 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [messages, setMessages] = useState([
     { from: "them", text: "Hey! Saw your request. What kind of vibe are you going for tomorrow? 🌿" },
     { from: "me", text: "I want to skip the tourist stuff. Hidden temples, local food, maybe something at night?" },
     { from: "them", text: "Perfect 🙌 10am? I'll show you spots that aren't even on Google Maps 😎" },
   ]);
   const [input, setInput] = useState("");
+
+  const supabase = useMemo(() => createClient(), []);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [supabase]);
 
   useEffect(() => {
     async function fetchGuides() {
@@ -96,7 +111,18 @@ export default function Home() {
                 <span style={{ color: "#2ecc71" }}>Noma</span>
                 <span style={{ color: "#fff" }}>Domo</span>
               </div>
-              <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Link href="/guides/new" style={{ background: "#2ecc71", color: "#fff", border: "none", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  + ガイドになる
+                </Link>
+                {userEmail ? (
+                  <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
+                ) : (
+                  <Link href="/login" style={{ background: "#ffffff28", border: "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
+                    ログイン
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* MAP BG HERO */}
@@ -272,9 +298,21 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 40px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
+            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 20px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
               "Backpacking Japan for 3 weeks. Love finding spots not in any guidebook. Into food, street art, and getting genuinely lost."
             </div>
+            {userEmail && (
+              <div style={{ margin: "0 20px 40px" }}>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 8, textAlign: "center" }}>
+                  ログイン中：{userEmail}
+                </div>
+                <form action={signout}>
+                  <button type="submit" style={{ width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
+                    ログアウト
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         )}
 
