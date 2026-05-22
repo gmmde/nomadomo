@@ -62,7 +62,12 @@ export async function createGuide(
     tags,
     languages,
   });
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.code === "23505") {
+      return { error: "既にガイドプロファイルがあるわよ（1ユーザー1つだけ）" };
+    }
+    return { error: error.message };
+  }
 
   revalidatePath("/");
   redirect("/");

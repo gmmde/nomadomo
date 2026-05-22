@@ -17,6 +17,18 @@ type Guide = {
   tour_count: number;
 };
 
+type TravelerProfile = {
+  name: string;
+  country: string;
+  interests: string[];
+};
+
+function ratingDisplay(g: { stars: string; tour_count: number }) {
+  // 新規ガイド（実績ゼロ）は ★0.0 ではなく「✨ 新規」と出す
+  if (g.tour_count === 0 || Number(g.stars) <= 0) return "✨ 新規";
+  return `★ ${g.stars}`;
+}
+
 const filters = ["All", "🍜 Food", "⛩ Temples", "🌙 Nightlife", "🚲 Hidden spots", "🎨 Art"];
 
 const filterKeyword: Record<string, string> = {
@@ -34,6 +46,7 @@ export default function Home() {
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [travelerProfile, setTravelerProfile] = useState<TravelerProfile | null>(null);
   const [messages, setMessages] = useState([
     { from: "them", text: "Hey! Saw your request. What kind of vibe are you going for tomorrow? 🌿" },
     { from: "me", text: "I want to skip the tourist stuff. Hidden temples, local food, maybe something at night?" },
@@ -52,6 +65,29 @@ export default function Home() {
     });
     return () => sub.subscription.unsubscribe();
   }, [supabase]);
+
+  // ログイン中なら自分の旅行者プロファイル取得（RLSで自分の行のみ取得可）
+  useEffect(() => {
+    if (!userEmail) {
+      setTravelerProfile(null);
+      return;
+    }
+    supabase
+      .from("travelers")
+      .select("name, country, interests")
+      .maybeSingle()
+      .then(({ data }) => {
+        setTravelerProfile(
+          data
+            ? {
+                name: data.name as string,
+                country: data.country as string,
+                interests: (data.interests as string[]) ?? [],
+              }
+            : null,
+        );
+      });
+  }, [supabase, userEmail]);
 
   useEffect(() => {
     async function fetchGuides() {
@@ -194,7 +230,7 @@ export default function Home() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 13, color: "#ad001c", fontWeight: 800 }}>{g.rate}</span>
-                      <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>★ {g.stars}</span>
+                      <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g)}</span>
                     </div>
                   </div>
                 ))}
@@ -229,7 +265,7 @@ export default function Home() {
               <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>{selectedGuide.uni}</div>
             </div>
             <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
-              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i) => (
+              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i) => (
                 <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < 2 ? "2px solid #e8c99a" : "none" }}>
                   <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
@@ -283,24 +319,33 @@ export default function Home() {
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>My profile</div>
-              <div style={{ fontSize: 13, color: "#2ecc71", fontWeight: 800, cursor: "pointer" }}>Edit</div>
+              <div style={{ width: 36 }}/>
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
               <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c" }}>😊</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>Alex Chen</div>
-              <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>Traveler · From Singapore</div>
+              {travelerProfile ? (
+                <>
+                  <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{travelerProfile.name}</div>
+                  <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>Traveler · From {travelerProfile.country}</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4, color: "#8a7560" }}>プロファイル未登録</div>
+                  <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600 }}>下のボタンから旅行者 or ガイドとして登録してね</div>
+                </>
+              )}
             </div>
-            <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
-              {[["8", "Trips"], ["5", "Locals met"], ["EN/ZH", "Languages"]].map(([n, l], i) => (
-                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < 2 ? "2px solid #e8c99a" : "none" }}>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
-                  <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 20px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
-              "Backpacking Japan for 3 weeks. Love finding spots not in any guidebook. Into food, street art, and getting genuinely lost."
-            </div>
+
+            {travelerProfile && travelerProfile.interests.length > 0 && (
+              <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20, justifyContent: "center" }}>
+                {travelerProfile.interests.map((t) => (
+                  <span key={t} style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {userEmail && (
               <div style={{ margin: "0 20px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
@@ -309,9 +354,11 @@ export default function Home() {
                 <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   + ガイドとして登録
                 </Link>
-                <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                  ✈ 旅行者として登録
-                </Link>
+                {!travelerProfile && (
+                  <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    ✈ 旅行者として登録
+                  </Link>
+                )}
                 <form action={signout}>
                   <button type="submit" style={{ width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
                     ログアウト
