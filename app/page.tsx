@@ -302,10 +302,16 @@ export default function Home() {
               "Backpacking Japan for 3 weeks. Love finding spots not in any guidebook. Into food, street art, and getting genuinely lost."
             </div>
             {userEmail && (
-              <div style={{ margin: "0 20px 40px" }}>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 8, textAlign: "center" }}>
+              <div style={{ margin: "0 20px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
                   ログイン中：{userEmail}
                 </div>
+                <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  + ガイドとして登録
+                </Link>
+                <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  ✈ 旅行者として登録
+                </Link>
                 <form action={signout}>
                   <button type="submit" style={{ width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
                     ログアウト
