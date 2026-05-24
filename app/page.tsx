@@ -61,6 +61,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   const [inboxPeers, setInboxPeers] = useState<Array<{ peerId: string; lastBody: string; lastAt: string }>>([]);
+  const [unreadByPeer, setUnreadByPeer] = useState<Record<string, number>>({});
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -119,6 +120,46 @@ export default function Home() {
       .then(({ data }) => {
         setSavedIds(new Set((data ?? []).map((r) => r.guide_id as number)));
       });
+  }, [supabase, currentUserId]);
+
+  // 未読メッセージカウント (peer別) + realtime で新着増減
+  useEffect(() => {
+    if (!currentUserId) {
+      setUnreadByPeer({});
+      return;
+    }
+    // 初回ロード: 受信済み未読をsender別に集計
+    (async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("sender_id")
+        .eq("recipient_id", currentUserId)
+        .is("read_at", null);
+      const counts: Record<string, number> = {};
+      for (const row of (data ?? []) as Array<{ sender_id: string }>) {
+        counts[row.sender_id] = (counts[row.sender_id] ?? 0) + 1;
+      }
+      setUnreadByPeer(counts);
+    })();
+
+    // realtime: 自分宛の新着で +1
+    const ch = supabase
+      .channel(`inbox-notify-${currentUserId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${currentUserId}` },
+        (payload) => {
+          const m = payload.new as { sender_id: string };
+          setUnreadByPeer((prev) => ({
+            ...prev,
+            [m.sender_id]: (prev[m.sender_id] ?? 0) + 1,
+          }));
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [supabase, currentUserId]);
 
   // Inbox: 過去メッセージから会話相手一覧を作る
@@ -226,6 +267,15 @@ export default function Home() {
         )
         .order("created_at");
       if (!cancelled) setMessages((data ?? []) as Message[]);
+      // チャット開いた瞬間に peer からの未読を既読化
+      await supabase.rpc("mark_messages_read", { peer: peerId });
+      if (!cancelled) {
+        setUnreadByPeer((prev) => {
+          const next = { ...prev };
+          delete next[peerId];
+          return next;
+        });
+      }
     })();
 
     const channel = supabase
@@ -413,12 +463,21 @@ export default function Home() {
 
             {/* BOTTOM NAV */}
             <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
-              {[["🏠", "Home"], ["💬", "Messages"], ["🤍", "Saved"], ["😊", "Profile"]].map(([icon, label]) => (
-                <div key={label} onClick={() => { if (label === "Home") setScreen("home"); if (label === "Messages") setScreen("inbox"); if (label === "Saved") setScreen("saved"); if (label === "Profile") setScreen("myprofile"); }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer" }}>
-                  <div style={{ fontSize: 20, color: label === "Home" ? "#fff" : "#a8d5b8" }}>{icon}</div>
-                  <div style={{ fontSize: 10, color: label === "Home" ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{label}</div>
-                </div>
-              ))}
+              {[["🏠", "Home"], ["💬", "Messages"], ["🤍", "Saved"], ["😊", "Profile"]].map(([icon, label]) => {
+                const totalUnread = Object.values(unreadByPeer).reduce((s, n) => s + n, 0);
+                const showBadge = label === "Messages" && totalUnread > 0;
+                return (
+                  <div key={label} onClick={() => { if (label === "Home") setScreen("home"); if (label === "Messages") setScreen("inbox"); if (label === "Saved") setScreen("saved"); if (label === "Profile") setScreen("myprofile"); }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}>
+                    <div style={{ fontSize: 20, color: label === "Home" ? "#fff" : "#a8d5b8" }}>{icon}</div>
+                    <div style={{ fontSize: 10, color: label === "Home" ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{label}</div>
+                    {showBadge && (
+                      <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2e8b57" }}>
+                        {totalUnread > 99 ? "99+" : totalUnread}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -662,12 +721,20 @@ export default function Home() {
                     const peerGuide = guides.find((g) => g.user_id === p.peerId);
                     const labelStr = peerGuide ? peerGuide.name : `ユーザー (${p.peerId.slice(0, 8)})`;
                     const peerEmoji = peerGuide ? peerGuide.emoji : "🧑";
+                    const unread = unreadByPeer[p.peerId] ?? 0;
                     return (
                       <div key={p.peerId} onClick={() => { if (peerGuide) { setSelectedGuide(peerGuide); setScreen("chat"); } }} style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: peerGuide ? "pointer" : "default", opacity: peerGuide ? 1 : 0.6 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{peerEmoji}</div>
+                        <div style={{ position: "relative" }}>
+                          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{peerEmoji}</div>
+                          {unread > 0 && (
+                            <div style={{ position: "absolute", top: -4, right: -4, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 20, height: 20, padding: "0 5px", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff9f0" }}>
+                              {unread > 99 ? "99+" : unread}
+                            </div>
+                          )}
+                        </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 900 }}>{labelStr}</div>
-                          <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
+                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{labelStr}</div>
+                          <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
                       </div>
