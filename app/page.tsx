@@ -184,13 +184,40 @@ export default function Home() {
   const sendMessage = async () => {
     if (!input.trim() || !currentUserId || !selectedGuide?.user_id) return;
     const body = input.trim();
+    const peerId = selectedGuide.user_id;
     setInput("");
-    const { error } = await supabase.from("messages").insert({
+
+    // Optimistic update: 即時 UI 反映（realtime subscribe レース回避）
+    const tempId = -Date.now();
+    const optimistic: Message = {
+      id: tempId,
       sender_id: currentUserId,
-      recipient_id: selectedGuide.user_id,
+      recipient_id: peerId,
       body,
-    });
-    if (error) console.error("Send failed:", error.message);
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimistic]);
+
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({ sender_id: currentUserId, recipient_id: peerId, body })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Send failed:", error.message);
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      return;
+    }
+
+    // optimistic を本物に置換（realtime callback が先に拾ってたら id 重複を除く）
+    if (data) {
+      setMessages((prev) => {
+        const withoutOpt = prev.filter((m) => m.id !== tempId);
+        if (withoutOpt.some((m) => m.id === (data as Message).id)) return withoutOpt;
+        return [...withoutOpt, data as Message];
+      });
+    }
   };
 
   return (
