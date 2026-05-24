@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createGuide, type GuideFormState } from "@/app/actions/guides";
+import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "FR", "ES", "DE"] as const;
@@ -108,6 +109,12 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
           </div>
 
           <form action={action}>
+            {/* Photos */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={labelStyle}>写真（複数可、最大8枚）</label>
+              <ImageUploader />
+            </div>
+
             {/* Emoji picker */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>アバター絵文字</label>

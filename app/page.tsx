@@ -16,6 +16,7 @@ type Guide = {
   bio: string;
   tour_count: number;
   user_id: string | null;
+  image_paths: string[];
 };
 
 type Message = {
@@ -219,7 +220,7 @@ export default function Home() {
     async function fetchGuides() {
       const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_hour, rating, bio, tour_count, user_id")
+        .select("id, name, emoji, university, tags, languages, rate_per_hour, rating, bio, tour_count, user_id, image_paths")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -240,6 +241,7 @@ export default function Home() {
         stars: Number(g.rating).toFixed(1),
         bio: g.bio ?? "",
         tour_count: g.tour_count ?? 0,
+        image_paths: (g.image_paths as string[]) ?? [],
       }));
 
       setGuides(mapped);
@@ -505,6 +507,20 @@ export default function Home() {
               <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{selectedGuide.name}</div>
               <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>{selectedGuide.uni}</div>
             </div>
+
+            {selectedGuide.image_paths.length > 0 && (
+              <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, overflowX: "auto" }}>
+                {selectedGuide.image_paths.map((p) => (
+                  <img
+                    key={p}
+                    src={supabase.storage.from("guide-images").getPublicUrl(p).data.publicUrl}
+                    alt=""
+                    style={{ height: 140, borderRadius: 12, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover" }}
+                  />
+                ))}
+              </div>
+            )}
+
             <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
               {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i) => (
                 <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < 2 ? "2px solid #e8c99a" : "none" }}>

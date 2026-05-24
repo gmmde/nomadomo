@@ -7,6 +7,7 @@ import {
   deleteGuide,
   type GuideFormState,
 } from "@/app/actions/guides";
+import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "FR", "ES", "DE"] as const;
@@ -21,6 +22,7 @@ type Initial = {
   rate_per_hour: number;
   tags: string[];
   languages: string[];
+  image_paths: string[];
 };
 
 const wrap: React.CSSProperties = {
@@ -148,6 +150,12 @@ export default function EditGuideForm({
 
           <form action={action}>
             <input type="hidden" name="id" value={initial.id} />
+
+            {/* Photos */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>写真（複数可、最大8枚）</label>
+              <ImageUploader initial={initial.image_paths} />
+            </div>
 
             <div style={{ marginBottom: 18 }}>
               <label style={label}>アバター絵文字</label>

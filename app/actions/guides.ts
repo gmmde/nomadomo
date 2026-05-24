@@ -30,6 +30,11 @@ function parseGuideFields(formData: FormData) {
   const rate = Number(rateRaw);
   const tags = formData.getAll("tags").map(String).filter(Boolean);
   const languages = formData.getAll("languages").map(String).filter(Boolean);
+  const image_paths = formData
+    .getAll("image_paths")
+    .map(String)
+    .filter(Boolean)
+    .slice(0, 8); // 最大8枚
 
   const errors: GuideFormErrors = {};
   if (name.length < 2) errors.name = "名前は2文字以上にして";
@@ -49,6 +54,7 @@ function parseGuideFields(formData: FormData) {
       rate_per_hour: Math.round(rate),
       tags,
       languages,
+      image_paths,
     },
     errors,
   };
@@ -101,7 +107,6 @@ export async function updateGuide(
   const { fields, errors } = parseGuideFields(formData);
   if (Object.keys(errors).length > 0) return { errors };
 
-  // RLS が auth.uid() = user_id で UPDATE を制限してるので、他人の行は更新できない
   const { error } = await supabase
     .from("guides")
     .update(fields)
@@ -123,7 +128,6 @@ export async function deleteGuide(formData: FormData): Promise<void> {
   const id = Number(idRaw);
   if (!Number.isFinite(id) || id <= 0) return;
 
-  // RLS が auth.uid() = user_id で DELETE を制限
   await supabase.from("guides").delete().eq("id", id);
 
   revalidatePath("/");
