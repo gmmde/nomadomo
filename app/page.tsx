@@ -15,6 +15,15 @@ type Guide = {
   stars: string;
   bio: string;
   tour_count: number;
+  user_id: string | null;
+};
+
+type Message = {
+  id: number;
+  sender_id: string;
+  recipient_id: string;
+  body: string;
+  created_at: string;
 };
 
 type TravelerProfile = {
@@ -46,12 +55,9 @@ export default function Home() {
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [travelerProfile, setTravelerProfile] = useState<TravelerProfile | null>(null);
-  const [messages, setMessages] = useState([
-    { from: "them", text: "Hey! Saw your request. What kind of vibe are you going for tomorrow? 🌿" },
-    { from: "me", text: "I want to skip the tourist stuff. Hidden temples, local food, maybe something at night?" },
-    { from: "them", text: "Perfect 🙌 10am? I'll show you spots that aren't even on Google Maps 😎" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
   const supabase = useMemo(() => createClient(), []);
@@ -59,9 +65,11 @@ export default function Home() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserEmail(data.user?.email ?? null);
+      setCurrentUserId(data.user?.id ?? null);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserEmail(session?.user?.email ?? null);
+      setCurrentUserId(session?.user?.id ?? null);
     });
     return () => sub.subscription.unsubscribe();
   }, [supabase]);
@@ -93,7 +101,7 @@ export default function Home() {
     async function fetchGuides() {
       const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_hour, rating, bio, tour_count")
+        .select("id, name, emoji, university, tags, languages, rate_per_hour, rating, bio, tour_count, user_id")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -107,6 +115,7 @@ export default function Home() {
         name: g.name,
         emoji: g.emoji ?? "🧑",
         uni: g.university ?? "",
+        user_id: (g.user_id as string | null) ?? null,
         tags: g.tags ?? [],
         languages: g.languages ?? [],
         rate: `¥${Number(g.rate_per_hour).toLocaleString()}/hr`,
@@ -121,17 +130,67 @@ export default function Home() {
     }
 
     fetchGuides();
-  }, []);
+  }, [supabase]);
+
+  // チャット画面が開いたら、選択中ガイドとのメッセージ履歴をロード + リアルタイム購読
+  useEffect(() => {
+    if (screen !== "chat" || !currentUserId || !selectedGuide?.user_id) {
+      return;
+    }
+    const peerId = selectedGuide.user_id;
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("id, sender_id, recipient_id, body, created_at")
+        .or(
+          `and(sender_id.eq.${currentUserId},recipient_id.eq.${peerId}),and(sender_id.eq.${peerId},recipient_id.eq.${currentUserId})`,
+        )
+        .order("created_at");
+      if (!cancelled) setMessages((data ?? []) as Message[]);
+    })();
+
+    const channel = supabase
+      .channel(`chat-${currentUserId}-${peerId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const m = payload.new as Message;
+          const isPair =
+            (m.sender_id === peerId && m.recipient_id === currentUserId) ||
+            (m.sender_id === currentUserId && m.recipient_id === peerId);
+          if (isPair) {
+            setMessages((prev) =>
+              prev.some((x) => x.id === m.id) ? prev : [...prev, m],
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [screen, currentUserId, selectedGuide?.user_id, supabase]);
 
   const visibleGuides =
     activeFilter === "All"
       ? guides
       : guides.filter((g) => g.tags.includes(filterKeyword[activeFilter] ?? ""));
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { from: "me", text: input }]);
+  const sendMessage = async () => {
+    if (!input.trim() || !currentUserId || !selectedGuide?.user_id) return;
+    const body = input.trim();
     setInput("");
+    const { error } = await supabase.from("messages").insert({
+      sender_id: currentUserId,
+      recipient_id: selectedGuide.user_id,
+      body,
+    });
+    if (error) console.error("Send failed:", error.message);
   };
 
   return (
@@ -284,7 +343,25 @@ export default function Home() {
               <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
               <span style={{ fontSize: 24, fontWeight: 900, color: "#ad001c" }}>{selectedGuide.rate}</span>
             </div>
-            <button onClick={() => setScreen("chat")} style={{ margin: "0 20px", display: "block", width: "calc(100% - 40px)", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>Message {selectedGuide.name} 💬</button>
+            {currentUserId && selectedGuide.user_id === currentUserId ? (
+              <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+                <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  ✏️ プロファイル編集
+                </Link>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
+                  これはあなたのガイドプロファイルよ
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setScreen("chat")}
+                disabled={!selectedGuide.user_id}
+                title={!selectedGuide.user_id ? "デモガイドにはメッセージング不可" : undefined}
+                style={{ margin: "0 20px", display: "block", width: "calc(100% - 40px)", background: selectedGuide.user_id ? "#ad001c" : "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: selectedGuide.user_id ? "pointer" : "not-allowed", fontFamily: "inherit" }}
+              >
+                {selectedGuide.user_id ? `Message ${selectedGuide.name} 💬` : "デモガイド・メッセージ不可"}
+              </button>
+            )}
           </div>
         )}
 
@@ -300,15 +377,43 @@ export default function Home() {
               </div>
             </div>
             <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-              {messages.map((m, i) => (
-                <div key={i} style={{ alignSelf: m.from === "me" ? "flex-end" : "flex-start", maxWidth: "78%" }}>
-                  <div style={{ padding: "11px 15px", borderRadius: m.from === "me" ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: m.from === "me" ? "#ad001c" : "#fff9f0", color: m.from === "me" ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: m.from === "them" ? "2px solid #e8c99a" : "none" }}>{m.text}</div>
+              {!currentUserId ? (
+                <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
+                  ログインするとメッセージできるわよ
                 </div>
-              ))}
+              ) : !selectedGuide.user_id ? (
+                <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
+                  このガイドはデモ表示用なのでメッセージ送信できないわ
+                </div>
+              ) : messages.length === 0 ? (
+                <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
+                  まだメッセージなし。最初の一言を送ってみて 👇
+                </div>
+              ) : (
+                messages.map((m) => {
+                  const mine = m.sender_id === currentUserId;
+                  return (
+                    <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "78%" }}>
+                      <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none" }}>{m.body}</div>
+                    </div>
+                  );
+                })
+              )}
             </div>
             <div style={{ padding: "12px 20px 24px", display: "flex", gap: 10, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
-              <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()} placeholder={`Message ${selectedGuide.name}...`} style={{ flex: 1, background: "#ffefd5", border: "2px solid #e8c99a", borderRadius: 24, padding: "10px 16px", fontSize: 13, color: "#1a1008", fontFamily: "inherit", fontWeight: 600, outline: "none" }}/>
-              <button onClick={sendMessage} style={{ width: 40, height: 40, borderRadius: "50%", background: "#ad001c", border: "none", cursor: "pointer", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>↑</button>
+              <input
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && sendMessage()}
+                placeholder={`Message ${selectedGuide.name}...`}
+                disabled={!currentUserId || !selectedGuide.user_id}
+                style={{ flex: 1, background: "#ffefd5", border: "2px solid #e8c99a", borderRadius: 24, padding: "10px 16px", fontSize: 13, color: "#1a1008", fontFamily: "inherit", fontWeight: 600, outline: "none" }}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!currentUserId || !selectedGuide.user_id || !input.trim()}
+                style={{ width: 40, height: 40, borderRadius: "50%", background: currentUserId && selectedGuide.user_id ? "#ad001c" : "#bbb", border: "none", cursor: currentUserId && selectedGuide.user_id ? "pointer" : "not-allowed", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >↑</button>
             </div>
           </div>
         )}
@@ -354,7 +459,11 @@ export default function Home() {
                 <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   + ガイドとして登録
                 </Link>
-                {!travelerProfile && (
+                {travelerProfile ? (
+                  <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    ✏️ 旅行者プロファイルを編集
+                  </Link>
+                ) : (
                   <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                     ✈ 旅行者として登録
                   </Link>
