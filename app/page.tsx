@@ -59,6 +59,8 @@ export default function Home() {
   const [travelerProfile, setTravelerProfile] = useState<TravelerProfile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
+  const [inboxPeers, setInboxPeers] = useState<Array<{ peerId: string; lastBody: string; lastAt: string }>>([]);
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -96,6 +98,73 @@ export default function Home() {
         );
       });
   }, [supabase, userEmail]);
+
+  // 自分のお気に入りガイドID一覧を取得
+  useEffect(() => {
+    if (!currentUserId) {
+      setSavedIds(new Set());
+      return;
+    }
+    supabase
+      .from("saved_guides")
+      .select("guide_id")
+      .then(({ data }) => {
+        setSavedIds(new Set((data ?? []).map((r) => r.guide_id as number)));
+      });
+  }, [supabase, currentUserId]);
+
+  // Inbox: 過去メッセージから会話相手一覧を作る
+  useEffect(() => {
+    if (screen !== "inbox" || !currentUserId) return;
+    supabase
+      .from("messages")
+      .select("sender_id, recipient_id, body, created_at")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const seen = new Map<string, { peerId: string; lastBody: string; lastAt: string }>();
+        for (const m of (data ?? []) as Array<{ sender_id: string; recipient_id: string; body: string; created_at: string }>) {
+          const peerId = m.sender_id === currentUserId ? m.recipient_id : m.sender_id;
+          if (!seen.has(peerId)) {
+            seen.set(peerId, { peerId, lastBody: m.body, lastAt: m.created_at });
+          }
+        }
+        setInboxPeers(Array.from(seen.values()));
+      });
+  }, [supabase, currentUserId, screen]);
+
+  // お気に入りトグル
+  const toggleSave = async (guideId: number) => {
+    if (!currentUserId) return;
+    if (savedIds.has(guideId)) {
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(guideId);
+        return next;
+      });
+      const { error } = await supabase
+        .from("saved_guides")
+        .delete()
+        .eq("user_id", currentUserId)
+        .eq("guide_id", guideId);
+      if (error) {
+        console.error("Unsave failed:", error.message);
+        setSavedIds((prev) => new Set(prev).add(guideId));
+      }
+    } else {
+      setSavedIds((prev) => new Set(prev).add(guideId));
+      const { error } = await supabase
+        .from("saved_guides")
+        .insert({ user_id: currentUserId, guide_id: guideId });
+      if (error) {
+        console.error("Save failed:", error.message);
+        setSavedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(guideId);
+          return next;
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     async function fetchGuides() {
@@ -328,7 +397,7 @@ export default function Home() {
             {/* BOTTOM NAV */}
             <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
               {[["🏠", "Home"], ["💬", "Messages"], ["🤍", "Saved"], ["😊", "Profile"]].map(([icon, label]) => (
-                <div key={label} onClick={() => { if (label === "Messages") setScreen("chat"); if (label === "Profile") setScreen("myprofile"); }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer" }}>
+                <div key={label} onClick={() => { if (label === "Home") setScreen("home"); if (label === "Messages") setScreen("inbox"); if (label === "Saved") setScreen("saved"); if (label === "Profile") setScreen("myprofile"); }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer" }}>
                   <div style={{ fontSize: 20, color: label === "Home" ? "#fff" : "#a8d5b8" }}>{icon}</div>
                   <div style={{ fontSize: 10, color: label === "Home" ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{label}</div>
                 </div>
@@ -343,7 +412,17 @@ export default function Home() {
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Guide profile</div>
-              <div style={{ width: 36 }}/>
+              {currentUserId ? (
+                <button
+                  onClick={() => toggleSave(Number(selectedGuide.id))}
+                  style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: 0, width: 36 }}
+                  aria-label="お気に入り"
+                >
+                  {savedIds.has(Number(selectedGuide.id)) ? "❤️" : "🤍"}
+                </button>
+              ) : (
+                <div style={{ width: 36 }}/>
+              )}
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
               <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c" }}>{selectedGuide.emoji}</div>
@@ -502,6 +581,81 @@ export default function Home() {
                 </form>
               </div>
             )}
+          </div>
+        )}
+
+        {/* SAVED */}
+        {screen === "saved" && (
+          <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
+            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+              <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Saved guides ❤️</div>
+              <div style={{ width: 36 }}/>
+            </div>
+            <div style={{ padding: "20px" }}>
+              {!currentUserId ? (
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
+                  ログインするとお気に入り使えるわよ
+                </div>
+              ) : savedIds.size === 0 ? (
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
+                  まだお気に入りなし。ガイド詳細で 🤍 をタップして追加して
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {guides.filter((g) => savedIds.has(Number(g.id))).map((g) => (
+                    <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{g.emoji}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
+                        <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600 }}>{g.uni} · {g.rate}</div>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", padding: 4 }}>❤️</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* INBOX */}
+        {screen === "inbox" && (
+          <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
+            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+              <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Messages 💬</div>
+              <div style={{ width: 36 }}/>
+            </div>
+            <div style={{ padding: "20px" }}>
+              {!currentUserId ? (
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
+                  ログインするとメッセージ使えるわよ
+                </div>
+              ) : inboxPeers.length === 0 ? (
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
+                  まだ会話なし。ガイド詳細から「Message」してみて
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {inboxPeers.map((p) => {
+                    const peerGuide = guides.find((g) => g.user_id === p.peerId);
+                    const labelStr = peerGuide ? peerGuide.name : `ユーザー (${p.peerId.slice(0, 8)})`;
+                    const emoji = peerGuide ? peerGuide.emoji : "🧑";
+                    return (
+                      <div key={p.peerId} onClick={() => { if (peerGuide) { setSelectedGuide(peerGuide); setScreen("chat"); } }} style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: peerGuide ? "pointer" : "default", opacity: peerGuide ? 1 : 0.6 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{emoji}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 900 }}>{labelStr}</div>
+                          <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
+                        </div>
+                        <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
