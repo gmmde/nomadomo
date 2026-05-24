@@ -33,6 +33,21 @@ type TravelerProfile = {
   interests: string[];
 };
 
+type ChatPeer = {
+  id: string; // peer の auth.users.id
+  name: string;
+  emoji: string;
+  guideId?: string; // ガイドプロファイル持ちなら id
+};
+
+type ChatOrigin = "profile" | "inbox";
+
+// 双方向で同じチャンネル名になるよう、UUID をソートして結合
+function pairChannel(prefix: string, a: string, b: string) {
+  const [x, y] = [a, b].sort();
+  return `${prefix}-${x}-${y}`;
+}
+
 function ratingDisplay(g: { stars: string; tour_count: number }) {
   // 新規ガイド（実績ゼロ）は ★0.0 ではなく「✨ 新規」と出す
   if (g.tour_count === 0 || Number(g.stars) <= 0) return "✨ 新規";
@@ -61,8 +76,12 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
-  const [inboxPeers, setInboxPeers] = useState<Array<{ peerId: string; lastBody: string; lastAt: string }>>([]);
+  const [inboxPeers, setInboxPeers] = useState<
+    Array<{ peerId: string; lastBody: string; lastAt: string; name: string; emoji: string; guideId?: string }>
+  >([]);
   const [unreadByPeer, setUnreadByPeer] = useState<Record<string, number>>({});
+  const [chatPeer, setChatPeer] = useState<ChatPeer | null>(null);
+  const [chatOrigin, setChatOrigin] = useState<ChatOrigin>("profile");
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -163,24 +182,60 @@ export default function Home() {
     };
   }, [supabase, currentUserId]);
 
-  // Inbox: 過去メッセージから会話相手一覧を作る
+  // Inbox: 過去メッセージから会話相手一覧 + guides/travelers から名前解決
   useEffect(() => {
     if (screen !== "inbox" || !currentUserId) return;
-    supabase
-      .from("messages")
-      .select("sender_id, recipient_id, body, created_at")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        const seen = new Map<string, { peerId: string; lastBody: string; lastAt: string }>();
-        for (const m of (data ?? []) as Array<{ sender_id: string; recipient_id: string; body: string; created_at: string }>) {
-          const peerId = m.sender_id === currentUserId ? m.recipient_id : m.sender_id;
-          if (!seen.has(peerId)) {
-            seen.set(peerId, { peerId, lastBody: m.body, lastAt: m.created_at });
-          }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("sender_id, recipient_id, body, created_at")
+        .order("created_at", { ascending: false });
+
+      const seen = new Map<string, { peerId: string; lastBody: string; lastAt: string }>();
+      for (const m of (data ?? []) as Array<{ sender_id: string; recipient_id: string; body: string; created_at: string }>) {
+        const peerId = m.sender_id === currentUserId ? m.recipient_id : m.sender_id;
+        if (!seen.has(peerId)) {
+          seen.set(peerId, { peerId, lastBody: m.body, lastAt: m.created_at });
         }
-        setInboxPeers(Array.from(seen.values()));
+      }
+      const peerIds = Array.from(seen.keys());
+      if (peerIds.length === 0) {
+        if (!cancelled) setInboxPeers([]);
+        return;
+      }
+
+      // ガイドに含まれない peer の travelers 情報も取得
+      const guideMap = new Map<string, { name: string; emoji: string; guideId: string }>();
+      for (const g of guides) {
+        if (g.user_id) guideMap.set(g.user_id, { name: g.name, emoji: g.emoji, guideId: g.id });
+      }
+      const nonGuidePeers = peerIds.filter((p) => !guideMap.has(p));
+      const travelerMap = new Map<string, { name: string }>();
+      if (nonGuidePeers.length > 0) {
+        const { data: tData } = await supabase
+          .from("travelers")
+          .select("user_id, name")
+          .in("user_id", nonGuidePeers);
+        for (const t of (tData ?? []) as Array<{ user_id: string; name: string }>) {
+          travelerMap.set(t.user_id, { name: t.name });
+        }
+      }
+
+      const enriched = peerIds.map((peerId) => {
+        const meta = seen.get(peerId)!;
+        const g = guideMap.get(peerId);
+        if (g) return { ...meta, name: g.name, emoji: g.emoji, guideId: g.guideId };
+        const t = travelerMap.get(peerId);
+        if (t) return { ...meta, name: t.name, emoji: "🧑" };
+        return { ...meta, name: `ユーザー (${peerId.slice(0, 8)})`, emoji: "👤" };
       });
-  }, [supabase, currentUserId, screen]);
+      if (!cancelled) setInboxPeers(enriched);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, currentUserId, screen, guides]);
 
   // お気に入りトグル
   const toggleSave = async (guideId: number) => {
@@ -252,12 +307,12 @@ export default function Home() {
     fetchGuides();
   }, [supabase]);
 
-  // チャット画面が開いたら、選択中ガイドとのメッセージ履歴をロード + リアルタイム購読
+  // チャット画面が開いたら、chatPeer とのメッセージ履歴をロード + リアルタイム購読
   useEffect(() => {
-    if (screen !== "chat" || !currentUserId || !selectedGuide?.user_id) {
+    if (screen !== "chat" || !currentUserId || !chatPeer?.id) {
       return;
     }
-    const peerId = selectedGuide.user_id;
+    const peerId = chatPeer.id;
     let cancelled = false;
 
     (async () => {
@@ -281,7 +336,7 @@ export default function Home() {
     })();
 
     const channel = supabase
-      .channel(`chat-${currentUserId}-${peerId}`)
+      .channel(pairChannel("chat", currentUserId, peerId))
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
@@ -303,7 +358,7 @@ export default function Home() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [screen, currentUserId, selectedGuide?.user_id, supabase]);
+  }, [screen, currentUserId, chatPeer?.id, supabase]);
 
   const visibleGuides =
     activeFilter === "All"
@@ -311,9 +366,9 @@ export default function Home() {
       : guides.filter((g) => g.tags.includes(filterKeyword[activeFilter] ?? ""));
 
   const sendMessage = async () => {
-    if (!input.trim() || !currentUserId || !selectedGuide?.user_id) return;
+    if (!input.trim() || !currentUserId || !chatPeer?.id) return;
     const body = input.trim();
-    const peerId = selectedGuide.user_id;
+    const peerId = chatPeer.id;
     setInput("");
 
     // Optimistic update: 即時 UI 反映（realtime subscribe レース回避）
@@ -348,6 +403,41 @@ export default function Home() {
       });
     }
   };
+
+  const totalUnread = Object.values(unreadByPeer).reduce((s, n) => s + n, 0);
+
+  const NAV_ITEMS: Array<{ icon: string; label: string; key: "home" | "inbox" | "saved" | "myprofile" }> = [
+    { icon: "🏠", label: "Home", key: "home" },
+    { icon: "💬", label: "Messages", key: "inbox" },
+    { icon: "🤍", label: "Saved", key: "saved" },
+    { icon: "😊", label: "Profile", key: "myprofile" },
+  ];
+
+  function renderBottomNav(active: "home" | "inbox" | "saved" | "myprofile") {
+    return (
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.key === active;
+          const showBadge = item.key === "inbox" && totalUnread > 0;
+          return (
+            <div
+              key={item.label}
+              onClick={() => setScreen(item.key)}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
+            >
+              <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
+              <div style={{ fontSize: 10, color: isActive ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{item.label}</div>
+              {showBadge && (
+                <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2e8b57" }}>
+                  {totalUnread > 99 ? "99+" : totalUnread}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
@@ -462,25 +552,7 @@ export default function Home() {
             )}
 
             <div style={{ height: 100 }}/>
-
-            {/* BOTTOM NAV */}
-            <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
-              {[["🏠", "Home"], ["💬", "Messages"], ["🤍", "Saved"], ["😊", "Profile"]].map(([icon, label]) => {
-                const totalUnread = Object.values(unreadByPeer).reduce((s, n) => s + n, 0);
-                const showBadge = label === "Messages" && totalUnread > 0;
-                return (
-                  <div key={label} onClick={() => { if (label === "Home") setScreen("home"); if (label === "Messages") setScreen("inbox"); if (label === "Saved") setScreen("saved"); if (label === "Profile") setScreen("myprofile"); }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}>
-                    <div style={{ fontSize: 20, color: label === "Home" ? "#fff" : "#a8d5b8" }}>{icon}</div>
-                    <div style={{ fontSize: 10, color: label === "Home" ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{label}</div>
-                    {showBadge && (
-                      <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2e8b57" }}>
-                        {totalUnread > 99 ? "99+" : totalUnread}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {renderBottomNav("home")}
           </div>
         )}
 
@@ -552,25 +624,35 @@ export default function Home() {
               </div>
             ) : (
               <button
-                onClick={() => setScreen("chat")}
-                disabled={!selectedGuide.user_id}
-                title={!selectedGuide.user_id ? "デモガイドにはメッセージング不可" : undefined}
-                style={{ margin: "0 20px", display: "block", width: "calc(100% - 40px)", background: selectedGuide.user_id ? "#ad001c" : "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: selectedGuide.user_id ? "pointer" : "not-allowed", fontFamily: "inherit" }}
+                onClick={() => {
+                  if (!selectedGuide.user_id) return;
+                  setChatPeer({
+                    id: selectedGuide.user_id,
+                    name: selectedGuide.name,
+                    emoji: selectedGuide.emoji,
+                    guideId: selectedGuide.id,
+                  });
+                  setChatOrigin("profile");
+                  setScreen("chat");
+                }}
+                disabled={!selectedGuide.user_id || !currentUserId}
+                title={!selectedGuide.user_id ? "デモガイドにはメッセージング不可" : (!currentUserId ? "ログインが必要" : undefined)}
+                style={{ margin: "0 20px", display: "block", width: "calc(100% - 40px)", background: selectedGuide.user_id && currentUserId ? "#ad001c" : "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: selectedGuide.user_id && currentUserId ? "pointer" : "not-allowed", fontFamily: "inherit" }}
               >
-                {selectedGuide.user_id ? `Message ${selectedGuide.name} 💬` : "デモガイド・メッセージ不可"}
+                {!selectedGuide.user_id ? "デモガイド・メッセージ不可" : !currentUserId ? "ログインしてメッセージ" : `Message ${selectedGuide.name} 💬`}
               </button>
             )}
           </div>
         )}
 
         {/* CHAT */}
-        {screen === "chat" && selectedGuide && (
+        {screen === "chat" && chatPeer && (
           <div style={{ background: "#ffefd5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setScreen("profile")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{selectedGuide.emoji}</div>
+              <button onClick={() => setScreen(chatOrigin)} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{chatPeer.emoji}</div>
               <div style={{ flex: 1, paddingLeft: 8 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{selectedGuide.name}</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{chatPeer.name}</div>
                 <div style={{ fontSize: 11, color: "#a8ffca", fontWeight: 700 }}>● Online now</div>
               </div>
             </div>
@@ -578,10 +660,6 @@ export default function Home() {
               {!currentUserId ? (
                 <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
                   ログインするとメッセージできるわよ
-                </div>
-              ) : !selectedGuide.user_id ? (
-                <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
-                  このガイドはデモ表示用なのでメッセージ送信できないわ
                 </div>
               ) : messages.length === 0 ? (
                 <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
@@ -606,14 +684,14 @@ export default function Home() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && sendMessage()}
-                placeholder={`Message ${selectedGuide.name}...`}
-                disabled={!currentUserId || !selectedGuide.user_id}
+                placeholder={`Message ${chatPeer.name}...`}
+                disabled={!currentUserId}
                 style={{ flex: 1, background: "#ffefd5", border: "2px solid #e8c99a", borderRadius: 24, padding: "10px 16px", fontSize: 13, color: "#1a1008", fontFamily: "inherit", fontWeight: 600, outline: "none" }}
               />
               <button
                 onClick={sendMessage}
-                disabled={!currentUserId || !selectedGuide.user_id || !input.trim()}
-                style={{ width: 40, height: 40, borderRadius: "50%", background: currentUserId && selectedGuide.user_id ? "#ad001c" : "#bbb", border: "none", cursor: currentUserId && selectedGuide.user_id ? "pointer" : "not-allowed", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}
+                disabled={!currentUserId || !input.trim()}
+                style={{ width: 40, height: 40, borderRadius: "50%", background: currentUserId ? "#ad001c" : "#bbb", border: "none", cursor: currentUserId ? "pointer" : "not-allowed", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}
               >↑</button>
             </div>
           </div>
@@ -676,6 +754,8 @@ export default function Home() {
                 </form>
               </div>
             )}
+            <div style={{ height: 100 }}/>
+            {renderBottomNav("myprofile")}
           </div>
         )}
 
@@ -711,6 +791,8 @@ export default function Home() {
                 </div>
               )}
             </div>
+            <div style={{ height: 100 }}/>
+            {renderBottomNav("saved")}
           </div>
         )}
 
@@ -734,14 +816,19 @@ export default function Home() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {inboxPeers.map((p) => {
-                    const peerGuide = guides.find((g) => g.user_id === p.peerId);
-                    const labelStr = peerGuide ? peerGuide.name : `ユーザー (${p.peerId.slice(0, 8)})`;
-                    const peerEmoji = peerGuide ? peerGuide.emoji : "🧑";
                     const unread = unreadByPeer[p.peerId] ?? 0;
                     return (
-                      <div key={p.peerId} onClick={() => { if (peerGuide) { setSelectedGuide(peerGuide); setScreen("chat"); } }} style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: peerGuide ? "pointer" : "default", opacity: peerGuide ? 1 : 0.6 }}>
+                      <div
+                        key={p.peerId}
+                        onClick={() => {
+                          setChatPeer({ id: p.peerId, name: p.name, emoji: p.emoji, guideId: p.guideId });
+                          setChatOrigin("inbox");
+                          setScreen("chat");
+                        }}
+                        style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+                      >
                         <div style={{ position: "relative" }}>
-                          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{peerEmoji}</div>
+                          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{p.emoji}</div>
                           {unread > 0 && (
                             <div style={{ position: "absolute", top: -4, right: -4, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 20, height: 20, padding: "0 5px", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff9f0" }}>
                               {unread > 99 ? "99+" : unread}
@@ -749,7 +836,7 @@ export default function Home() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{labelStr}</div>
+                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
@@ -759,6 +846,8 @@ export default function Home() {
                 </div>
               )}
             </div>
+            <div style={{ height: 100 }}/>
+            {renderBottomNav("inbox")}
           </div>
         )}
 
@@ -766,3 +855,4 @@ export default function Home() {
     </div>
   );
 }
+                 
