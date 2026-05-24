@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "./lib/supabase/client";
 import { signout } from "./actions/auth";
@@ -63,6 +63,14 @@ export default function Home() {
   const [inboxPeers, setInboxPeers] = useState<Array<{ peerId: string; lastBody: string; lastAt: string }>>([]);
 
   const supabase = useMemo(() => createClient(), []);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  // チャット新着で自動スクロール
+  useEffect(() => {
+    if (screen === "chat" && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messages, screen]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -376,7 +384,16 @@ export default function Home() {
             ) : (
               <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
                 {visibleGuides.map(g => (
-                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer" }}>
+                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer", position: "relative" }}>
+                    {currentUserId && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }}
+                        style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", fontSize: 18, cursor: "pointer", padding: 4, lineHeight: 1 }}
+                        aria-label="お気に入り"
+                      >
+                        {savedIds.has(Number(g.id)) ? "❤️" : "🤍"}
+                      </button>
+                    )}
                     <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a" }}>{g.emoji}</div>
                     <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
                     <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
@@ -496,14 +513,17 @@ export default function Home() {
                   まだメッセージなし。最初の一言を送ってみて 👇
                 </div>
               ) : (
-                messages.map((m) => {
-                  const mine = m.sender_id === currentUserId;
-                  return (
-                    <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "78%" }}>
-                      <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none" }}>{m.body}</div>
-                    </div>
-                  );
-                })
+                <>
+                  {messages.map((m) => {
+                    const mine = m.sender_id === currentUserId;
+                    return (
+                      <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "78%" }}>
+                        <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none" }}>{m.body}</div>
+                      </div>
+                    );
+                  })}
+                  <div ref={chatEndRef} />
+                </>
               )}
             </div>
             <div style={{ padding: "12px 20px 24px", display: "flex", gap: 10, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
@@ -641,10 +661,10 @@ export default function Home() {
                   {inboxPeers.map((p) => {
                     const peerGuide = guides.find((g) => g.user_id === p.peerId);
                     const labelStr = peerGuide ? peerGuide.name : `ユーザー (${p.peerId.slice(0, 8)})`;
-                    const emoji = peerGuide ? peerGuide.emoji : "🧑";
+                    const peerEmoji = peerGuide ? peerGuide.emoji : "🧑";
                     return (
                       <div key={p.peerId} onClick={() => { if (peerGuide) { setSelectedGuide(peerGuide); setScreen("chat"); } }} style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: peerGuide ? "pointer" : "default", opacity: peerGuide ? 1 : 0.6 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{emoji}</div>
+                        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{peerEmoji}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 14, fontWeight: 900 }}>{labelStr}</div>
                           <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
