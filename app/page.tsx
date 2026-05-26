@@ -13,7 +13,9 @@ type Guide = {
   uni: string;
   tags: string[];
   languages: string[];
-  rate: string;
+  rate: string;       // 表示用フォーマット (free なら "Free")
+  ratePerDay: number | null;
+  mode: "free" | "paid" | "both";
   stars: string;
   bio: string;
   tour_count: number;
@@ -63,6 +65,8 @@ const ADMIN_EMAILS = ["tonoikenta@icloud.com"];
 
 const filters = [
   "All",
+  "🤝 mate",
+  "💼 guide",
   "🍜 Food",
   "⛩ Temples",
   "🌙 Nightlife",
@@ -426,7 +430,7 @@ function HomeInner() {
     async function fetchGuides() {
       const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_hour, rating, bio, tour_count, user_id, image_paths")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -443,7 +447,13 @@ function HomeInner() {
         user_id: (g.user_id as string | null) ?? null,
         tags: g.tags ?? [],
         languages: g.languages ?? [],
-        rate: `¥${Number(g.rate_per_hour).toLocaleString()}/hr`,
+        rate: g.mode === "free"
+          ? "Free"
+          : g.rate_per_day != null
+            ? `¥${Number(g.rate_per_day).toLocaleString()}/day`
+            : "—",
+        ratePerDay: g.rate_per_day != null ? Number(g.rate_per_day) : null,
+        mode: ((g.mode as string) ?? "paid") as "free" | "paid" | "both",
         stars: Number(g.rating).toFixed(1),
         bio: g.bio ?? "",
         tour_count: g.tour_count ?? 0,
@@ -511,10 +521,13 @@ function HomeInner() {
     };
   }, [screen, currentUserId, chatPeer?.id, supabase]);
 
-  const visibleGuides =
-    activeFilter === "All"
-      ? guides
-      : guides.filter((g) => g.tags.includes(filterKeyword[activeFilter] ?? ""));
+  const visibleGuides = (() => {
+    if (activeFilter === "All") return guides;
+    if (activeFilter === "🤝 mate") return guides.filter((g) => g.mode === "free" || g.mode === "both");
+    if (activeFilter === "💼 guide") return guides.filter((g) => g.mode === "paid" || g.mode === "both");
+    const kw = filterKeyword[activeFilter] ?? "";
+    return guides.filter((g) => g.tags.includes(kw));
+  })();
 
   const sendMessage = async () => {
     if (!input.trim() || !currentUserId || !chatPeer?.id) return;
@@ -781,7 +794,7 @@ function HomeInner() {
                       {[...g.tags, ...g.languages].map(t => <span key={t} style={{ background: "#ffefd5", border: "1.5px solid #e8c99a", borderRadius: 6, padding: "3px 7px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>)}
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 13, color: "#ad001c", fontWeight: 800 }}>{g.rate}</span>
+                      <span style={{ fontSize: 13, color: g.mode === "free" ? "#2e8b57" : g.mode === "paid" ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{g.mode === "free" ? "🤝 Free" : g.rate}</span>
                       <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g)}</span>
                     </div>
                   </div>
@@ -812,8 +825,13 @@ function HomeInner() {
               <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
-              <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c" }}>{selectedGuide.emoji}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{selectedGuide.name}</div>
+              <div style={{ width: 90, height: 90, borderRadius: "50%", background: selectedGuide.mode === "paid" ? "#e1f5ee" : "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: `3px solid ${selectedGuide.mode === "paid" ? "#2e8b57" : selectedGuide.mode === "both" ? "#1a1008" : "#ad001c"}` }}>{selectedGuide.emoji}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4, color: selectedGuide.mode === "paid" ? "#2e8b57" : "#1a1008" }}>
+                {selectedGuide.name}{selectedGuide.mode === "paid" ? " ✨" : selectedGuide.mode === "both" ? " ✨" : ""}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 900, color: selectedGuide.mode === "paid" ? "#2e8b57" : selectedGuide.mode === "free" ? "#ad001c" : "#1a1008", marginBottom: 4 }}>
+                {selectedGuide.mode === "paid" ? "💼 PAID GUIDE" : selectedGuide.mode === "free" ? "🤝 MATE (FREE)" : "✨ MATE & GUIDE"}
+              </div>
               <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, marginBottom: 10 }}>{selectedGuide.uni}</div>
 
               {/* フォロワー数 (常に表示) + フォローボタン (他人ガイドのみ) */}
@@ -891,10 +909,17 @@ function HomeInner() {
                 )}
               </div>
             )}
-            <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
-              <span style={{ fontSize: 24, fontWeight: 900, color: "#ad001c" }}>{selectedGuide.rate}</span>
-            </div>
+            {selectedGuide.mode !== "free" && (
+              <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
+                <span style={{ fontSize: 24, fontWeight: 900, color: "#2e8b57" }}>{selectedGuide.rate}</span>
+              </div>
+            )}
+            {selectedGuide.mode === "free" && (
+              <div style={{ padding: "0 20px 12px", textAlign: "center", fontSize: 13, color: "#ad001c", fontWeight: 900 }}>
+                🤝 無料で会える mate よ！料金なし
+              </div>
+            )}
             {currentUserId && selectedGuide.user_id === currentUserId ? (
               <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
@@ -1129,7 +1154,7 @@ function HomeInner() {
                       <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{g.emoji}</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
-                        <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600 }}>{g.uni} · {g.rate}</div>
+                        <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600 }}>{g.uni}{g.mode !== "free" ? ` · ${g.rate}` : " · 🤝 Free"}</div>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", padding: 4 }}>❤️</button>
                     </div>
@@ -1213,6 +1238,7 @@ function HomeInner() {
             <img
               src={lightboxUrl}
               alt=""
+              className="zoom-enter"
               style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }}
             />
             <button

@@ -7,6 +7,7 @@ import {
   deleteGuide,
   type GuideFormState,
 } from "@/app/actions/guides";
+import ModeAndRate from "@/app/lib/mode-and-rate";
 import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
@@ -28,7 +29,8 @@ type Initial = {
   university: string;
   bio: string;
   emoji: string;
-  rate_per_hour: number;
+  rate_per_day: number | null;
+  mode: "free" | "paid" | "both";
   tags: string[];
   languages: string[];
   image_paths: string[];
@@ -216,21 +218,9 @@ export default function EditGuideForm({
               {state?.errors?.bio && <div style={err}>{state.errors.bio}</div>}
             </div>
 
-            <div style={{ marginBottom: 18 }}>
-              <label style={label} htmlFor="rate_per_hour">時給 (¥)</label>
-              <input
-                id="rate_per_hour"
-                name="rate_per_hour"
-                type="number"
-                inputMode="numeric"
-                min={500}
-                step={100}
-                required
-                defaultValue={initial.rate_per_hour}
-                style={input}
-              />
-              {state?.errors?.rate_per_hour && <div style={err}>{state.errors.rate_per_hour}</div>}
-            </div>
+            <ModeAndRate state={state} initialMode={initial.mode} initialRate={initial.rate_per_day ?? 3000} />
+            {state?.errors?.mode && <div style={err}>{state.errors.mode}</div>}
+            {state?.errors?.rate_per_day && <div style={err}>{state.errors.rate_per_day}</div>}
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="gender">性別 (任意)</label>

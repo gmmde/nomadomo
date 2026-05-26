@@ -17,20 +17,16 @@ export default async function EditGuidePage({ params }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect(`/login?next=/guides/${id}/edit`);
 
-  // RLS は SELECT public read だけど、念のため user_id でも絞って所有確認
   const { data: guide } = await supabase
     .from("guides")
     .select(
-      "id, name, university, bio, emoji, rate_per_hour, tags, languages, user_id, image_paths, gender, birth_year",
+      "id, name, university, bio, emoji, rate_per_day, mode, tags, languages, user_id, image_paths, gender, birth_year",
     )
     .eq("id", guideId)
     .maybeSingle();
 
   if (!guide) notFound();
-  if (guide.user_id !== user.id) {
-    // 他人のガイドを編集しようとしてる
-    redirect("/");
-  }
+  if (guide.user_id !== user.id) redirect("/");
 
   return (
     <EditGuideForm
@@ -41,7 +37,8 @@ export default async function EditGuidePage({ params }: Props) {
         university: (guide.university as string) ?? "",
         bio: (guide.bio as string) ?? "",
         emoji: (guide.emoji as string) ?? "🧑",
-        rate_per_hour: (guide.rate_per_hour as number) ?? 0,
+        rate_per_day: (guide.rate_per_day as number | null) ?? null,
+        mode: ((guide.mode as string) ?? "paid") as "free" | "paid" | "both",
         tags: (guide.tags as string[]) ?? [],
         languages: (guide.languages as string[]) ?? [],
         image_paths: (guide.image_paths as string[]) ?? [],

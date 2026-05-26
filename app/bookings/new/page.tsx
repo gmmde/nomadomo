@@ -21,12 +21,13 @@ export default async function NewBookingPage({ searchParams }: Props) {
 
   const { data: guide } = await supabase
     .from("guides")
-    .select("id, name, emoji, university, rate_per_hour, user_id")
+    .select("id, name, emoji, university, rate_per_day, mode, user_id")
     .eq("id", guideId)
     .maybeSingle();
   if (!guide) notFound();
   if (!guide.user_id) redirect("/");
   if (guide.user_id === user.id) redirect("/");
+  if (guide.mode === "free") redirect(`/?guide=${guideId}`);
 
   return (
     <BookingForm
@@ -34,7 +35,8 @@ export default async function NewBookingPage({ searchParams }: Props) {
       guideName={guide.name as string}
       guideEmoji={(guide.emoji as string) ?? "🧑"}
       guideUniversity={(guide.university as string) ?? ""}
-      ratePerHour={Number(guide.rate_per_hour)}
+      ratePerDay={Number(guide.rate_per_day ?? 0)}
+      mode={(guide.mode as string ?? "paid") as "free" | "paid" | "both"}
     />
   );
 }

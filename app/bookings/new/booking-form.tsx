@@ -25,16 +25,17 @@ type Props = {
   guideName: string;
   guideEmoji: string;
   guideUniversity: string;
-  ratePerHour: number;
+  ratePerDay: number;
+  mode: "free" | "paid" | "both";
 };
 
-export default function BookingForm({ guideId, guideName, guideEmoji, guideUniversity, ratePerHour }: Props) {
+export default function BookingForm({ guideId, guideName, guideEmoji, guideUniversity, ratePerDay }: Props) {
   const [state, action, pending] = useActionState<BookingFormState, FormData>(
     createBooking,
     undefined,
   );
-  const [hours, setHours] = useState(2);
-  const total = useMemo(() => ratePerHour * hours, [ratePerHour, hours]);
+  const [days, setDays] = useState(1);
+  const total = useMemo(() => ratePerDay * days, [ratePerDay, days]);
 
   return (
     <div style={wrap}>
@@ -49,7 +50,7 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 900 }}>{guideName}</div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{guideUniversity}</div>
-            <div style={{ fontSize: 12, color: "#ad001c", fontWeight: 900, marginTop: 2 }}>¥{ratePerHour.toLocaleString()} / hr</div>
+            <div style={{ fontSize: 12, color: "#ad001c", fontWeight: 900, marginTop: 2 }}>¥{ratePerDay.toLocaleString()} / day</div>
           </div>
         </div>
 
@@ -62,16 +63,16 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="hours">時間 (1〜12 時間)</label>
+            <label style={label} htmlFor="hours">日数 (1〜7 日)</label>
             <input
               id="hours"
               name="hours"
               type="number"
               min={1}
-              max={12}
+              max={7}
               step={1}
-              value={hours}
-              onChange={(e) => setHours(Math.max(1, Math.min(12, Number(e.target.value) || 1)))}
+              value={days}
+              onChange={(e) => setDays(Math.max(1, Math.min(7, Number(e.target.value) || 1)))}
               required
               style={input}
             />

@@ -13,7 +13,8 @@ export type GuideRow = {
   bio: string;
   tags: string[];
   languages: string[];
-  rate_per_hour: number;
+  rate_per_day: number | null;
+  mode: "free" | "paid" | "both";
   rating: number;
   tour_count: number;
   user_id: string | null;
@@ -64,6 +65,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
   const [ageMin, setAgeMin] = useState<number | "">("");
   const [ageMax, setAgeMax] = useState<number | "">("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [modeFilter, setModeFilter] = useState<"all" | "mate" | "guide">("all");
 
   function toggleArr(arr: string[], setter: (v: string[]) => void, v: string) {
     setter(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -71,6 +73,8 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
 
   const filtered = useMemo(() => {
     let rs = guides;
+    if (modeFilter === "mate") rs = rs.filter((g) => g.mode === "free" || g.mode === "both");
+    if (modeFilter === "guide") rs = rs.filter((g) => g.mode === "paid" || g.mode === "both");
     const q = query.trim().toLowerCase();
     if (q) {
       rs = rs.filter((g) =>
@@ -98,10 +102,10 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         rs = [...rs].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
         break;
       case "price_asc":
-        rs = [...rs].sort((a, b) => a.rate_per_hour - b.rate_per_hour);
+        rs = [...rs].sort((a, b) => (a.rate_per_day ?? 999999) - (b.rate_per_day ?? 999999));
         break;
       case "price_desc":
-        rs = [...rs].sort((a, b) => b.rate_per_hour - a.rate_per_hour);
+        rs = [...rs].sort((a, b) => (b.rate_per_day ?? -1) - (a.rate_per_day ?? -1));
         break;
       case "recommended":
       default:
@@ -109,7 +113,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         break;
     }
     return rs;
-  }, [guides, query, sort, tags, langs, gender, ageMin, ageMax]);
+  }, [guides, query, sort, tags, langs, gender, ageMin, ageMax, modeFilter]);
 
   function clearAll() {
     setQuery("");
@@ -119,6 +123,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
     setGender("");
     setAgeMin("");
     setAgeMax("");
+    setModeFilter("all");
   }
 
   return (
@@ -162,13 +167,25 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             onClick={() => setFiltersOpen((v) => !v)}
             style={{ background: filtersOpen ? "#ad001c" : "#fff", color: filtersOpen ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
           >
-            🎛 絞り込み{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0)})` : ""}
+            🎛 絞り込み{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0)})` : ""}
           </button>
         </div>
 
         {/* Filters panel */}
         {filtersOpen && (
           <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 12, marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>モード</div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+              {([["all", "すべて", "#8a7560"], ["mate", "🤝 mate (無料)", "#ad001c"], ["guide", "💼 guide (有料)", "#2e8b57"]] as const).map(([v, label, c]) => (
+                <button key={v} onClick={() => setModeFilter(v)} style={{
+                  flex: 1,
+                  background: modeFilter === v ? c : "#fff",
+                  color: modeFilter === v ? "#fff" : "#8a7560",
+                  border: `2px solid ${modeFilter === v ? c : "#e8c99a"}`,
+                  borderRadius: 14, padding: "6px 8px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit",
+                }}>{label}</button>
+              ))}
+            </div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>タグ</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
               {TAG_OPTIONS.map((t) => (
@@ -221,8 +238,14 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                       </div>
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontSize: 14, color: "#ad001c", fontWeight: 900 }}>¥{g.rate_per_hour.toLocaleString()}</div>
-                      <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800 }}>/hr</div>
+                      {g.mode === "free" ? (
+                        <div style={{ fontSize: 12, color: "#ad001c", fontWeight: 900 }}>🤝 Free</div>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: 14, color: g.mode === "paid" ? "#2e8b57" : "#ad001c", fontWeight: 900 }}>¥{(g.rate_per_day ?? 0).toLocaleString()}</div>
+                          <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800 }}>/day</div>
+                        </>
+                      )}
                     </div>
                   </div>
                   {g.bio && (

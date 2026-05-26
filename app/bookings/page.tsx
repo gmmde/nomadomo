@@ -92,7 +92,7 @@ export default async function BookingsPage() {
                       </div>
                       <div style={{ fontSize: 11, fontWeight: 900 }}>{STATUS_LABEL[b.status] ?? b.status}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}h · ¥{b.total_yen.toLocaleString()}</div>
+                    <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}日 · ¥{b.total_yen.toLocaleString()}</div>
                     {b.message && <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, marginTop: 6, fontStyle: "italic" }}>“{b.message}”</div>}
                     {b.status === "pending" && (
                       <form action={updateBookingStatus} style={{ marginTop: 10 }}>
@@ -131,7 +131,7 @@ export default async function BookingsPage() {
                       </div>
                       <div style={{ fontSize: 11, fontWeight: 900 }}>{STATUS_LABEL[b.status] ?? b.status}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}h · ¥{b.total_yen.toLocaleString()}</div>
+                    <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}日 · ¥{b.total_yen.toLocaleString()}</div>
                     {b.message && <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, marginTop: 6, fontStyle: "italic" }}>“{b.message}”</div>}
                     {b.status === "pending" && (
                       <div style={{ display: "flex", gap: 6, marginTop: 10 }}>

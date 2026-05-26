@@ -38,7 +38,7 @@ export async function createBooking(
   // ガイドの user_id と rate_per_hour を取得
   const { data: guide, error: guideErr } = await supabase
     .from("guides")
-    .select("user_id, rate_per_hour")
+    .select("user_id, rate_per_day, mode")
     .eq("id", guideId)
     .maybeSingle();
   if (guideErr) return { error: guideErr.message };
@@ -46,7 +46,9 @@ export async function createBooking(
   if (!guide.user_id) return { error: "このガイドは予約不可（デモガイド）" };
   if (guide.user_id === user.id) return { error: "自分のガイドは予約できないわよ" };
 
-  const totalYen = Number(guide.rate_per_hour) * hours;
+  if (guide.mode === "free") return { error: "このガイドは無料 (mate) なので予約不要よ。直接メッセージ送って" };
+  if (guide.rate_per_day == null) return { error: "ガイドが料金を設定してない" };
+  const totalYen = Number(guide.rate_per_day) * hours;
 
   const { error } = await supabase.from("bookings").insert({
     traveler_id: user.id,

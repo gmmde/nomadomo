@@ -12,7 +12,8 @@ export type GuideFormErrors = Partial<
     | "university"
     | "bio"
     | "emoji"
-    | "rate_per_hour"
+    | "rate_per_day"
+    | "mode"
     | "tags"
     | "languages"
     | "gender"
@@ -30,7 +31,9 @@ function parseGuideFields(formData: FormData) {
   const university = String(formData.get("university") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
   const emoji = String(formData.get("emoji") ?? "").trim() || "🧑";
-  const rateRaw = String(formData.get("rate_per_hour") ?? "").trim();
+  const modeRaw = String(formData.get("mode") ?? "both").trim();
+  const mode = (["free", "paid", "both"].includes(modeRaw) ? modeRaw : "both") as "free" | "paid" | "both";
+  const rateRaw = String(formData.get("rate_per_day") ?? "").trim();
   const rate = Number(rateRaw);
   const tags = formData.getAll("tags").map(String).filter(Boolean);
   const languages = formData.getAll("languages").map(String).filter(Boolean);
@@ -56,8 +59,10 @@ function parseGuideFields(formData: FormData) {
   if (name.length < 2) errors.name = "名前は2文字以上にして";
   if (university.length < 2) errors.university = "大学名を入れて";
   if (bio.length < 10) errors.bio = "自己紹介は10文字以上書いてちょうだい";
-  if (!rateRaw || !Number.isFinite(rate) || rate <= 0)
-    errors.rate_per_hour = "料金は正の数値で";
+  if (mode !== "free") {
+    if (!rateRaw || !Number.isFinite(rate) || rate <= 0)
+      errors.rate_per_day = "料金は正の数値で (1日あたり)";
+  }
   if (tags.length === 0) errors.tags = "タグを1つ以上選んで";
   if (languages.length === 0) errors.languages = "言語を1つ以上選んで";
   if (birthYearRaw && !birth_year) errors.birth_year = "西暦 (例: 2002) で";
@@ -68,7 +73,8 @@ function parseGuideFields(formData: FormData) {
       university,
       bio,
       emoji,
-      rate_per_hour: Math.round(rate),
+      rate_per_day: mode === "free" ? null : Math.round(rate),
+      mode,
       tags,
       languages,
       image_paths,

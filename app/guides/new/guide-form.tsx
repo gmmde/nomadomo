@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createGuide, type GuideFormState } from "@/app/actions/guides";
+import ModeAndRate from "@/app/lib/mode-and-rate";
 import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
@@ -178,22 +179,10 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
               {state?.errors?.bio && <div style={errStyle}>{state.errors.bio}</div>}
             </div>
 
-            {/* Rate per hour */}
-            <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle} htmlFor="rate_per_hour">時給 (¥)</label>
-              <input
-                id="rate_per_hour"
-                name="rate_per_hour"
-                type="number"
-                inputMode="numeric"
-                min={500}
-                step={100}
-                required
-                style={inputStyle}
-                placeholder="例: 3000"
-              />
-              {state?.errors?.rate_per_hour && <div style={errStyle}>{state.errors.rate_per_hour}</div>}
-            </div>
+            {/* Mode selector */}
+            <ModeAndRate state={state} initialMode="both" initialRate={3000} />
+            {state?.errors?.mode && <div style={errStyle}>{state.errors.mode}</div>}
+            {state?.errors?.rate_per_day && <div style={errStyle}>{state.errors.rate_per_day}</div>}
 
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
