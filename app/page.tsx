@@ -55,7 +55,20 @@ function ratingDisplay(g: { stars: string; tour_count: number }) {
   return `★ ${g.stars}`;
 }
 
-const filters = ["All", "🍜 Food", "⛩ Temples", "🌙 Nightlife", "🚲 Hidden spots", "🎨 Art"];
+const filters = [
+  "All",
+  "🍜 Food",
+  "⛩ Temples",
+  "🌙 Nightlife",
+  "🚲 Hidden spots",
+  "🎨 Art",
+  "🎌 Anime",
+  "🚗 Drive",
+  "🌿 Nature",
+  "🎭 Culture",
+  "🏛 History",
+  "🕳 Deep",
+];
 
 const filterKeyword: Record<string, string> = {
   "🍜 Food": "Food",
@@ -63,6 +76,12 @@ const filterKeyword: Record<string, string> = {
   "🌙 Nightlife": "Nightlife",
   "🚲 Hidden spots": "Hidden",
   "🎨 Art": "Art",
+  "🎌 Anime": "Anime",
+  "🚗 Drive": "Drive",
+  "🌿 Nature": "Nature",
+  "🎭 Culture": "Culture",
+  "🏛 History": "History",
+  "🕳 Deep": "Deep",
 };
 
 export default function Home() {
@@ -410,6 +429,18 @@ export default function Home() {
 
   const totalUnread = Object.values(unreadByPeer).reduce((s, n) => s + n, 0);
 
+  // ガイドアイコン → ガイド詳細画面 (どの画面からでも呼べる)
+  function openGuideProfile(guideId: string | undefined) {
+    if (!guideId) return;
+    const g = guides.find((x) => x.id === guideId);
+    if (!g) return;
+    setSelectedGuide(g);
+    setScreen("profile");
+  }
+
+  // 自分自身のガイドプロファイル (あれば)
+  const ownGuide = guides.find((g) => g.user_id === currentUserId) ?? null;
+
   const NAV_ITEMS: Array<{ icon: string; label: string; key: "home" | "inbox" | "saved" | "myprofile" }> = [
     { icon: "🏠", label: "Home", key: "home" },
     { icon: "💬", label: "Messages", key: "inbox" },
@@ -446,6 +477,20 @@ export default function Home() {
   return (
     <div style={{ background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", position: "relative" }}>
+
+        {/* SPLASH (initial mount) */}
+        {loading && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+            <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: -1 }}>
+              <span style={{ color: "#2ecc71" }}>Noma</span>
+              <span style={{ color: "#ad001c" }}>Domo</span>
+            </div>
+            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>
+              京都で本物のローカルと出会う
+            </div>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid #e8c99a", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite", marginTop: 8 }} />
+          </div>
+        )}
 
         {/* HOME */}
         {screen === "home" && (
@@ -686,7 +731,11 @@ export default function Home() {
           <div style={{ background: "#ffefd5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen(chatOrigin)} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{chatPeer.emoji}</div>
+              <div
+                onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
+                style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default" }}
+                title={chatPeer.guideId ? "ガイド詳細を見る" : undefined}
+              >{chatPeer.emoji}</div>
               <div style={{ flex: 1, paddingLeft: 8 }}>
                 <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{chatPeer.name}</div>
                 <div style={{ fontSize: 11, color: "#a8ffca", fontWeight: 700 }}>● Online now</div>
@@ -742,7 +791,11 @@ export default function Home() {
               <div style={{ width: 36 }}/>
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
-              <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c" }}>😊</div>
+              <div
+                onClick={() => ownGuide && openGuideProfile(ownGuide.id)}
+                style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", cursor: ownGuide ? "pointer" : "default" }}
+                title={ownGuide ? "自分のガイドプロファイルを開く" : undefined}
+              >{ownGuide?.emoji ?? "😊"}</div>
               {travelerProfile ? (
                 <>
                   <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{travelerProfile.name}</div>
@@ -864,7 +917,14 @@ export default function Home() {
                         style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
                       >
                         <div style={{ position: "relative" }}>
-                          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{p.emoji}</div>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (p.guideId) openGuideProfile(p.guideId);
+                            }}
+                            style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default" }}
+                            title={p.guideId ? "ガイド詳細" : undefined}
+                          >{p.emoji}</div>
                           {unread > 0 && (
                             <div style={{ position: "absolute", top: -4, right: -4, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 20, height: 20, padding: "0 5px", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff9f0" }}>
                               {unread > 99 ? "99+" : unread}
@@ -872,6 +932,7 @@ export default function Home() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>

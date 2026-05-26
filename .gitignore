@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cowork mode: PAT を置く場所（絶対 commit しない）
+.git-credentials-local
+.git-credentials-local.txt

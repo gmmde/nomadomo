@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { createGuide, type GuideFormState } from "@/app/actions/guides";
 import ImageUploader from "@/app/lib/image-uploader";
 
-const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art"] as const;
+const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "FR", "ES", "DE"] as const;
 const EMOJI_OPTIONS = ["🧑", "🍜", "⛩", "🎨", "🌙", "🚲", "🏯", "☕", "📷", "🍶"] as const;
 
