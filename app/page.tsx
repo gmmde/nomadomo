@@ -823,11 +823,18 @@ export default function Home() {
               </button>
             )}
             {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
-              <div style={{ textAlign: "center", marginTop: 14 }}>
-                <Link href={`/report/${selectedGuide.user_id}`} style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textDecoration: "underline" }}>
-                  🚩 このガイドを通報
-                </Link>
-              </div>
+              <>
+                <div style={{ margin: "10px 20px 0" }}>
+                  <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    📅 予約をリクエストする
+                  </Link>
+                </div>
+                <div style={{ textAlign: "center", marginTop: 14 }}>
+                  <Link href={`/report/${selectedGuide.user_id}`} style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textDecoration: "underline" }}>
+                    🚩 このガイドを通報
+                  </Link>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -937,6 +944,9 @@ export default function Home() {
                 <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
                   ログイン中：{userEmail}
                 </div>
+                <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  📅 予約一覧
+                </Link>
                 <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   + ガイドとして登録
                 </Link>
