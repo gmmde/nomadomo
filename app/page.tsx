@@ -102,6 +102,8 @@ export default function Home() {
   const [unreadByPeer, setUnreadByPeer] = useState<Record<string, number>>({});
   const [chatPeer, setChatPeer] = useState<ChatPeer | null>(null);
   const [chatOrigin, setChatOrigin] = useState<ChatOrigin>("profile");
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [selectedGuideFollowers, setSelectedGuideFollowers] = useState<number>(0);
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -164,6 +166,72 @@ export default function Home() {
         setSavedIds(new Set((data ?? []).map((r) => r.guide_id as number)));
       });
   }, [supabase, currentUserId]);
+
+  // 自分のフォロー先一覧を取得（follows RLS で自分の行のみ取れる）
+  useEffect(() => {
+    if (!currentUserId) {
+      setFollowingIds(new Set());
+      return;
+    }
+    supabase
+      .from("follows")
+      .select("followee_id")
+      .then(({ data }) => {
+        setFollowingIds(new Set((data ?? []).map((r) => r.followee_id as string)));
+      });
+  }, [supabase, currentUserId]);
+
+  // 選択中ガイドのフォロワー数（SECURITY DEFINER 関数経由）
+  useEffect(() => {
+    if (!selectedGuide?.user_id) {
+      setSelectedGuideFollowers(0);
+      return;
+    }
+    supabase
+      .rpc("get_follower_count", { user_id: selectedGuide.user_id })
+      .then(({ data }) => {
+        setSelectedGuideFollowers(typeof data === "number" ? data : 0);
+      });
+  }, [supabase, selectedGuide?.user_id]);
+
+  // フォロートグル（楽観的更新）
+  async function toggleFollow(followeeUserId: string) {
+    if (!currentUserId || followeeUserId === currentUserId) return;
+    const isFollowing = followingIds.has(followeeUserId);
+    if (isFollowing) {
+      setFollowingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(followeeUserId);
+        return next;
+      });
+      setSelectedGuideFollowers((c) => Math.max(0, c - 1));
+      const { error } = await supabase
+        .from("follows")
+        .delete()
+        .eq("follower_id", currentUserId)
+        .eq("followee_id", followeeUserId);
+      if (error) {
+        console.error("Unfollow failed:", error.message);
+        setFollowingIds((prev) => new Set(prev).add(followeeUserId));
+        setSelectedGuideFollowers((c) => c + 1);
+      }
+    } else {
+      setFollowingIds((prev) => new Set(prev).add(followeeUserId));
+      setSelectedGuideFollowers((c) => c + 1);
+      const { error } = await supabase
+        .from("follows")
+        .insert({ follower_id: currentUserId, followee_id: followeeUserId });
+      if (error) {
+        console.error("Follow failed:", error.message);
+        setFollowingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(followeeUserId);
+          return next;
+        });
+        setSelectedGuideFollowers((c) => Math.max(0, c - 1));
+      }
+    }
+  }
 
   // 未読メッセージカウント (peer別) + realtime で新着増減
   useEffect(() => {
@@ -675,8 +743,8 @@ export default function Home() {
             )}
 
             <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
-              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i) => (
-                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < 2 ? "2px solid #e8c99a" : "none" }}>
+              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [String(selectedGuideFollowers), "Followers"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
+                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
                   <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
                 </div>
@@ -694,6 +762,28 @@ export default function Home() {
               <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
               <span style={{ fontSize: 24, fontWeight: 900, color: "#ad001c" }}>{selectedGuide.rate}</span>
             </div>
+            {/* Follow ボタン (他人 + ログイン中 + user_id あり のみ) */}
+            {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
+              <div style={{ padding: "0 20px 12px" }}>
+                <button
+                  onClick={() => selectedGuide.user_id && toggleFollow(selectedGuide.user_id)}
+                  style={{
+                    width: "100%",
+                    background: followingIds.has(selectedGuide.user_id) ? "#fff" : "#2e8b57",
+                    color: followingIds.has(selectedGuide.user_id) ? "#2e8b57" : "#fff",
+                    border: `2px solid #2e8b57`,
+                    borderRadius: 14,
+                    padding: 12,
+                    fontSize: 14,
+                    fontWeight: 900,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  {followingIds.has(selectedGuide.user_id) ? "✓ フォロー中" : "+ フォローする"}
+                </button>
+              </div>
+            )}
             {currentUserId && selectedGuide.user_id === currentUserId ? (
               <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
