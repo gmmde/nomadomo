@@ -1,4 +1,5 @@
 "use client";
+import BackButton from "@/app/lib/back-button";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -122,7 +123,7 @@ export default function AllGuidesView({ guides }: { guides: GuideRow[] }) {
       <div style={card} className="screen-enter">
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <Link href="/" style={{ color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
+          <BackButton />
           <div style={{ fontSize: 18, fontWeight: 900 }}>ガイド一覧</div>
           <div style={{ flex: 1 }}/>
           <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 800 }}>{filtered.length} / {guides.length}</div>

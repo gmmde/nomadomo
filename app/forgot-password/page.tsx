@@ -1,4 +1,5 @@
 "use client";
+import BackButton from "@/app/lib/back-button";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -75,7 +76,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <div style={{ marginTop: 24, fontSize: 13, textAlign: "center" }}>
-          <Link href="/login" style={{ color: "#8a7560", fontWeight: 700 }}>← ログインに戻る</Link>
+          <BackButton />
         </div>
       </div>
     </div>

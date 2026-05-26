@@ -1,4 +1,5 @@
 "use client";
+import BackButton from "@/app/lib/back-button";
 
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
@@ -39,7 +40,7 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
     <div style={wrap}>
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <Link href="/" style={{ color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
+          <BackButton />
           <div style={{ fontSize: 20, fontWeight: 900 }}>予約申込</div>
         </div>
 

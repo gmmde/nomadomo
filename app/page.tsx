@@ -93,7 +93,33 @@ const filterKeyword: Record<string, string> = {
 };
 
 function HomeInner() {
-  const [screen, setScreen] = useState("home");
+  const [screen, _setScreen] = useState("home");
+  const [navHistory, setNavHistory] = useState<string[]>(["home"]);
+
+  // 画面遷移: push to history (back で戻れる)
+  function navigateTo(next: string) {
+    _setScreen(next);
+    setNavHistory((h) => [...h, next]);
+  }
+  // 履歴 1 個前に戻る (現在画面 pop)
+  function goBack() {
+    setNavHistory((h) => {
+      if (h.length <= 1) {
+        _setScreen("home");
+        return ["home"];
+      }
+      const popped = h.slice(0, -1);
+      _setScreen(popped[popped.length - 1]);
+      return popped;
+    });
+  }
+  // bottom nav: タブ切替で履歴 reset
+  function navTab(tab: string) {
+    _setScreen(tab);
+    setNavHistory([tab]);
+  }
+  // 旧 setScreen() を navigateTo に alias (徐々に置換)
+  const setScreen = navigateTo;
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
@@ -113,6 +139,7 @@ function HomeInner() {
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [selectedGuideFollowers, setSelectedGuideFollowers] = useState<number>(0);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [heroImgError, setHeroImgError] = useState(false);
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -558,7 +585,7 @@ function HomeInner() {
           return (
             <div
               key={item.label}
-              onClick={() => setScreen(item.key)}
+              onClick={() => navTab(item.key)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
               <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
@@ -613,11 +640,20 @@ function HomeInner() {
                     ログイン
                   </Link>
                 )}
+                <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textDecoration: "none" }}>⚙</Link>
               </div>
             </div>
 
             {/* MAP BG HERO */}
             <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
+              {!heroImgError && (
+                <img
+                  src="/home-hero.png"
+                  alt=""
+                  onError={() => setHeroImgError(true)}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 1 }}
+                />
+              )}
               <svg width="100%" height="200" viewBox="0 0 380 200" preserveAspectRatio="xMidYMid slice">
                 <rect width="380" height="200" fill="#f5ead0"/>
                 <rect x="0" y="0" width="60" height="45" fill="#e8d9b8" rx="2"/><rect x="65" y="0" width="80" height="30" fill="#ddd0b0" rx="2"/><rect x="150" y="0" width="50" height="50" fill="#e8d9b8" rx="2"/><rect x="205" y="0" width="70" height="35" fill="#ddd0b0" rx="2"/><rect x="320" y="0" width="60" height="60" fill="#ddd0b0" rx="2"/>
@@ -639,8 +675,8 @@ function HomeInner() {
                 <g transform="translate(83,90)"><g transform="rotate(20)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(92)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(164)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(236)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(308)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="5" fill="#fffde7"/><circle cx="0" cy="0" r="2.5" fill="#f9c74f"/></g>
                 <g transform="translate(52,86)"><g transform="rotate(5)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(77)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(149)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(221)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(293)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="3.5" fill="#fffde7"/><circle cx="0" cy="0" r="1.8" fill="#f9c74f"/></g>
               </svg>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #f5ead0 100%)" }}/>
-              <div style={{ position: "absolute", bottom: 16, left: 20 }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #f5ead0 100%)", zIndex: 2 }}/>
+              <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Kyoto, Japan</div>
                 <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, textShadow: "0 2px 12px #fff8" }}>
                   Meet a <span style={{ color: "#ad001c" }}>real local</span>,<br/>not a tour guide
@@ -734,19 +770,18 @@ function HomeInner() {
         {screen === "profile" && selectedGuide && (
           <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+              <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Guide profile</div>
-              {currentUserId ? (
+              {currentUserId && (
                 <button
                   onClick={() => toggleSave(Number(selectedGuide.id))}
-                  style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: 0, width: 36 }}
+                  style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: 0, width: 28 }}
                   aria-label="お気に入り"
                 >
                   {savedIds.has(Number(selectedGuide.id)) ? "❤️" : "🤍"}
                 </button>
-              ) : (
-                <div style={{ width: 36 }}/>
               )}
+              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
               <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c" }}>{selectedGuide.emoji}</div>
@@ -783,6 +818,23 @@ function HomeInner() {
               </div>
             </div>
 
+
+            <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
+              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
+                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
+                  <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
+              "{selectedGuide.bio}"
+            </div>
+            <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+              {selectedGuide.tags.map(t => (
+                <span key={t} style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "7px 14px", fontSize: 12, color: "#2e8b57", fontWeight: 700 }}>{t}</span>
+              ))}
+            </div>
             {selectedGuide.image_paths.length > 0 && (
               <div style={{ padding: "0 20px 16px" }}>
                 <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", margin: "0 -20px", padding: "0 20px" }}>
@@ -811,23 +863,6 @@ function HomeInner() {
                 )}
               </div>
             )}
-
-            <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
-              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
-                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
-                  <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
-              "{selectedGuide.bio}"
-            </div>
-            <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {selectedGuide.tags.map(t => (
-                <span key={t} style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "7px 14px", fontSize: 12, color: "#2e8b57", fontWeight: 700 }}>{t}</span>
-              ))}
-            </div>
             <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
               <span style={{ fontSize: 24, fontWeight: 900, color: "#ad001c" }}>{selectedGuide.rate}</span>
@@ -882,7 +917,7 @@ function HomeInner() {
         {screen === "chat" && chatPeer && (
           <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setScreen(chatOrigin)} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+              <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div
                 onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
                 style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default" }}
@@ -899,6 +934,7 @@ function HomeInner() {
               >
                 🚩
               </Link>
+              <Link href="/settings" aria-label="設定" style={{ width: 30, height: 30, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
               {!currentUserId ? (
@@ -945,9 +981,9 @@ function HomeInner() {
         {screen === "myprofile" && (
           <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>My profile</div>
               <div style={{ width: 36 }}/>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>My profile</div>
+              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
               <div
@@ -1045,9 +1081,9 @@ function HomeInner() {
         {screen === "saved" && (
           <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Saved guides ❤️</div>
               <div style={{ width: 36 }}/>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Saved guides ❤️</div>
+              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "20px" }}>
               {!currentUserId ? (
@@ -1082,9 +1118,9 @@ function HomeInner() {
         {screen === "inbox" && (
           <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+              <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Messages 💬</div>
-              <div style={{ width: 36 }}/>
+              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "20px" }}>
               {!currentUserId ? (

@@ -9,7 +9,7 @@ html, body {
   background-color: #cfe2c4;
   background-image:
     linear-gradient(rgba(255, 249, 240, 0.45), rgba(255, 249, 240, 0.45)),
-    url("/map-bg.svg");
+    url("/map-bg.png");
   background-repeat: no-repeat, no-repeat;
   background-size: cover, cover;
   background-position: center center, 0% center;

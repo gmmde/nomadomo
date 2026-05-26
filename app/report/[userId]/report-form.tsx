@@ -1,4 +1,5 @@
 "use client";
+import BackButton from "@/app/lib/back-button";
 
 import Link from "next/link";
 import { useActionState } from "react";
@@ -27,7 +28,7 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
     <div style={wrap}>
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <Link href="/" style={{ color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
+          <BackButton />
           <div style={{ fontSize: 20, fontWeight: 900 }}>通報</div>
         </div>
 

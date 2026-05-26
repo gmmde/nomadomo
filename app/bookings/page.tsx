@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import BackButton from "@/app/lib/back-button";
 import Link from "next/link";
 import { createClient } from "@/app/lib/supabase/server";
 import { updateBookingStatus } from "@/app/actions/bookings";
@@ -66,7 +67,7 @@ export default async function BookingsPage() {
     <div style={{ background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <Link href="/" style={{ color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
+          <BackButton />
           <div style={{ fontSize: 20, fontWeight: 900 }}>予約一覧</div>
         </div>
 
