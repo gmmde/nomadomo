@@ -4,6 +4,7 @@ import BackButton from "@/app/lib/back-button";
 import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSignedUrls } from "@/app/lib/use-signed-urls";
 
 export type GuideRow = {
   id: number;
@@ -20,6 +21,7 @@ export type GuideRow = {
   user_id: string | null;
   gender: string | null;
   birth_year: number | null;
+  avatar_path: string | null;
   created_at: string;
 };
 
@@ -54,6 +56,13 @@ function ageFromBirth(year: number | null): number | null {
   return new Date().getFullYear() - year;
 }
 
+
+function modeCardStyle(mode: "free" | "paid" | "both") {
+  if (mode === "free") return { bg: "#e6f5ee", border: "#9fc9b6" };
+  if (mode === "paid") return { bg: "#fceaec", border: "#e8b5bc" };
+  return { bg: "#ffffffee", border: "#f0d9b5" };
+}
+
 function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
@@ -66,6 +75,8 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
   const [ageMax, setAgeMax] = useState<number | "">("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [modeFilter, setModeFilter] = useState<"all" | "mate" | "guide">("all");
+  const avatarPaths = guides.map((g) => g.avatar_path).filter((p): p is string => Boolean(p));
+  const avatarUrls = useSignedUrls(avatarPaths);
 
   function toggleArr(arr: string[], setter: (v: string[]) => void, v: string) {
     setter(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -227,10 +238,10 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                 <Link
                   key={g.id}
                   href={`/?guide=${g.id}`}
-                  style={{ display: "block", textDecoration: "none", color: "inherit", background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 18, padding: 14 }}
+                  style={(() => { const s = modeCardStyle(g.mode); return { display: "block", textDecoration: "none", color: "inherit", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 18, padding: 14 }; })()}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0 }}>{g.emoji}</div>
+                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
                       <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>

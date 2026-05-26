@@ -10,6 +10,7 @@ type Guide = {
   id: string;
   name: string;
   emoji: string;
+  avatarPath: string | null;
   uni: string;
   tags: string[];
   languages: string[];
@@ -96,6 +97,14 @@ const filterKeyword: Record<string, string> = {
   "🎵 Music": "Music",
 };
 
+
+// mode に応じたカード背景色 + 枠色
+function modeCardStyle(mode: "free" | "paid" | "both") {
+  if (mode === "free") return { bg: "#e6f5ee", border: "#9fc9b6" };
+  if (mode === "paid") return { bg: "#fceaec", border: "#e8b5bc" };
+  return { bg: "#ffffffee", border: "#f0d9b5" };
+}
+
 function HomeInner() {
   const [screen, _setScreen] = useState("home");
   const [navHistory, setNavHistory] = useState<string[]>(["home"]);
@@ -152,6 +161,8 @@ function HomeInner() {
 
   // 選択中ガイドの画像を signed URL に変換（private bucket 対応）
   const galleryUrls = useSignedUrls(selectedGuide?.image_paths ?? []);
+  // 全ガイドのアバター画像 (1 リクエストでバッチ取得)
+  const avatarUrls = useSignedUrls(guides.map((g) => g.avatarPath).filter((p): p is string => Boolean(p)));
   // 自分の旅行者画像も signed URL に
   const travelerImageUrls = useSignedUrls(travelerProfile?.image_paths ?? []);
 
@@ -430,7 +441,7 @@ function HomeInner() {
     async function fetchGuides() {
       const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -443,6 +454,7 @@ function HomeInner() {
         id: g.id,
         name: g.name,
         emoji: g.emoji ?? "🧑",
+        avatarPath: (g.avatar_path as string | null) ?? null,
         uni: g.university ?? "",
         user_id: (g.user_id as string | null) ?? null,
         tags: g.tags ?? [],
@@ -777,7 +789,7 @@ function HomeInner() {
             ) : (
               <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
                 {visibleGuides.map(g => (
-                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer", position: "relative" }}>
+                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={(() => { const s = modeCardStyle(g.mode); return { background: s.bg, border: `2px solid ${s.border}`, borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer", position: "relative" }; })()}>
                     {currentUserId && (
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }}
@@ -787,7 +799,7 @@ function HomeInner() {
                         {savedIds.has(Number(g.id)) ? "❤️" : "🤍"}
                       </button>
                     )}
-                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a" }}>{g.emoji}</div>
+                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                     <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
                     <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
@@ -825,11 +837,11 @@ function HomeInner() {
               <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
             </div>
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
-              <div style={{ width: 90, height: 90, borderRadius: "50%", background: selectedGuide.mode === "paid" ? "#e1f5ee" : "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: `3px solid ${selectedGuide.mode === "paid" ? "#2e8b57" : selectedGuide.mode === "both" ? "#1a1008" : "#ad001c"}` }}>{selectedGuide.emoji}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4, color: selectedGuide.mode === "paid" ? "#2e8b57" : "#1a1008" }}>
-                {selectedGuide.name}{selectedGuide.mode === "paid" ? " ✨" : selectedGuide.mode === "both" ? " ✨" : ""}
+              <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", overflow: "hidden" }}>{selectedGuide.avatarPath && avatarUrls[selectedGuide.avatarPath] ? <img src={avatarUrls[selectedGuide.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : selectedGuide.emoji}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>
+                {selectedGuide.name}{selectedGuide.mode !== "free" ? " ✨" : ""}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 900, color: selectedGuide.mode === "paid" ? "#2e8b57" : selectedGuide.mode === "free" ? "#ad001c" : "#1a1008", marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: selectedGuide.mode === "paid" ? "#ad001c" : selectedGuide.mode === "free" ? "#2e8b57" : "#1a1008", marginBottom: 4 }}>
                 {selectedGuide.mode === "paid" ? "💼 PAID GUIDE" : selectedGuide.mode === "free" ? "🤝 MATE (FREE)" : "✨ MATE & GUIDE"}
               </div>
               <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, marginBottom: 10 }}>{selectedGuide.uni}</div>
@@ -865,7 +877,7 @@ function HomeInner() {
             </div>
 
 
-            <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
+            <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { display: "flex", margin: "0 20px 20px", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 18, overflow: "hidden" }; })()}>
               {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
                 <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
                   <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
@@ -873,7 +885,7 @@ function HomeInner() {
                 </div>
               ))}
             </div>
-            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
+            <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { background: s.bg, border: `2px solid ${s.border}`, borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }; })()}>
               "{selectedGuide.bio}"
             </div>
             <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
@@ -973,9 +985,9 @@ function HomeInner() {
               <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div
                 onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
-                style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default" }}
+                style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}
                 title={chatPeer.guideId ? "ガイド詳細を見る" : undefined}
-              >{chatPeer.emoji}</div>
+              >{(() => { const pg = chatPeer.guideId ? guides.find((x) => x.id === chatPeer.guideId) : null; return pg?.avatarPath && avatarUrls[pg.avatarPath] ? <img src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : chatPeer.emoji; })()}</div>
               <div style={{ flex: 1, paddingLeft: 8 }}>
                 <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{chatPeer.name}</div>
                 <div style={{ fontSize: 11, color: "#a8ffca", fontWeight: 700 }}>● Online now</div>
@@ -1041,9 +1053,9 @@ function HomeInner() {
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
               <div
                 onClick={() => ownGuide && openGuideProfile(ownGuide.id)}
-                style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", cursor: ownGuide ? "pointer" : "default" }}
+                style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", cursor: ownGuide ? "pointer" : "default", overflow: "hidden" }}
                 title={ownGuide ? "自分のガイドプロファイルを開く" : undefined}
-              >{ownGuide?.emoji ?? "😊"}</div>
+              >{ownGuide?.avatarPath && avatarUrls[ownGuide.avatarPath] ? <img src={avatarUrls[ownGuide.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (ownGuide?.emoji ?? "😊")}</div>
               {travelerProfile ? (
                 <>
                   <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{travelerProfile.name}</div>
@@ -1150,8 +1162,8 @@ function HomeInner() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {guides.filter((g) => savedIds.has(Number(g.id))).map((g) => (
-                    <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
-                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{g.emoji}</div>
+                    <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={(() => { const s = modeCardStyle(g.mode); return { background: s.bg, border: `2px solid ${s.border}`, borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }; })()}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
                         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600 }}>{g.uni}{g.mode !== "free" ? ` · ${g.rate}` : " · 🤝 Free"}</div>
@@ -1204,9 +1216,9 @@ function HomeInner() {
                               e.stopPropagation();
                               if (p.guideId) openGuideProfile(p.guideId);
                             }}
-                            style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default" }}
+                            style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default", overflow: "hidden" }}
                             title={p.guideId ? "ガイド詳細" : undefined}
-                          >{p.emoji}</div>
+                          >{(() => { const pg = p.guideId ? guides.find((x) => x.id === p.guideId) : null; return pg?.avatarPath && avatarUrls[pg.avatarPath] ? <img src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji; })()}</div>
                           {unread > 0 && (
                             <div style={{ position: "absolute", top: -4, right: -4, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 20, height: 20, padding: "0 5px", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff9f0" }}>
                               {unread > 99 ? "99+" : unread}

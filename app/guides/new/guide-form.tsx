@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createGuide, type GuideFormState } from "@/app/actions/guides";
 import ModeAndRate from "@/app/lib/mode-and-rate";
+import AvatarPicker from "@/app/lib/avatar-picker";
 import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
@@ -15,7 +16,6 @@ const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "prefer_not", label: "回答しない" },
 ];
 
-const EMOJI_OPTIONS = ["🧑", "🍜", "⛩", "🎨", "🌙", "🚲", "🏯", "☕", "📷", "🍶"] as const;
 
 const wrapStyle: React.CSSProperties = {
   background: "#f5ead0",
@@ -92,7 +92,6 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
     createGuide,
     undefined,
   );
-  const [emoji, setEmoji] = useState<string>(EMOJI_OPTIONS[0]);
   const [tags, setTags] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
 
@@ -123,32 +122,10 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
               <ImageUploader />
             </div>
 
-            {/* Emoji picker */}
+            {/* Avatar */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>アバター絵文字</label>
-              <input type="hidden" name="emoji" value={emoji} />
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {EMOJI_OPTIONS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    onClick={() => setEmoji(e)}
-                    style={{
-                      width: 46,
-                      height: 46,
-                      fontSize: 22,
-                      cursor: "pointer",
-                      borderRadius: "50%",
-                      background: emoji === e ? "#ffefd5" : "#fff9f0",
-                      border: `2px solid ${emoji === e ? "#ad001c" : "#e8c99a"}`,
-                    }}
-                    aria-label={`Emoji ${e}`}
-                    aria-pressed={emoji === e}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
+              <label style={labelStyle}>アバター (写真または絵文字)</label>
+              <AvatarPicker />
             </div>
 
             {/* Name */}

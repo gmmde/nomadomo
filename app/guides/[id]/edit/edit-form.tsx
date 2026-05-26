@@ -8,6 +8,7 @@ import {
   type GuideFormState,
 } from "@/app/actions/guides";
 import ModeAndRate from "@/app/lib/mode-and-rate";
+import AvatarPicker from "@/app/lib/avatar-picker";
 import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
@@ -19,11 +20,11 @@ const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "prefer_not", label: "回答しない" },
 ];
 
-const EMOJI_OPTIONS = ["🧑", "🍜", "⛩", "🎨", "🌙", "🚲", "🏯", "☕", "📷", "🍶"] as const;
 
 type Initial = {
   gender: string | null;
   birth_year: number | null;
+  avatar_path: string | null;
   id: number;
   name: string;
   university: string;
@@ -129,7 +130,6 @@ export default function EditGuideForm({
     updateGuide,
     undefined,
   );
-  const [emoji, setEmoji] = useState<string>(initial.emoji);
   const [tags, setTags] = useState<string[]>(initial.tags);
   const [languages, setLanguages] = useState<string[]>(initial.languages);
 
@@ -169,28 +169,8 @@ export default function EditGuideForm({
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>アバター絵文字</label>
-              <input type="hidden" name="emoji" value={emoji} />
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {EMOJI_OPTIONS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    onClick={() => setEmoji(e)}
-                    style={{
-                      width: 46,
-                      height: 46,
-                      fontSize: 22,
-                      cursor: "pointer",
-                      borderRadius: "50%",
-                      background: emoji === e ? "#ffefd5" : "#fff9f0",
-                      border: `2px solid ${emoji === e ? "#ad001c" : "#e8c99a"}`,
-                    }}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
+              <label style={label}>アバター (写真または絵文字)</label>
+              <AvatarPicker initialEmoji={initial.emoji} initialAvatarPath={initial.avatar_path} />
             </div>
 
             <div style={{ marginBottom: 16 }}>

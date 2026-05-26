@@ -37,6 +37,7 @@ function parseGuideFields(formData: FormData) {
   const rate = Number(rateRaw);
   const tags = formData.getAll("tags").map(String).filter(Boolean);
   const languages = formData.getAll("languages").map(String).filter(Boolean);
+  const avatar_path = String(formData.get("avatar_path") ?? "").trim() || null;
   const image_paths = formData
     .getAll("image_paths")
     .map(String)
@@ -80,6 +81,7 @@ function parseGuideFields(formData: FormData) {
       image_paths,
       gender,
       birth_year,
+      avatar_path,
     },
     errors,
   };
