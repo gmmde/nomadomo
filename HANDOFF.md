@@ -445,4 +445,49 @@ npm run build    # 本番ビルド検証
 
 - **画像はパブリック URL。** 個人写真を載せる場合は signed URL ＋ private bucket に切り替えるべき。今は `getPublicUrl()` でアクセス制御なし。
 - **ImageUploader の × は即時 Storage 削除。** 「うっかり」リスクあるが、現状は素直で実装シンプル。後で confirm() か undo を入れてもよい。
-- **Inbox 一覧の lastBody は realtime 連動なし。** `unreadByPeer` は realtime で増えるが、最終メッセージ本文・時刻は inbox を開き直
+- **Inbox 一覧の lastBody は realtime 連動なし。** `unreadByPeer` は realtime で増えるが、最終メッセージ本文・時刻は inbox を開き直すまで古いまま。
+- **チャットの back button は `chatOrigin` 依存。** 同じ peer を profile 経由 → inbox 経由で開くと back 先が変わる。仕様としては合っているが、ユーザーには分かりづらいかも。
+- **`saved_guides` の guide_id は bigint。** ガイドが削除されても saved 行は残る（FK にカスケード未設定）。実害は「お気に入りに出てこないだけ」だが、データ整理上は ON DELETE CASCADE 推奨。
+- **`/guides/[id]/edit` で 23505 (UNIQUE 違反) は出ない。** UPDATE なので。create でだけ気にすればよし。
+- **HANDOFF.md と現実が乖離するペースが速い。** 機能を追加したらこのファイルの 1 行で良いから更新する習慣をつけて。
+
+### 11.2 Supabase 適用済み migrations（追加分）
+
+```sql
+-- storage バケット制限
+update storage.buckets
+set file_size_limit = 5242880,
+    allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif']
+where id = 'guide-images';
+
+-- travelers をチャット相手にだけ見せる
+create policy travelers_select_chat_peer on public.travelers
+for select to authenticated
+using (
+  exists (
+    select 1 from public.messages m
+    where (m.sender_id = auth.uid() and m.recipient_id = travelers.user_id)
+       or (m.sender_id = travelers.user_id and m.recipient_id = auth.uid())
+  )
+);
+```
+
+---
+
+## 12. メール通知 (2026-05-26)
+
+新着メッセージ受信時に Resend 経由でメールが飛ぶ仕組み。
+
+### 構成
+1. **Edge Function**: `supabase/functions/send-message-notification/index.ts`
+   - Deployed at `https://xsifihdujxitwocgoffp.supabase.co/functions/v1/send-message-notification`
+   - JWT 認証なし（webhook 用）
+2. **Postgres トリガ**: `public.notify_new_message()` が `messages` INSERT で発火
+   - `net.http_post` (pg_net) で Edge Function を非同期 POST
+3. **過剰通知防止**: 同じ送信者から直近5分以内に未読が既にあれば送らない（throttle）
+4. **送信者名解決**: guides → travelers → "ユーザー XXX" の順でフォールバック
+
+### ユーザー側セットアップ（必須・まだ未完了）
+1. https://resend.com でアカウント作成（無料 3000 通/月）
+2. **テスト用**: `onboarding@resend.dev` から自分のメールにだけ送信可
+   **本番用**: ドメイン認証 (DNS の TXT/MX/CNAME 設定) してから 
