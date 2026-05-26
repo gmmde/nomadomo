@@ -24,7 +24,7 @@ export type GuideRow = {
 type SortKey = "recommended" | "newest" | "price_asc" | "price_desc";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"];
-const LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "FR", "ES", "DE"];
+const LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"];
 const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "", label: "指定なし" },
   { value: "male", label: "男性" },
