@@ -822,6 +822,13 @@ export default function Home() {
                 {!selectedGuide.user_id ? "デモガイド・メッセージ不可" : !currentUserId ? "ログインしてメッセージ" : `Message ${selectedGuide.name} 💬`}
               </button>
             )}
+            {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
+              <div style={{ textAlign: "center", marginTop: 14 }}>
+                <Link href={`/report/${selectedGuide.user_id}`} style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textDecoration: "underline" }}>
+                  🚩 このガイドを通報
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -839,6 +846,13 @@ export default function Home() {
                 <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{chatPeer.name}</div>
                 <div style={{ fontSize: 11, color: "#a8ffca", fontWeight: 700 }}>● Online now</div>
               </div>
+              <Link
+                href={`/report/${chatPeer.id}`}
+                style={{ color: "#fff", fontSize: 16, textDecoration: "none", padding: 4 }}
+                title="このユーザーを通報"
+              >
+                🚩
+              </Link>
             </div>
             <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
               {!currentUserId ? (
@@ -1031,6 +1045,7 @@ export default function Home() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
