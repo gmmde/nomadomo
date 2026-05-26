@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/app/lib/supabase/client";
+import { useSignedUrls } from "@/app/lib/use-signed-urls";
 
 type Props = {
   initial?: string[];
@@ -20,10 +21,7 @@ export default function ImageUploader({
   const [paths, setPaths] = useState<string[]>(initial);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  function publicUrl(path: string) {
-    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-  }
+  const signed = useSignedUrls(paths, bucket);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -75,11 +73,15 @@ export default function ImageUploader({
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
         {paths.map((p) => (
           <div key={p} style={{ position: "relative" }}>
-            <img
-              src={publicUrl(p)}
-              alt=""
-              style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12, border: "2px solid #e8c99a", display: "block" }}
-            />
+            {signed[p] ? (
+              <img
+                src={signed[p]}
+                alt=""
+                style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12, border: "2px solid #e8c99a", display: "block" }}
+              />
+            ) : (
+              <div style={{ width: 80, height: 80, borderRadius: 12, border: "2px solid #e8c99a", background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite" }} />
+            )}
             <button
               type="button"
               onClick={() => removePath(p)}

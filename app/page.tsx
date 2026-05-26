@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "./lib/supabase/client";
+import { useSignedUrls } from "./lib/use-signed-urls";
 import { signout } from "./actions/auth";
 
 type Guide = {
@@ -85,6 +86,9 @@ export default function Home() {
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  // 選択中ガイドの画像を signed URL に変換（private bucket 対応）
+  const galleryUrls = useSignedUrls(selectedGuide?.image_paths ?? []);
 
   // チャット新着で自動スクロール
   useEffect(() => {
@@ -520,7 +524,31 @@ export default function Home() {
             </div>
 
             {loading ? (
-              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>Loading guides...</div>
+              <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "#ffffffee",
+                      border: "2px solid #f0d9b5",
+                      borderRadius: 20,
+                      padding: 16,
+                      minWidth: 152,
+                      flexShrink: 0,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#f0d9b5", marginBottom: 10, animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+                    <div style={{ height: 14, background: "#f0d9b5", borderRadius: 6, marginBottom: 6, width: "70%", animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+                    <div style={{ height: 10, background: "#f0d9b5", borderRadius: 5, marginBottom: 10, width: "50%", animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+                    <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+                      <div style={{ width: 32, height: 14, background: "#f0d9b5", borderRadius: 6, animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+                      <div style={{ width: 26, height: 14, background: "#f0d9b5", borderRadius: 6, animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+                    </div>
+                    <div style={{ height: 12, background: "#f0d9b5", borderRadius: 5, width: "60%", animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+                  </div>
+                ))}
+              </div>
             ) : visibleGuides.length === 0 ? (
               <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>No guides found</div>
             ) : (
@@ -583,12 +611,20 @@ export default function Home() {
             {selectedGuide.image_paths.length > 0 && (
               <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, overflowX: "auto" }}>
                 {selectedGuide.image_paths.map((p) => (
-                  <img
-                    key={p}
-                    src={supabase.storage.from("guide-images").getPublicUrl(p).data.publicUrl}
-                    alt=""
-                    style={{ height: 140, borderRadius: 12, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover" }}
-                  />
+                  galleryUrls[p] ? (
+                    <img
+                      key={p}
+                      src={galleryUrls[p]}
+                      alt=""
+                      style={{ height: 140, borderRadius: 12, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div
+                      key={p}
+                      style={{ width: 140, height: 140, borderRadius: 12, border: "2px solid #e8c99a", flexShrink: 0, background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite" }}
+                      aria-hidden="true"
+                    />
+                  )
                 ))}
               </div>
             )}
@@ -836,7 +872,6 @@ export default function Home() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
@@ -855,4 +890,3 @@ export default function Home() {
     </div>
   );
 }
-                 
