@@ -2,7 +2,8 @@
 import BackButton from "@/app/lib/back-button";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export type GuideRow = {
   id: number;
@@ -52,8 +53,10 @@ function ageFromBirth(year: number | null): number | null {
   return new Date().getFullYear() - year;
 }
 
-export default function AllGuidesView({ guides }: { guides: GuideRow[] }) {
-  const [query, setQuery] = useState("");
+function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(initialQuery);
   const [sort, setSort] = useState<SortKey>("recommended");
   const [tags, setTags] = useState<string[]>([]);
   const [langs, setLangs] = useState<string[]>([]);
@@ -242,5 +245,13 @@ export default function AllGuidesView({ guides }: { guides: GuideRow[] }) {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AllGuidesView(props: { guides: GuideRow[] }) {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
+      <AllGuidesViewInner {...props} />
+    </Suspense>
   );
 }

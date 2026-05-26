@@ -651,7 +651,17 @@ function HomeInner() {
                   src="/home-hero.png"
                   alt=""
                   onError={() => setHeroImgError(true)}
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 1 }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    zIndex: 1,
+                    // 画像自体を下端で完全透明に fade → 背景が自然に透ける
+                    maskImage: "linear-gradient(to bottom, black 0%, black 55%, rgba(0,0,0,0.85) 70%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0) 100%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, rgba(0,0,0,0.85) 70%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0) 100%)",
+                  }}
                 />
               )}
               <svg width="100%" height="200" viewBox="0 0 380 200" preserveAspectRatio="xMidYMid slice">
@@ -675,7 +685,7 @@ function HomeInner() {
                 <g transform="translate(83,90)"><g transform="rotate(20)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(92)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(164)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(236)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(308)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="5" fill="#fffde7"/><circle cx="0" cy="0" r="2.5" fill="#f9c74f"/></g>
                 <g transform="translate(52,86)"><g transform="rotate(5)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(77)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(149)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(221)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(293)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="3.5" fill="#fffde7"/><circle cx="0" cy="0" r="1.8" fill="#f9c74f"/></g>
               </svg>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(255,249,240,0) 0%, rgba(255,249,240,0) 30%, rgba(255,249,240,0.08) 50%, rgba(255,249,240,0.22) 65%, rgba(255,249,240,0.42) 78%, rgba(255,249,240,0.68) 90%, rgba(255,249,240,0.92) 100%)", zIndex: 2 }}/>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.05) 100%)", zIndex: 2, pointerEvents: "none" }}/>
               <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Kyoto, Japan</div>
                 <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, textShadow: "0 2px 12px #fff8" }}>
@@ -686,10 +696,28 @@ function HomeInner() {
 
             {/* SEARCH */}
             <div style={{ padding: "12px 20px" }}>
-              <div style={{ background: "#ffffffee", border: "2px solid #e8c99a", borderRadius: 16, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const fd = new FormData(e.currentTarget);
+                  const q = String(fd.get("q") ?? "").trim();
+                  router.push(`/guides/all${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+                }}
+                style={{ background: "#ffffffee", border: "2px solid #e8c99a", borderRadius: 16, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}
+              >
                 <span style={{ color: "#ad001c", fontSize: 18 }}>🔍</span>
-                <input placeholder="Temples, ramen, nightlife..." style={{ background: "none", border: "none", outline: "none", fontSize: 14, fontWeight: 600, flex: 1, fontFamily: "inherit", color: "#1a1008" }}/>
-              </div>
+                <input
+                  name="q"
+                  placeholder="Temples, ramen, nightlife..."
+                  style={{ background: "none", border: "none", outline: "none", fontSize: 14, fontWeight: 600, flex: 1, fontFamily: "inherit", color: "#1a1008" }}
+                />
+                <button
+                  type="submit"
+                  style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                >
+                  検索
+                </button>
+              </form>
             </div>
 
             {/* FILTERS */}
@@ -1185,7 +1213,6 @@ function HomeInner() {
             <img
               src={lightboxUrl}
               alt=""
-              className="zoom-enter"
               style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }}
             />
             <button
