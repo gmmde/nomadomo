@@ -13,7 +13,7 @@ export default async function EditTravelerPage() {
 
   const { data: t } = await supabase
     .from("travelers")
-    .select("name, country, interests")
+    .select("name, country, interests, bio, image_paths")
     .maybeSingle();
 
   if (!t) notFound();
@@ -25,6 +25,8 @@ export default async function EditTravelerPage() {
         name: (t.name as string) ?? "",
         country: (t.country as string) ?? "",
         interests: (t.interests as string[]) ?? [],
+        bio: (t.bio as string) ?? "",
+        image_paths: (t.image_paths as string[]) ?? [],
       }}
     />
   );

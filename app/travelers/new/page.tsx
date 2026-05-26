@@ -2,9 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import TravelerForm from "./traveler-form";
 
-export const metadata = {
-  title: "旅行者登録 - NomaDomo",
-};
+export const metadata = { title: "旅行者登録 - NomaDomo" };
 
 export default async function NewTravelerPage() {
   const supabase = await createClient();
@@ -12,21 +10,15 @@ export default async function NewTravelerPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login?next=/travelers/new");
-  }
+  if (!user) redirect("/login?next=/travelers/new");
 
-  // 既に旅行者プロファイルがあるかチェック（あれば編集ページがある世界線にいずれ）
+  // 既に旅行者プロファイルがあれば編集画面へ
   const { data: existing } = await supabase
     .from("travelers")
-    .select("id, name")
+    .select("id")
     .eq("user_id", user.id)
     .maybeSingle();
+  if (existing) redirect("/travelers/edit");
 
-  return (
-    <TravelerForm
-      userEmail={user.email ?? ""}
-      existingName={existing?.name ?? null}
-    />
-  );
+  return <TravelerForm userEmail={user.email ?? ""} />;
 }

@@ -32,6 +32,8 @@ type TravelerProfile = {
   name: string;
   country: string;
   interests: string[];
+  bio: string;
+  image_paths: string[];
 };
 
 type ChatPeer = {
@@ -106,12 +108,15 @@ export default function Home() {
   const [chatOrigin, setChatOrigin] = useState<ChatOrigin>("profile");
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [selectedGuideFollowers, setSelectedGuideFollowers] = useState<number>(0);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // 選択中ガイドの画像を signed URL に変換（private bucket 対応）
   const galleryUrls = useSignedUrls(selectedGuide?.image_paths ?? []);
+  // 自分の旅行者画像も signed URL に
+  const travelerImageUrls = useSignedUrls(travelerProfile?.image_paths ?? []);
 
   // チャット新着で自動スクロール
   useEffect(() => {
@@ -140,7 +145,7 @@ export default function Home() {
     }
     supabase
       .from("travelers")
-      .select("name, country, interests")
+      .select("name, country, interests, bio, image_paths")
       .maybeSingle()
       .then(({ data }) => {
         setTravelerProfile(
@@ -149,6 +154,8 @@ export default function Home() {
                 name: data.name as string,
                 country: data.country as string,
                 interests: (data.interests as string[]) ?? [],
+                bio: (data.bio as string) ?? "",
+                image_paths: (data.image_paths as string[]) ?? [],
               }
             : null,
         );
@@ -545,8 +552,8 @@ export default function Home() {
   }
 
   return (
-    <div style={{ background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
-      <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", position: "relative" }}>
+    <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center" }}>
+      <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", position: "relative" }}>
 
         {/* SPLASH (initial mount) */}
         {loading && (
@@ -701,7 +708,7 @@ export default function Home() {
 
         {/* GUIDE PROFILE */}
         {screen === "profile" && selectedGuide && (
-          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Guide profile</div>
@@ -753,23 +760,31 @@ export default function Home() {
             </div>
 
             {selectedGuide.image_paths.length > 0 && (
-              <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, overflowX: "auto" }}>
-                {selectedGuide.image_paths.map((p) => (
-                  galleryUrls[p] ? (
-                    <img
-                      key={p}
-                      src={galleryUrls[p]}
-                      alt=""
-                      style={{ height: 140, borderRadius: 12, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div
-                      key={p}
-                      style={{ width: 140, height: 140, borderRadius: 12, border: "2px solid #e8c99a", flexShrink: 0, background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite" }}
-                      aria-hidden="true"
-                    />
-                  )
-                ))}
+              <div style={{ padding: "0 20px 16px" }}>
+                <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", margin: "0 -20px", padding: "0 20px" }}>
+                  {selectedGuide.image_paths.map((p) => (
+                    galleryUrls[p] ? (
+                      <img
+                        key={p}
+                        src={galleryUrls[p]}
+                        alt=""
+                        onClick={() => galleryUrls[p] && setLightboxUrl(galleryUrls[p])}
+                        style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover", scrollSnapAlign: "center", cursor: "pointer" }}
+                      />
+                    ) : (
+                      <div
+                        key={p}
+                        style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite", scrollSnapAlign: "center" }}
+                        aria-hidden="true"
+                      />
+                    )
+                  ))}
+                </div>
+                {selectedGuide.image_paths.length > 1 && (
+                  <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 6 }}>
+                    ← スワイプして他の写真を見る →
+                  </div>
+                )}
               </div>
             )}
 
@@ -841,7 +856,7 @@ export default function Home() {
 
         {/* CHAT */}
         {screen === "chat" && chatPeer && (
-          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen(chatOrigin)} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div
@@ -904,7 +919,7 @@ export default function Home() {
 
         {/* MY PROFILE */}
         {screen === "myprofile" && (
-          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>My profile</div>
@@ -928,6 +943,32 @@ export default function Home() {
                 </>
               )}
             </div>
+
+            {travelerProfile && travelerProfile.image_paths.length > 0 && (
+              <div style={{ padding: "0 20px 16px" }}>
+                <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", margin: "0 -20px", padding: "0 20px" }}>
+                  {travelerProfile.image_paths.map((p) => (
+                    travelerImageUrls[p] ? (
+                      <img
+                        key={p}
+                        src={travelerImageUrls[p]}
+                        alt=""
+                        onClick={() => travelerImageUrls[p] && setLightboxUrl(travelerImageUrls[p])}
+                        style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover", scrollSnapAlign: "center", cursor: "pointer" }}
+                      />
+                    ) : (
+                      <div key={p} style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite", scrollSnapAlign: "center" }} />
+                    )
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {travelerProfile?.bio && (
+              <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
+                &ldquo;{travelerProfile.bio}&rdquo;
+              </div>
+            )}
 
             {travelerProfile && travelerProfile.interests.length > 0 && (
               <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20, justifyContent: "center" }}>
@@ -973,7 +1014,7 @@ export default function Home() {
 
         {/* SAVED */}
         {screen === "saved" && (
-          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Saved guides ❤️</div>
@@ -1010,7 +1051,7 @@ export default function Home() {
 
         {/* INBOX */}
         {screen === "inbox" && (
-          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Messages 💬</div>
@@ -1055,7 +1096,6 @@ export default function Home() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
@@ -1067,6 +1107,29 @@ export default function Home() {
             </div>
             <div style={{ height: 100 }}/>
             {renderBottomNav("inbox")}
+          </div>
+        )}
+
+        {/* LIGHTBOX (full screen image viewer) */}
+        {lightboxUrl && (
+          <div
+            onClick={() => setLightboxUrl(null)}
+            className="fade-enter"
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, cursor: "zoom-out" }}
+          >
+            <img
+              src={lightboxUrl}
+              alt=""
+              className="zoom-enter"
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }}
+            />
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxUrl(null); }}
+              style={{ position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.18)", color: "#fff", border: "2px solid rgba(255,255,255,0.4)", borderRadius: "50%", width: 36, height: 36, fontSize: 18, cursor: "pointer", fontWeight: 900 }}
+              aria-label="閉じる"
+            >
+              ×
+            </button>
           </div>
         )}
 

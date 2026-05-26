@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 
-const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
-const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 24px" };
+const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
+const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "32px 24px" };
 const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
@@ -16,16 +16,70 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [ready, setReady] = useState(false);
+  const [bootMsg, setBootMsg] = useState<string>("リカバリセッション確認中…");
   const [state, setState] = useState<{ status: "idle" | "saving" | "ok" | "error"; msg?: string }>({ status: "idle" });
 
-  // Supabase は recovery リンク経由でアクセスされた時に PASSWORD_RECOVERY イベントを出す
-  // それを掴むまでフォームを enable しない
+  // recovery 経由でアクセスされた時の認証ハンドリング
   useEffect(() => {
     const supabase = createClient();
-    // 既にセッションがあれば（リカバリ完了済みケース）即 enable
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
-    });
+
+    async function init() {
+      const url = new URL(window.location.href);
+
+      // 1. Supabase からのエラー (?error=... or ?error_description=...)
+      const error = url.searchParams.get("error") ?? url.hash.match(/error=([^&]+)/)?.[1];
+      const errorDesc = url.searchParams.get("error_description") ?? url.hash.match(/error_description=([^&]+)/)?.[1];
+      if (error) {
+        setBootMsg(`❌ Supabase エラー: ${error}${errorDesc ? ` - ${decodeURIComponent(errorDesc).replace(/\+/g, " ")}` : ""}`);
+        return;
+      }
+
+      // 2. PKCE フロー: ?code=xxx で来る
+      const code = url.searchParams.get("code");
+      if (code) {
+        const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+        if (exErr) {
+          setBootMsg(`❌ code 交換失敗: ${exErr.message}`);
+          return;
+        }
+        setReady(true);
+        // URL の code を消す
+        url.searchParams.delete("code");
+        window.history.replaceState({}, "", url.toString());
+        return;
+      }
+
+      // 3. OTP/暗黙フロー: #access_token=... で来る
+      if (window.location.hash.includes("access_token")) {
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+        if (accessToken && refreshToken) {
+          const { error: setErr } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (setErr) {
+            setBootMsg(`❌ セッション復元失敗: ${setErr.message}`);
+            return;
+          }
+          setReady(true);
+          window.history.replaceState({}, "", window.location.pathname);
+          return;
+        }
+      }
+
+      // 4. 既にセッションあり (リロード後)
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setReady(true);
+        return;
+      }
+
+      // 5. 何もない: 直接アクセス or 期限切れ
+      setBootMsg("⚠️ このページはパスワード再設定メールのリンクから開いて。\n直接アクセスしても何もできないわよ。\nリンクが期限切れ (1時間) の可能性もあるから、もう一度送り直して。");
+    }
+
+    init();
+
+    // PASSWORD_RECOVERY イベントも保険で監視
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
@@ -55,7 +109,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div style={wrap}>
-      <div style={card}>
+      <div style={card} className="screen-enter">
         <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
           <span style={{ color: "#2ecc71" }}>Noma</span>
           <span style={{ color: "#ad001c" }}>Domo</span>
@@ -65,11 +119,8 @@ export default function ResetPasswordPage() {
         </div>
 
         {!ready ? (
-          <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 16, color: "#ad001c", fontSize: 13, fontWeight: 700, lineHeight: 1.6 }}>
-            ⚠️ このページはパスワード再設定メールのリンクから開いてね。<br/>
-            直接アクセスしても何もできないわよ。<br/>
-            <br/>
-            メール内リンクをクリックしてからここに来てるならちょっと待って、リカバリセッション確認中…
+          <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 16, color: "#ad001c", fontSize: 13, fontWeight: 700, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+            {bootMsg}
           </div>
         ) : state.status === "ok" ? (
           <div style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 12, padding: 16, color: "#2e8b57", fontSize: 13, fontWeight: 700, lineHeight: 1.6 }}>

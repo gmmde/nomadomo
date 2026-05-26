@@ -5,35 +5,51 @@
   --foreground: #1a1008;
 }
 
-body {
-  background: var(--background);
+html, body {
+  background-color: #f5ead0;
+  /* 地図 SVG をタイル背景に + 上から薄いベージュのオーバーレイで可読性確保 */
+  background-image:
+    linear-gradient(rgba(245, 234, 208, 0.55), rgba(245, 234, 208, 0.55)),
+    url("/map-bg.svg");
+  background-repeat: repeat;
+  background-size: auto, 380px 200px;
+  background-attachment: fixed, fixed;
   color: var(--foreground);
 }
 
 /* スクロールバーを完全に隠す (機能は残す) */
-*::-webkit-scrollbar {
-  display: none;
-}
+*::-webkit-scrollbar { display: none; }
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-/* 画面遷移アニメーション (X / Instagram 風 slide + fade) */
+/* 画面遷移: subtle lift + fade (Instagram っぽい) */
 @keyframes screenIn {
-  from { opacity: 0; transform: translateX(8%); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: scale(0.985) translateY(8px); filter: blur(2px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 .screen-enter {
-  animation: screenIn 0.28s cubic-bezier(0.32, 0.72, 0.32, 1);
+  animation: screenIn 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
 
+/* 単純 fade (lightbox 等) */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 .fade-enter {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.18s ease-out;
+}
+
+/* lightbox 用 zoom in */
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.zoom-enter {
+  animation: zoomIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes pulse {
@@ -43,4 +59,21 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ナビ用プログレスバー */
+@keyframes navProgress {
+  0%   { width: 0; opacity: 1; }
+  60%  { width: 70%; }
+  100% { width: 95%; opacity: 1; }
+}
+.nav-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2ecc71, #ad001c);
+  z-index: 99999;
+  animation: navProgress 1.2s ease-out forwards;
+  border-bottom-right-radius: 2px;
 }

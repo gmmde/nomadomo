@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="200" viewBox="0 0 380 200">
+  <rect width="380" height="200" fill="#f5ead0"/>
+  <!-- buildings row 1 -->
+  <rect x="0" y="0" width="60" height="45" fill="#e8d9b8" rx="2"/>
+  <rect x="65" y="0" width="80" height="30" fill="#ddd0b0" rx="2"/>
+  <rect x="150" y="0" width="50" height="50" fill="#e8d9b8" rx="2"/>
+  <rect x="205" y="0" width="70" height="35" fill="#ddd0b0" rx="2"/>
+  <rect x="320" y="0" width="60" height="60" fill="#ddd0b0" rx="2"/>
+  <!-- row 2 -->
+  <rect x="0" y="50" width="45" height="55" fill="#e8d9b8" rx="2"/>
+  <rect x="110" y="55" width="65" height="50" fill="#e8d9b8" rx="2"/>
+  <rect x="180" y="40" width="50" height="60" fill="#ddd0b0" rx="2"/>
+  <rect x="235" y="38" width="80" height="45" fill="#e8d9b8" rx="2"/>
+  <!-- river -->
+  <path d="M0 108 Q60 98 120 110 Q180 122 240 108 Q300 94 380 105 L380 128 Q300 118 240 132 Q180 146 120 132 Q60 118 0 130 Z" fill="#a8d8ea" opacity="0.75"/>
+  <!-- row 3 -->
+  <rect x="0" y="135" width="68" height="58" fill="#e8d9b8" rx="2"/>
+  <rect x="73" y="128" width="48" height="65" fill="#ddd0b0" rx="2"/>
+  <rect x="126" y="135" width="72" height="55" fill="#e8d9b8" rx="2"/>
+  <rect x="260" y="133" width="58" height="55" fill="#e8d9b8" rx="2"/>
+  <!-- horizontal streets -->
+  <line x1="0" y1="48" x2="380" y2="48" stroke="#fff9f0" strokeWidth="5"/>
+  <line x1="0" y1="98" x2="380" y2="98" stroke="#fff9f0" strokeWidth="5"/>
+  <line x1="0" y1="165" x2="380" y2="165" stroke="#fff9f0" strokeWidth="5"/>
+  <!-- vertical streets -->
+  <line x1="60" y1="0" x2="60" y2="200" stroke="#fff9f0" strokeWidth="4"/>
+  <line x1="145" y1="0" x2="145" y2="200" stroke="#fff9f0" strokeWidth="4"/>
+  <line x1="235" y1="0" x2="235" y2="200" stroke="#fff9f0" strokeWidth="4"/>
+  <line x1="330" y1="0" x2="330" y2="200" stroke="#fff9f0" strokeWidth="4"/>
+</svg>
