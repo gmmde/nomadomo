@@ -14,7 +14,9 @@ export type GuideFormErrors = Partial<
     | "emoji"
     | "rate_per_hour"
     | "tags"
-    | "languages",
+    | "languages"
+    | "gender"
+    | "birth_year",
     string
   >
 >;
@@ -36,7 +38,19 @@ function parseGuideFields(formData: FormData) {
     .getAll("image_paths")
     .map(String)
     .filter(Boolean)
-    .slice(0, 8); // 最大8枚
+    .slice(0, 8);
+  const genderRaw = String(formData.get("gender") ?? "").trim();
+  const gender =
+    genderRaw && ["male", "female", "non-binary", "prefer_not"].includes(genderRaw)
+      ? genderRaw
+      : null;
+  const birthYearRaw = String(formData.get("birth_year") ?? "").trim();
+  const birthYearN = Number(birthYearRaw);
+  const currentYear = new Date().getFullYear();
+  const birth_year =
+    birthYearRaw && Number.isFinite(birthYearN) && birthYearN >= 1900 && birthYearN <= currentYear
+      ? Math.round(birthYearN)
+      : null;
 
   const errors: GuideFormErrors = {};
   if (name.length < 2) errors.name = "名前は2文字以上にして";
@@ -46,6 +60,7 @@ function parseGuideFields(formData: FormData) {
     errors.rate_per_hour = "料金は正の数値で";
   if (tags.length === 0) errors.tags = "タグを1つ以上選んで";
   if (languages.length === 0) errors.languages = "言語を1つ以上選んで";
+  if (birthYearRaw && !birth_year) errors.birth_year = "西暦 (例: 2002) で";
 
   return {
     fields: {
@@ -57,6 +72,8 @@ function parseGuideFields(formData: FormData) {
       tags,
       languages,
       image_paths,
+      gender,
+      birth_year,
     },
     errors,
   };

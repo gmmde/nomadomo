@@ -21,7 +21,7 @@ export default async function EditGuidePage({ params }: Props) {
   const { data: guide } = await supabase
     .from("guides")
     .select(
-      "id, name, university, bio, emoji, rate_per_hour, tags, languages, user_id, image_paths",
+      "id, name, university, bio, emoji, rate_per_hour, tags, languages, user_id, image_paths, gender, birth_year",
     )
     .eq("id", guideId)
     .maybeSingle();
@@ -45,6 +45,8 @@ export default async function EditGuidePage({ params }: Props) {
         tags: (guide.tags as string[]) ?? [],
         languages: (guide.languages as string[]) ?? [],
         image_paths: (guide.image_paths as string[]) ?? [],
+        gender: (guide.gender as string | null) ?? null,
+        birth_year: (guide.birth_year as number | null) ?? null,
       }}
     />
   );

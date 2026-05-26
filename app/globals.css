@@ -6,25 +6,34 @@
 }
 
 html, body {
-  background-color: #f5ead0;
-  /* 地図 SVG をタイル背景に + 上から薄いベージュのオーバーレイで可読性確保 */
+  background-color: #cfe2c4;
   background-image:
-    linear-gradient(rgba(245, 234, 208, 0.55), rgba(245, 234, 208, 0.55)),
+    linear-gradient(rgba(255, 249, 240, 0.45), rgba(255, 249, 240, 0.45)),
     url("/map-bg.svg");
-  background-repeat: repeat;
-  background-size: auto, 380px 200px;
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
+  background-position: center center, 0% center;
   background-attachment: fixed, fixed;
+  transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--foreground);
 }
 
-/* スクロールバーを完全に隠す (機能は残す) */
+/* タブ index に応じて地図を右にずらす (パララックス) */
+body[data-screen="home"]      { background-position: center center, 0%   center; }
+body[data-screen="inbox"]     { background-position: center center, 25%  center; }
+body[data-screen="saved"]     { background-position: center center, 60%  center; }
+body[data-screen="myprofile"] { background-position: center center, 100% center; }
+body[data-screen="profile"]   { background-position: center center, 15%  center; }
+body[data-screen="chat"]      { background-position: center center, 40%  center; }
+
+/* スクロールバーを完全に隠す */
 *::-webkit-scrollbar { display: none; }
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-/* 画面遷移: subtle lift + fade (Instagram っぽい) */
+/* 画面遷移: subtle lift + fade */
 @keyframes screenIn {
   from { opacity: 0; transform: scale(0.985) translateY(8px); filter: blur(2px); }
   to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
@@ -34,23 +43,17 @@ html, body {
   will-change: opacity, transform;
 }
 
-/* 単純 fade (lightbox 等) */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-.fade-enter {
-  animation: fadeIn 0.18s ease-out;
-}
+.fade-enter { animation: fadeIn 0.18s ease-out; }
 
-/* lightbox 用 zoom in */
 @keyframes zoomIn {
   from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
-.zoom-enter {
-  animation: zoomIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-}
+.zoom-enter { animation: zoomIn 0.22s cubic-bezier(0.22, 1, 0.36, 1); }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
@@ -59,21 +62,4 @@ html, body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* ナビ用プログレスバー */
-@keyframes navProgress {
-  0%   { width: 0; opacity: 1; }
-  60%  { width: 70%; }
-  100% { width: 95%; opacity: 1; }
-}
-.nav-progress-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #2ecc71, #ad001c);
-  z-index: 99999;
-  animation: navProgress 1.2s ease-out forwards;
-  border-bottom-right-radius: 2px;
 }

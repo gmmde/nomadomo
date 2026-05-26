@@ -7,6 +7,13 @@ import ImageUploader from "@/app/lib/image-uploader";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "FR", "ES", "DE"] as const;
+const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: "male", label: "男性" },
+  { value: "female", label: "女性" },
+  { value: "non-binary", label: "ノンバイナリー" },
+  { value: "prefer_not", label: "回答しない" },
+];
+
 const EMOJI_OPTIONS = ["🧑", "🍜", "⛩", "🎨", "🌙", "🚲", "🏯", "☕", "📷", "🍶"] as const;
 
 const wrapStyle: React.CSSProperties = {
@@ -186,6 +193,33 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 placeholder="例: 3000"
               />
               {state?.errors?.rate_per_hour && <div style={errStyle}>{state.errors.rate_per_hour}</div>}
+            </div>
+
+            {/* Gender */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle} htmlFor="gender">性別 (任意・検索フィルタに使われる)</label>
+              <select id="gender" name="gender" style={inputStyle} defaultValue="">
+                <option value="">指定しない</option>
+                {GENDER_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value}>{g.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Birth year */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle} htmlFor="birth_year">生まれ年 (任意・年齢計算用)</label>
+              <input
+                id="birth_year"
+                name="birth_year"
+                type="number"
+                min={1900}
+                max={new Date().getFullYear()}
+                step={1}
+                style={inputStyle}
+                placeholder="例: 2002"
+              />
+              {state?.errors?.birth_year && <div style={errStyle}>{state.errors.birth_year}</div>}
             </div>
 
             {/* Tags */}

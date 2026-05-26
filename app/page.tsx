@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "./lib/supabase/client";
 import { useSignedUrls } from "./lib/use-signed-urls";
 import { signout } from "./actions/auth";
@@ -57,6 +58,9 @@ function ratingDisplay(g: { stars: string; tour_count: number }) {
   return `★ ${g.stars}`;
 }
 
+// Admin email list (Vercel env var ADMIN_EMAILS でも上書き可)
+const ADMIN_EMAILS = ["tonoikenta@icloud.com"];
+
 const filters = [
   "All",
   "🍜 Food",
@@ -88,7 +92,7 @@ const filterKeyword: Record<string, string> = {
   "🎵 Music": "Music",
 };
 
-export default function Home() {
+function HomeInner() {
   const [screen, setScreen] = useState("home");
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,6 +116,8 @@ export default function Home() {
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   // 選択中ガイドの画像を signed URL に変換（private bucket 対応）
   const galleryUrls = useSignedUrls(selectedGuide?.image_paths ?? []);
@@ -124,6 +130,24 @@ export default function Home() {
       chatEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages, screen]);
+
+  // 背景地図パララックス用: body の data-screen 属性を更新
+  useEffect(() => {
+    document.body.dataset.screen = screen;
+    return () => { delete document.body.dataset.screen; };
+  }, [screen]);
+
+  // ?guide=ID で来たら該当ガイドのプロフィール画面に飛ぶ (例: /guides/all 経由)
+  useEffect(() => {
+    const gid = searchParams.get("guide");
+    if (!gid || guides.length === 0) return;
+    const g = guides.find((x) => String(x.id) === gid);
+    if (g) {
+      setSelectedGuide(g);
+      setScreen("profile");
+      router.replace("/", { scroll: false });
+    }
+  }, [searchParams, guides, router]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -642,7 +666,7 @@ export default function Home() {
             {/* GUIDES */}
             <div style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
               <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>Available now ✨</div>
-              <div style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>See all</div>
+              <Link href="/guides/all" style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>See all &rarr;</Link>
             </div>
 
             {loading ? (
@@ -988,6 +1012,11 @@ export default function Home() {
                 <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   📅 予約一覧
                 </Link>
+                {userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase()) && (
+                  <Link href="/admin/analytics" style={{ display: "block", width: "100%", background: "#1a1008", color: "#fff", border: "none", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    📊 分析ダッシュボード (admin)
+                  </Link>
+                )}
                 <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   + ガイドとして登録
                 </Link>
@@ -1135,5 +1164,13 @@ export default function Home() {
 
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
+      <HomeInner />
+    </Suspense>
   );
 }

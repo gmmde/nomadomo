@@ -1,30 +1,98 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="380" height="200" viewBox="0 0 380 200">
-  <rect width="380" height="200" fill="#f5ead0"/>
-  <!-- buildings row 1 -->
-  <rect x="0" y="0" width="60" height="45" fill="#e8d9b8" rx="2"/>
-  <rect x="65" y="0" width="80" height="30" fill="#ddd0b0" rx="2"/>
-  <rect x="150" y="0" width="50" height="50" fill="#e8d9b8" rx="2"/>
-  <rect x="205" y="0" width="70" height="35" fill="#ddd0b0" rx="2"/>
-  <rect x="320" y="0" width="60" height="60" fill="#ddd0b0" rx="2"/>
-  <!-- row 2 -->
-  <rect x="0" y="50" width="45" height="55" fill="#e8d9b8" rx="2"/>
-  <rect x="110" y="55" width="65" height="50" fill="#e8d9b8" rx="2"/>
-  <rect x="180" y="40" width="50" height="60" fill="#ddd0b0" rx="2"/>
-  <rect x="235" y="38" width="80" height="45" fill="#e8d9b8" rx="2"/>
-  <!-- river -->
-  <path d="M0 108 Q60 98 120 110 Q180 122 240 108 Q300 94 380 105 L380 128 Q300 118 240 132 Q180 146 120 132 Q60 118 0 130 Z" fill="#a8d8ea" opacity="0.75"/>
-  <!-- row 3 -->
-  <rect x="0" y="135" width="68" height="58" fill="#e8d9b8" rx="2"/>
-  <rect x="73" y="128" width="48" height="65" fill="#ddd0b0" rx="2"/>
-  <rect x="126" y="135" width="72" height="55" fill="#e8d9b8" rx="2"/>
-  <rect x="260" y="133" width="58" height="55" fill="#e8d9b8" rx="2"/>
-  <!-- horizontal streets -->
-  <line x1="0" y1="48" x2="380" y2="48" stroke="#fff9f0" strokeWidth="5"/>
-  <line x1="0" y1="98" x2="380" y2="98" stroke="#fff9f0" strokeWidth="5"/>
-  <line x1="0" y1="165" x2="380" y2="165" stroke="#fff9f0" strokeWidth="5"/>
-  <!-- vertical streets -->
-  <line x1="60" y1="0" x2="60" y2="200" stroke="#fff9f0" strokeWidth="4"/>
-  <line x1="145" y1="0" x2="145" y2="200" stroke="#fff9f0" strokeWidth="4"/>
-  <line x1="235" y1="0" x2="235" y2="200" stroke="#fff9f0" strokeWidth="4"/>
-  <line x1="330" y1="0" x2="330" y2="200" stroke="#fff9f0" strokeWidth="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="600" viewBox="0 0 1024 600" preserveAspectRatio="xMidYMid slice">
+  <!-- 山/丘の薄緑ベース -->
+  <rect width="1024" height="600" fill="#cfe2c4"/>
+
+  <!-- 濃緑の山影 (左上, 右上, 下) -->
+  <g fill="#a9cf9c" opacity="0.85">
+    <path d="M0 0 L0 220 Q60 180 120 200 Q180 220 240 180 Q300 140 360 160 Q400 170 420 130 Q440 80 380 40 Q320 10 260 30 Q180 60 100 30 L0 0 Z"/>
+    <path d="M1024 0 L1024 240 Q960 200 880 220 Q800 240 720 200 Q680 180 660 140 Q650 100 700 60 Q760 30 820 50 Q900 80 1024 40 L1024 0 Z"/>
+    <path d="M0 600 L0 480 Q80 460 160 480 Q260 500 360 470 Q460 440 560 460 Q680 480 780 460 Q880 440 1024 470 L1024 600 Z"/>
+  </g>
+  <!-- 山影 (もっと濃い緑) -->
+  <g fill="#8fbf80" opacity="0.6">
+    <path d="M40 0 L40 140 Q100 110 160 140 Q220 170 260 120 Q300 70 240 30 Q180 0 120 10 L40 0 Z"/>
+    <path d="M1024 0 L1024 140 Q960 110 900 140 Q840 170 800 120 Q760 70 820 30 Q880 0 940 10 L1024 0 Z"/>
+  </g>
+  <!-- 山の等高線風ハッチ (薄い) -->
+  <g stroke="#7eb072" strokeWidth="1.2" fill="none" opacity="0.4">
+    <path d="M20 60 Q80 40 140 70 Q200 100 260 80"/>
+    <path d="M870 60 Q920 40 980 70 Q1010 90 1020 75"/>
+    <path d="M50 530 Q150 510 250 540 Q350 565 450 540"/>
+    <path d="M560 540 Q680 515 800 545 Q900 565 1000 540"/>
+  </g>
+
+  <!-- 川 (大きな S字, 青) -->
+  <path d="M-20 70 Q120 120 200 160 Q300 220 280 280 Q260 350 340 400 Q440 460 520 430 Q620 400 700 440 Q800 490 880 480 Q970 470 1044 440 L1044 480 Q970 510 880 520 Q800 530 700 480 Q620 440 520 470 Q440 500 340 440 Q260 390 280 320 Q300 260 200 200 Q120 160 -20 110 Z"
+        fill="#6cb8e0" opacity="0.85"/>
+
+  <!-- 市街地 (オフホワイトの大きな塊) -->
+  <g fill="#f4f1ea">
+    <path d="M280 200 Q360 180 460 200 L580 200 Q680 200 760 240 L820 280 L820 380 Q800 430 720 460 L600 470 Q500 470 420 450 L340 420 Q300 380 290 340 Q280 270 280 200 Z"/>
+  </g>
+
+  <!-- 市街地内のストリートグリッド -->
+  <g stroke="#fff" strokeWidth="1.5" opacity="0.9">
+    <!-- horizontal -->
+    <line x1="290" y1="240" x2="820" y2="240"/>
+    <line x1="290" y1="270" x2="820" y2="270"/>
+    <line x1="290" y1="300" x2="820" y2="300"/>
+    <line x1="290" y1="330" x2="820" y2="330"/>
+    <line x1="290" y1="360" x2="820" y2="360"/>
+    <line x1="290" y1="390" x2="820" y2="390"/>
+    <line x1="290" y1="420" x2="820" y2="420"/>
+    <!-- vertical -->
+    <line x1="320" y1="200" x2="320" y2="460"/>
+    <line x1="360" y1="200" x2="360" y2="460"/>
+    <line x1="400" y1="200" x2="400" y2="460"/>
+    <line x1="440" y1="200" x2="440" y2="460"/>
+    <line x1="480" y1="200" x2="480" y2="460"/>
+    <line x1="520" y1="200" x2="520" y2="460"/>
+    <line x1="560" y1="200" x2="560" y2="460"/>
+    <line x1="600" y1="200" x2="600" y2="460"/>
+    <line x1="640" y1="200" x2="640" y2="460"/>
+    <line x1="680" y1="200" x2="680" y2="460"/>
+    <line x1="720" y1="200" x2="720" y2="460"/>
+    <line x1="760" y1="200" x2="760" y2="460"/>
+    <line x1="800" y1="200" x2="800" y2="460"/>
+  </g>
+
+  <!-- 個別建物 (大きめのもの) -->
+  <g fill="#e6e0d2" opacity="0.7">
+    <rect x="400" y="240" width="40" height="30"/>
+    <rect x="480" y="280" width="50" height="40"/>
+    <rect x="560" y="240" width="60" height="30"/>
+    <rect x="640" y="320" width="45" height="55"/>
+    <rect x="700" y="280" width="55" height="40"/>
+    <rect x="380" y="380" width="60" height="40"/>
+  </g>
+
+  <!-- 黄色の幹線 (環状 + 直線) -->
+  <g stroke="#f5c649" strokeWidth="8" fill="none" strokeLinecap="round" opacity="0.95">
+    <!-- 外環 (オーバル) -->
+    <path d="M180 280 Q200 160 380 130 Q540 100 720 130 Q870 160 880 300 Q890 420 720 480 Q540 510 380 480 Q200 460 180 320 Z"/>
+    <!-- 横断 -->
+    <path d="M-30 380 Q120 370 280 380 Q420 390 600 380 Q780 370 1054 380"/>
+    <!-- 縦断 -->
+    <path d="M500 -30 Q510 80 520 200 Q530 320 520 450 Q510 580 500 640"/>
+  </g>
+  <g stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.95">
+    <path d="M180 280 Q200 160 380 130 Q540 100 720 130 Q870 160 880 300 Q890 420 720 480 Q540 510 380 480 Q200 460 180 320 Z" strokeDasharray="6 5"/>
+  </g>
+
+  <!-- インターチェンジ (黄色丸) -->
+  <g fill="#f5c649" stroke="#fff" strokeWidth="2">
+    <circle cx="380" cy="130" r="10"/>
+    <circle cx="720" cy="130" r="10"/>
+    <circle cx="180" cy="300" r="10"/>
+    <circle cx="880" cy="300" r="10"/>
+    <circle cx="380" cy="480" r="10"/>
+    <circle cx="720" cy="480" r="10"/>
+    <circle cx="500" cy="380" r="8"/>
+  </g>
+
+  <!-- 公園/緑地 (市街地内に lighter green スポット) -->
+  <g fill="#bcd6a8" opacity="0.7">
+    <ellipse cx="640" cy="430" rx="50" ry="25"/>
+    <ellipse cx="350" cy="270" rx="35" ry="22"/>
+  </g>
 </svg>
