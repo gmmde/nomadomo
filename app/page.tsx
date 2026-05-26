@@ -68,6 +68,7 @@ const filters = [
   "🎭 Culture",
   "🏛 History",
   "🕳 Deep",
+  "🎵 Music",
 ];
 
 const filterKeyword: Record<string, string> = {
@@ -82,6 +83,7 @@ const filterKeyword: Record<string, string> = {
   "🎭 Culture": "Culture",
   "🏛 History": "History",
   "🕳 Deep": "Deep",
+  "🎵 Music": "Music",
 };
 
 export default function Home() {
@@ -562,7 +564,7 @@ export default function Home() {
 
         {/* HOME */}
         {screen === "home" && (
-          <div>
+          <div className="screen-enter">
             {/* TOPBAR */}
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontSize: 24, fontWeight: 900 }}>
@@ -699,7 +701,7 @@ export default function Home() {
 
         {/* GUIDE PROFILE */}
         {screen === "profile" && selectedGuide && (
-          <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Guide profile</div>
@@ -718,7 +720,36 @@ export default function Home() {
             <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
               <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c" }}>{selectedGuide.emoji}</div>
               <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{selectedGuide.name}</div>
-              <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>{selectedGuide.uni}</div>
+              <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, marginBottom: 10 }}>{selectedGuide.uni}</div>
+
+              {/* フォロワー数 (常に表示) + フォローボタン (他人ガイドのみ) */}
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 14, marginBottom: 4 }}>
+                <div style={{ fontSize: 13, color: "#1a1008", fontWeight: 800 }}>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{selectedGuideFollowers}</span>
+                  <span style={{ marginLeft: 4, color: "#8a7560" }}>followers</span>
+                </div>
+                {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
+                  <button
+                    onClick={() => selectedGuide.user_id && toggleFollow(selectedGuide.user_id)}
+                    style={{
+                      background: followingIds.has(selectedGuide.user_id) ? "#fff" : "#2e8b57",
+                      color: followingIds.has(selectedGuide.user_id) ? "#2e8b57" : "#fff",
+                      border: "2px solid #2e8b57",
+                      borderRadius: 20,
+                      padding: "6px 16px",
+                      fontSize: 13,
+                      fontWeight: 900,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {followingIds.has(selectedGuide.user_id) ? "✓ Following" : "+ Follow"}
+                  </button>
+                )}
+                {!selectedGuide.user_id && (
+                  <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic" }}>デモガイド</span>
+                )}
+              </div>
             </div>
 
             {selectedGuide.image_paths.length > 0 && (
@@ -743,7 +774,7 @@ export default function Home() {
             )}
 
             <div style={{ display: "flex", margin: "0 20px 20px", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, overflow: "hidden" }}>
-              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [String(selectedGuideFollowers), "Followers"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
+              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
                 <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
                   <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
@@ -762,28 +793,6 @@ export default function Home() {
               <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
               <span style={{ fontSize: 24, fontWeight: 900, color: "#ad001c" }}>{selectedGuide.rate}</span>
             </div>
-            {/* Follow ボタン (他人 + ログイン中 + user_id あり のみ) */}
-            {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
-              <div style={{ padding: "0 20px 12px" }}>
-                <button
-                  onClick={() => selectedGuide.user_id && toggleFollow(selectedGuide.user_id)}
-                  style={{
-                    width: "100%",
-                    background: followingIds.has(selectedGuide.user_id) ? "#fff" : "#2e8b57",
-                    color: followingIds.has(selectedGuide.user_id) ? "#2e8b57" : "#fff",
-                    border: `2px solid #2e8b57`,
-                    borderRadius: 14,
-                    padding: 12,
-                    fontSize: 14,
-                    fontWeight: 900,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  {followingIds.has(selectedGuide.user_id) ? "✓ フォロー中" : "+ フォローする"}
-                </button>
-              </div>
-            )}
             {currentUserId && selectedGuide.user_id === currentUserId ? (
               <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
@@ -818,7 +827,7 @@ export default function Home() {
 
         {/* CHAT */}
         {screen === "chat" && chatPeer && (
-          <div style={{ background: "#ffefd5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen(chatOrigin)} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div
@@ -874,7 +883,7 @@ export default function Home() {
 
         {/* MY PROFILE */}
         {screen === "myprofile" && (
-          <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>My profile</div>
@@ -940,7 +949,7 @@ export default function Home() {
 
         {/* SAVED */}
         {screen === "saved" && (
-          <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Saved guides ❤️</div>
@@ -977,7 +986,7 @@ export default function Home() {
 
         {/* INBOX */}
         {screen === "inbox" && (
-          <div style={{ background: "#ffefd5", minHeight: "100vh" }}>
+          <div className="screen-enter" style={{ background: "#ffefd5", minHeight: "100vh" }}>
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
               <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
               <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Messages 💬</div>
@@ -1022,7 +1031,6 @@ export default function Home() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>

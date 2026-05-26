@@ -10,6 +10,32 @@ body {
   color: var(--foreground);
 }
 
+/* スクロールバーを完全に隠す (機能は残す) */
+*::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* 画面遷移アニメーション (X / Instagram 風 slide + fade) */
+@keyframes screenIn {
+  from { opacity: 0; transform: translateX(8%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.screen-enter {
+  animation: screenIn 0.28s cubic-bezier(0.32, 0.72, 0.32, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-enter {
+  animation: fadeIn 0.2s ease-out;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
