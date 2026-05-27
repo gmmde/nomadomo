@@ -81,9 +81,9 @@ function pairChannel(prefix: string, a: string, b: string) {
   return `${prefix}-${x}-${y}`;
 }
 
-function ratingDisplay(g: { stars: string; tour_count: number }) {
-  // 新規ガイド（実績ゼロ）は ★0.0 ではなく「✨ 新規」と出す
-  if (g.tour_count === 0 || Number(g.stars) <= 0) return "✨ 新規";
+function ratingDisplay(g: { stars: string; tour_count: number }, lang: "en" | "ja" = "en") {
+  // 新規ガイド（実績ゼロ）は ★0.0 ではなく「✨ New」と出す
+  if (g.tour_count === 0 || Number(g.stars) <= 0) return lang === "ja" ? "✨ 新規" : "✨ New";
   return `★ ${g.stars}`;
 }
 
@@ -198,6 +198,7 @@ function HomeInner() {
   const [appMode, setAppMode] = useState<"local" | "traveler" | null>(null);
   const [appModeLoaded, setAppModeLoaded] = useState(false);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState<Array<{ id: number; senderId: string; senderName: string; senderEmoji: string; message: string; createdAt: string }>>([]);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
   const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
@@ -366,18 +367,53 @@ function HomeInner() {
   // travelers 用 signed URL バッチ取得
   const travelerAvatarUrls = useSignedUrls(travelersList.map((t) => t.avatar_path).filter((p): p is string => Boolean(p)));
 
-  // 自分宛 pending リクエスト数 (Local モード時のみ意味あり)
+  // 自分宛 pending リクエスト一覧 + 件数 (Local モード時のみ意味あり)
   useEffect(() => {
     if (!currentUserId) {
       setPendingRequestCount(0);
+      setPendingRequests([]);
       return;
     }
-    supabase
-      .from("chat_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("guide_user_id", currentUserId)
-      .eq("status", "pending")
-      .then(({ count }) => setPendingRequestCount(count ?? 0));
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("chat_requests")
+        .select("id, traveler_id, message, created_at")
+        .eq("guide_user_id", currentUserId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      const rows = (data ?? []) as Array<{ id: number; traveler_id: string; message: string | null; created_at: string }>;
+      if (cancelled) return;
+      setPendingRequestCount(rows.length);
+
+      if (rows.length === 0) {
+        setPendingRequests([]);
+        return;
+      }
+      // sender 情報: travelers → guides の順で名前解決
+      const senderIds = [...new Set(rows.map((r) => r.traveler_id))];
+      const [tRes, gRes] = await Promise.all([
+        supabase.from("travelers").select("user_id, name, emoji").in("user_id", senderIds),
+        supabase.from("guides").select("user_id, name, emoji").in("user_id", senderIds),
+      ]);
+      const senderMap = new Map<string, { name: string; emoji: string }>();
+      for (const t of ((tRes.data ?? []) as Array<{ user_id: string; name: string; emoji: string | null }>)) {
+        senderMap.set(t.user_id, { name: t.name, emoji: t.emoji ?? "🧑" });
+      }
+      for (const g of ((gRes.data ?? []) as Array<{ user_id: string; name: string; emoji: string | null }>)) {
+        if (!senderMap.has(g.user_id)) senderMap.set(g.user_id, { name: g.name, emoji: g.emoji ?? "🧑" });
+      }
+      const enriched = rows.map((r) => ({
+        id: r.id,
+        senderId: r.traveler_id,
+        senderName: senderMap.get(r.traveler_id)?.name ?? `User ${r.traveler_id.slice(0, 8)}`,
+        senderEmoji: senderMap.get(r.traveler_id)?.emoji ?? "👤",
+        message: r.message ?? "",
+        createdAt: r.created_at,
+      }));
+      if (!cancelled) setPendingRequests(enriched);
+    })();
+    return () => { cancelled = true; };
   }, [supabase, currentUserId]);
 
   // 自分のフォロー先一覧を取得（follows RLS で自分の行のみ取れる）
@@ -772,13 +808,13 @@ function HomeInner() {
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
-          const isReq = item.key === "requests";
-          const showBadge = (item.key === "inbox" && totalUnread > 0) || (isReq && pendingRequestCount > 0);
-          const badgeCount = isReq ? pendingRequestCount : totalUnread;
+          const inboxCombined = totalUnread + (appMode === "local" ? pendingRequestCount : 0);
+          const showBadge = item.key === "inbox" && inboxCombined > 0;
+          const badgeCount = inboxCombined;
           return (
             <div
               key={item.label}
-              onClick={() => { if (item.key === "requests") { router.push("/requests"); } else { navTab(item.key as Exclude<NavKey, "requests">); } }}
+              onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
               <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
@@ -821,7 +857,7 @@ function HomeInner() {
                   <button
                     onClick={() => saveAppMode(appMode === "local" ? "traveler" : "local")}
                     style={{ background: appMode === "local" ? "#2ecc71" : "#ffffff28", color: "#fff", border: appMode === "local" ? "none" : "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
-                    title="タップでモード切替"
+                    title={t("switch_mode_tooltip", lang)}
                   >
                     {appMode === "local" ? "🏯 Local" : "✈️ Traveler"}
                   </button>
@@ -928,21 +964,21 @@ function HomeInner() {
               <div style={{ padding: "0 20px 12px" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <Link href="/requests" style={{ display: "block", background: pendingRequestCount > 0 ? "#ad001c" : "#fff9f0", color: pendingRequestCount > 0 ? "#fff" : "#1a1008", border: `2px solid ${pendingRequestCount > 0 ? "#ad001c" : "#e8c99a"}`, borderRadius: 14, padding: 14, textDecoration: "none" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.85, marginBottom: 4 }}>📨 リクエスト</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{pendingRequestCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>件</span></div>
+                    <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.85, marginBottom: 4 }}>{t("local_dashboard_requests", lang)}</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{pendingRequestCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
                   </Link>
                   <Link href="/bookings" style={{ display: "block", background: "#fff9f0", color: "#1a1008", border: "2px solid #e8c99a", borderRadius: 14, padding: 14, textDecoration: "none" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#8a7560", marginBottom: 4 }}>📅 予約</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, color: "#2e8b57" }}>{upcomingBookingsCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>件</span></div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#8a7560", marginBottom: 4 }}>{t("local_dashboard_bookings", lang)}</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, color: "#2e8b57" }}>{upcomingBookingsCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
                   </Link>
                 </div>
                 {ownGuide ? (
                   <Link href={`/?guide=${ownGuide.id}`} style={{ display: "block", marginTop: 10, background: "#e6f5ee", color: "#1e6b40", border: "2px solid #2e8b57", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 12, fontWeight: 800, textAlign: "center" }}>
-                    🏯 自分のガイドプロファイルを見る ({ownGuide.name})
+                    {t("own_guide_open", lang)} ({ownGuide.name})
                   </Link>
                 ) : (
                   <Link href="/guides/new" style={{ display: "block", marginTop: 10, background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 13, fontWeight: 900, textAlign: "center" }}>
-                    + ガイドプロファイルを作成しよう
+                    {t("create_guide_profile", lang)}
                   </Link>
                 )}
               </div>
@@ -1037,7 +1073,7 @@ function HomeInner() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 13, color: g.mode === "free" ? "#2e8b57" : g.mode === "paid" ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{g.mode === "free" ? "🤝 Free" : g.rate}</span>
-                      <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g)}</span>
+                      <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span>
                     </div>
                   </div>
                 ))}
@@ -1109,8 +1145,8 @@ function HomeInner() {
                   🎓 {selectedGuide.uni}
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                  📍 {selectedGuide.areas.join(" · ")} 在住
-                  {ageFromBirthYear(selectedGuide.birthYear) != null && <span style={{ marginLeft: 8 }}>· {ageFromBirthYear(selectedGuide.birthYear)} y.o.</span>}
+                  📍 {lang === "ja" ? `${selectedGuide.areas.join(" · ")} 在住` : `Lives in ${selectedGuide.areas.join(" · ")}`}
+                  {ageFromBirthYear(selectedGuide.birthYear) != null && <span style={{ marginLeft: 8 }}>· {ageFromBirthYear(selectedGuide.birthYear)} {t("yo", lang)}</span>}
                 </div>
                 {(selectedGuide.nationality || selectedGuide.occupation) && (
                   <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
@@ -1149,7 +1185,7 @@ function HomeInner() {
             </div>
 
             <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { display: "flex", margin: "0 20px 16px", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 14, overflow: "hidden" }; })()}>
-              {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
+              {[[String(selectedGuide.tour_count), t("stat_tours", lang)], [selectedGuide.tour_count === 0 ? t("rating_new", lang) : selectedGuide.stars, t("stat_rating", lang)], [selectedGuide.languages.join("/"), t("stat_languages", lang)]].map(([n, l], i, arr) => (
                 <div key={l} style={{ flex: 1, padding: "12px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
                   <div style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{n}</div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
@@ -1165,7 +1201,7 @@ function HomeInner() {
             )}
             {selectedGuide.mode === "free" && (
               <div style={{ padding: "0 20px 12px", textAlign: "center", fontSize: 13, color: "#2e8b57", fontWeight: 900 }}>
-                🤝 無料で会える mate よ
+                {t("free_mate_label", lang)}
               </div>
             )}
 
@@ -1173,7 +1209,7 @@ function HomeInner() {
               <div style={{ margin: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
                 {selectedGuide.hobbies.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>🎯 Hobbies / 趣味</div>
+                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>{t("hobbies_section", lang)}</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {selectedGuide.hobbies.map((h) => (
                         <span key={h} style={{ background: "#ffefd5", border: "1.5px solid #ad001c", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>{h}</span>
@@ -1183,7 +1219,7 @@ function HomeInner() {
                 )}
                 {selectedGuide.availableSlots.length > 0 && (
                   <div>
-                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>📅 Available / 会える時間</div>
+                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>{t("available_section", lang)}</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {selectedGuide.availableSlots.slice(0, 12).map((s) => (
                         <span key={s} style={{ background: "#e6f5ee", border: "1.5px solid #2e8b57", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{formatSlotShort(s)}</span>
@@ -1196,18 +1232,18 @@ function HomeInner() {
             {isOwn ? (
               <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                  ✏️ プロファイル編集
+                  {t("edit_my_profile", lang)}
                 </Link>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>これはあなたのガイドプロファイルよ</div>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>{t("this_is_your_profile", lang)}</div>
               </div>
             ) : (
               <>
                 {/* sticky 下部: message + heart */}
                 <div style={{ position: "sticky", bottom: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(8px)", borderTop: "2px solid #f0d9b5", padding: "14px 20px", display: "flex", gap: 12, alignItems: "center", marginTop: "auto" }}>
                   {isDemo ? (
-                    <button disabled style={{ flex: 1, background: "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, cursor: "not-allowed", fontFamily: "inherit" }}>デモガイド・メッセージ不可</button>
+                    <button disabled style={{ flex: 1, background: "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, cursor: "not-allowed", fontFamily: "inherit" }}>{t("demo_guide_no_msg", lang)}</button>
                   ) : !currentUserId ? (
-                    <Link href="/login" style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>ログインしてメッセージ</Link>
+                    <Link href="/login" style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>{t("login_to_message", lang)}</Link>
                   ) : chatUnlocked ? (
                     <button
                       onClick={() => {
@@ -1218,11 +1254,11 @@ function HomeInner() {
                       }}
                       style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
                     >
-                      💬 message
+                      {t("message_btn", lang)}
                     </button>
                   ) : (
                     <Link href={`/chat-request/${selectedGuide.id}/new`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                      📨 メッセージリクエスト
+                      {t("message_request_btn", lang)}
                     </Link>
                   )}
                   {currentUserId && (
@@ -1237,9 +1273,9 @@ function HomeInner() {
                 </div>
                 {currentUserId && selectedGuide.user_id && (
                   <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, padding: "8px 20px 16px" }}>
-                    <Link href={`/report/${selectedGuide.user_id}`} style={{ color: "#8a7560", textDecoration: "underline", marginRight: 12 }}>🚩 通報</Link>
+                    <Link href={`/report/${selectedGuide.user_id}`} style={{ color: "#8a7560", textDecoration: "underline", marginRight: 12 }}>{t("report_link", lang)}</Link>
                     {selectedGuide.mode !== "free" && (
-                      <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ color: "#2e8b57", textDecoration: "underline", fontWeight: 800 }}>📅 予約フォーム (有料)</Link>
+                      <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ color: "#2e8b57", textDecoration: "underline", fontWeight: 800 }}>{t("booking_form_paid", lang)}</Link>
                     )}
                   </div>
                 )}
@@ -1327,7 +1363,6 @@ function HomeInner() {
     </div>
   );
 }
-
 export default function Home() {
   return (
     <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>

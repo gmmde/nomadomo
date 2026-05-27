@@ -13,6 +13,15 @@ type InboxPeer = {
   guideId?: string;
 };
 
+type PendingRequest = {
+  id: number;
+  senderId: string;
+  senderName: string;
+  senderEmoji: string;
+  message: string;
+  createdAt: string;
+};
+
 type GuideAvatar = {
   id: string;
   avatarPath: string | null;
@@ -27,6 +36,7 @@ type Props = {
   avatarUrls: Record<string, string>;
   openGuideProfile: (guideId: string | undefined) => void;
   onOpenChat: (p: InboxPeer) => void;
+  pendingRequests?: PendingRequest[];
   bottomNav: ReactNode;
   lang: Lang;
 };
@@ -40,22 +50,43 @@ export default function InboxScreen({
   avatarUrls,
   openGuideProfile,
   onOpenChat,
+  pendingRequests = [],
   bottomNav,
   lang,
 }: Props) {
+  const dateLocale = lang === "ja" ? "ja-JP" : "en-US";
   return (
     <div className="screen-enter" style={{ minHeight: "100vh" }}>
       <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
         <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("inbox_title", lang)}</div>
-        <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
+        <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
       </div>
       <div style={{ padding: "20px" }}>
+        {currentUserId && pendingRequests.length > 0 && (
+          <Link
+            href="/requests"
+            style={{ display: "block", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, marginBottom: 16, textDecoration: "none" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ fontSize: 28 }}>📨</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 2 }}>
+                  {t("inbox_pending_requests", lang)} ({pendingRequests.length})
+                </div>
+                <div style={{ fontSize: 12, opacity: 0.92, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {pendingRequests.slice(0, 3).map((r) => `${r.senderEmoji} ${r.senderName}`).join(" · ")}
+                </div>
+              </div>
+              <div style={{ fontSize: 18 }}>→</div>
+            </div>
+          </Link>
+        )}
         {!currentUserId ? (
           <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
             {t("inbox_login_required", lang)}
           </div>
-        ) : inboxPeers.length === 0 ? (
+        ) : inboxPeers.length === 0 && pendingRequests.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
             {t("inbox_empty", lang)}
           </div>
@@ -73,7 +104,6 @@ export default function InboxScreen({
                     <div
                       onClick={(e) => { e.stopPropagation(); if (p.guideId) openGuideProfile(p.guideId); }}
                       style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default", overflow: "hidden" }}
-                      title={p.guideId ? "ガイド詳細" : undefined}
                     >
                       {(() => {
                         const pg = p.guideId ? guides.find((x) => x.id === p.guideId) : null;
@@ -93,7 +123,7 @@ export default function InboxScreen({
                     <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                   </div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>
-                    {new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}
+                    {new Date(p.lastAt).toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" })}
                   </div>
                 </div>
               );

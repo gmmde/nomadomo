@@ -1,10 +1,13 @@
 "use client";
 
+import { useLang, t } from "../lib/i18n";
+
 type Props = {
   onPick: (mode: "local" | "traveler") => void;
 };
 
 export default function ModePicker({ onPick }: Props) {
+  const [lang] = useLang();
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "#f5ead0", display: "flex", flexDirection: "column", padding: "32px 20px 80px", overflowY: "auto" }}>
       <div style={{ fontSize: 32, fontWeight: 900, textAlign: "center", marginTop: 40, marginBottom: 4 }}>
@@ -12,7 +15,7 @@ export default function ModePicker({ onPick }: Props) {
         <span style={{ color: "#ad001c" }}>Domo</span>
       </div>
       <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, textAlign: "center", marginBottom: 36 }}>
-        How are you using NomaDomo?
+        {t("mode_picker_title", lang)}
       </div>
 
       <button
@@ -22,7 +25,7 @@ export default function ModePicker({ onPick }: Props) {
         <div style={{ fontSize: 38, marginBottom: 8 }}>✈️</div>
         <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>Traveler</div>
         <div style={{ fontSize: 12, color: "#5a4530", fontWeight: 700, lineHeight: 1.5 }}>
-          旅行者として地元のガイドや mate と出会う。
+          {t("mode_picker_traveler_desc", lang)}
         </div>
       </button>
 
@@ -33,12 +36,12 @@ export default function ModePicker({ onPick }: Props) {
         <div style={{ fontSize: 38, marginBottom: 8 }}>🏯</div>
         <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4, color: "#1e6b40" }}>Local</div>
         <div style={{ fontSize: 12, color: "#1e6b40", fontWeight: 700, lineHeight: 1.5 }}>
-          ガイド / mate として旅行者と出会う。
+          {t("mode_picker_local_desc", lang)}
         </div>
       </button>
 
       <div style={{ textAlign: "center", fontSize: 11, color: "#8a7560", fontWeight: 700, marginTop: 20 }}>
-        ⚙️ 設定からあとで切り替えられるわよ
+        {t("mode_picker_settings_hint", lang)}
       </div>
     </div>
   );

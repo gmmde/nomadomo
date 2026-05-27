@@ -49,8 +49,8 @@ export const dict: Dict = {
   // chat request form
   chat_req_form_title: { en: "Message Request", ja: "メッセージリクエスト" },
   chat_req_explainer_full: {
-    en: "DMs aren't open by default. Tell them when, where, and why you'd like to meet — once the local accepts, you can chat.",
-    ja: "いきなり DM は送れない仕組みよ。「いつ・どこで・なぜ会いたいか」をリクエストすると、ガイドが承認したらチャットが開けるわ。",
+    en: "DMs aren't open by default. Tell them when, where, and why you'd like to meet — once they accept, you can chat.",
+    ja: "いきなり DM は送れない仕組みよ。「いつ・どこで・なぜ会いたいか」を相手に送ると、承認されたらチャットが開けるわ。",
   },
   chat_req_explainer_simple: {
     en: "DMs aren't open by default. Send a short intro message — once they accept, you can chat.",
@@ -58,7 +58,7 @@ export const dict: Dict = {
   },
   preferred_date: { en: "Preferred date & time", ja: "希望日時" },
   preferred_place: { en: "Where would you like to go?", ja: "行きたい場所" },
-  send_request: { en: "Send request", ja: "リクエストを送る" },
+  send_request: { en: "Send a message", ja: "メッセージを送る" },
 
   // settings page
   settings_title: { en: "Settings", ja: "設定" },
@@ -106,7 +106,7 @@ export const dict: Dict = {
   // inbox / chat
   inbox_title: { en: "Messages 💬", ja: "メッセージ 💬" },
   inbox_login_required: { en: "Log in to use messages", ja: "ログインするとメッセージ使えるわよ" },
-  inbox_empty: { en: "No conversations yet. Send a request → once accepted, chat begins.", ja: "まだ会話なし。ガイドにメッセージリクエスト → 承認されると会話開始" },
+  inbox_empty: { en: "No conversations yet. Send a request → once accepted, chat begins.", ja: "まだ会話なし。メッセージリクエストを送って、承認されたら会話開始" },
   chat_login_required: { en: "Log in to message", ja: "ログインするとメッセージできるわよ" },
   chat_empty: { en: "No messages yet. Say hi 👇", ja: "まだメッセージなし。最初の一言を送ってみて 👇" },
   online_now: { en: "● Online now", ja: "● オンライン中" },
@@ -117,6 +117,55 @@ export const dict: Dict = {
   local_dashboard_bookings: { en: "📅 Bookings", ja: "📅 予約" },
   own_guide_open: { en: "🏯 View your guide profile", ja: "🏯 自分のガイドプロファイルを見る" },
   create_guide_profile: { en: "+ Create a guide profile", ja: "+ ガイドプロファイルを作成しよう" },
+  items_unit: { en: "", ja: "件" },
+  new_badge: { en: "✨ New", ja: "✨ 新規" },
+  switch_mode_tooltip: { en: "Tap to switch mode", ja: "タップでモード切替" },
+  settings_aria: { en: "Settings", ja: "設定" },
+  save_aria: { en: "Save", ja: "お気に入り" },
+
+  // mode picker descriptions
+  mode_picker_traveler_desc: { en: "Meet local Kyoto guides and mates as a traveler.", ja: "旅行者として地元のガイドや mate と出会う。" },
+  mode_picker_local_desc: { en: "Meet travelers as a guide or mate.", ja: "ガイド / mate として旅行者と出会う。" },
+  mode_picker_settings_hint: { en: "⚙️ You can switch later from settings.", ja: "⚙️ 設定からあとで切り替えられるわよ" },
+
+  // guide profile (Tinder)
+  living_in: { en: "lives in", ja: "在住" },
+  yo: { en: "y.o.", ja: "歳" },
+  stat_tours: { en: "Tours", ja: "ツアー" },
+  stat_rating: { en: "Rating", ja: "評価" },
+  stat_languages: { en: "Languages", ja: "言語" },
+  rating_new: { en: "new", ja: "新規" },
+  free_mate_label: { en: "🤝 Free mate — meet up for free", ja: "🤝 無料で会える mate よ" },
+  hobbies_section: { en: "🎯 Hobbies", ja: "🎯 趣味" },
+  available_section: { en: "📅 Available", ja: "📅 会える時間" },
+  edit_my_profile: { en: "✏️ Edit profile", ja: "✏️ プロファイル編集" },
+  this_is_your_profile: { en: "This is your own guide profile.", ja: "これはあなたのガイドプロファイルよ" },
+  demo_guide_no_msg: { en: "Demo guide — messaging disabled", ja: "デモガイド・メッセージ不可" },
+  login_to_message: { en: "Login to message", ja: "ログインしてメッセージ" },
+  message_btn: { en: "💬 Message", ja: "💬 メッセージ" },
+  message_request_btn: { en: "📨 Message request", ja: "📨 メッセージリクエスト" },
+  report_link: { en: "🚩 Report", ja: "🚩 通報" },
+  booking_form_paid: { en: "📅 Booking form (paid)", ja: "📅 予約フォーム (有料)" },
+
+  // chat request form
+  send_btn: { en: "Send a message", ja: "メッセージを送る" },
+  sending: { en: "Sending…", ja: "送信中…" },
+  request_sent_ok: { en: "✅ Request sent.", ja: "✅ リクエスト送信したわ。" },
+  request_sent_waiting: { en: "Waiting for {name} to accept. You'll be able to chat once approved.", ja: "{name} の承認待ち。承認されたらチャットできるようになるわよ。" },
+  request_redirecting: { en: "📨 Redirecting to your request list…", ja: "📨 リクエスト一覧に飛ばすわね…" },
+  req_form_title: { en: "📨 Message request", ja: "📨 メッセージリクエスト" },
+  msg_optional: { en: "💬 Message (optional)", ja: "💬 メッセージ (任意)" },
+  msg_placeholder: { en: "Introduce yourself or share what you'd like to do together", ja: "自己紹介や、相手に伝えたいこと" },
+  preferred_date_label: { en: "📅 Preferred date & time", ja: "📅 希望日時" },
+  preferred_place_label: { en: "📍 Where to meet", ja: "📍 行きたい場所" },
+  preferred_place_placeholder: { en: "e.g. Arashiyama bamboo grove, Fushimi Inari, Gion", ja: "例: 嵐山の竹林、伏見稲荷、祇園のお茶屋" },
+
+  // inbox extras
+  inbox_pending_requests: { en: "📨 New requests", ja: "📨 新着リクエスト" },
+  inbox_pending_unit: { en: "pending", ja: "件" },
+
+  // travelers list
+  travelers_list_title: { en: "✈️ Travelers", ja: "✈️ 旅行者一覧" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {
