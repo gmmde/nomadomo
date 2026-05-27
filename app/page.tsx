@@ -12,6 +12,11 @@ type Guide = {
   emoji: string;
   avatarPath: string | null;
   areas: string[];
+  nationality: string | null;
+  occupation: string | null;
+  hobbies: string[];
+  availableSlots: string[];
+  birthYear: number | null;
   uni: string;
   tags: string[];
   languages: string[];
@@ -113,6 +118,21 @@ const filterKeyword: Record<string, string> = {
 
 
 // mode に応じたカード背景色 + 枠色
+
+function formatSlotShort(s: string): string {
+  // "mon:1800-2200" -> "Mon 18:00-22:00"
+  const [day, time] = s.split(":");
+  if (!day || !time) return s;
+  const map: Record<string, string> = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
+  const [start, end] = time.split("-");
+  const fmt = (t: string) => t.length === 4 ? `${t.slice(0, 2)}:${t.slice(2)}` : t;
+  return `${map[day] ?? day} ${fmt(start ?? "")}-${fmt(end ?? "")}`;
+}
+function ageFromBirthYear(y: number | null): number | null {
+  if (!y) return null;
+  return new Date().getFullYear() - y;
+}
+
 function modeCardStyle(mode: "free" | "paid" | "both") {
   if (mode === "free") return { bg: "#e6f5ee", border: "#9fc9b6" };
   if (mode === "paid") return { bg: "#fceaec", border: "#e8b5bc" };
@@ -172,6 +192,7 @@ function HomeInner() {
   const [appModeLoaded, setAppModeLoaded] = useState(false);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
+  const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
   const [heroImgLoaded, setHeroImgLoaded] = useState(false);
 
@@ -291,6 +312,20 @@ function HomeInner() {
     // ホームに飛ばす
     navTab("home");
   }
+
+  // Local モード時: 受信予約 (pending + accepted) の件数
+  useEffect(() => {
+    if (appMode !== "local" || !currentUserId) {
+      setUpcomingBookingsCount(0);
+      return;
+    }
+    supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("guide_user_id", currentUserId)
+      .in("status", ["pending", "accepted"])
+      .then(({ count }) => setUpcomingBookingsCount(count ?? 0));
+  }, [supabase, appMode, currentUserId]);
 
   // Local モード時: traveler 一覧を取得
   useEffect(() => {
@@ -550,7 +585,7 @@ function HomeInner() {
     async function fetchGuides() {
       const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -565,6 +600,11 @@ function HomeInner() {
         emoji: g.emoji ?? "🧑",
         avatarPath: (g.avatar_path as string | null) ?? null,
         areas: (g.areas as string[]) ?? ["Kyoto"],
+        nationality: (g.nationality as string | null) ?? null,
+        occupation: (g.occupation as string | null) ?? null,
+        hobbies: (g.hobbies as string[]) ?? [],
+        availableSlots: (g.available_slots as string[]) ?? [],
+        birthYear: (g.birth_year as number | null) ?? null,
         uni: g.university ?? "",
         user_id: (g.user_id as string | null) ?? null,
         tags: g.tags ?? [],
@@ -713,8 +753,8 @@ function HomeInner() {
   ];
   const NAV_ITEMS_LOCAL: Array<{ icon: string; label: string; key: NavKey }> = [
     { icon: "🏠", label: "Home", key: "home" },
+    { icon: "📨", label: "Requests", key: "requests" },
     { icon: "💬", label: "Messages", key: "inbox" },
-    { icon: "🤍", label: "Saved", key: "saved" },
     { icon: "😊", label: "Profile", key: "myprofile" },
   ];
   const NAV_ITEMS = appMode === "local" ? NAV_ITEMS_LOCAL : NAV_ITEMS_TRAVELER;
@@ -724,12 +764,13 @@ function HomeInner() {
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
-          const showBadge = item.key === "inbox" && totalUnread > 0;
-          const badgeCount = totalUnread;
+          const isReq = item.key === "requests";
+          const showBadge = (item.key === "inbox" && totalUnread > 0) || (isReq && pendingRequestCount > 0);
+          const badgeCount = isReq ? pendingRequestCount : totalUnread;
           return (
             <div
               key={item.label}
-              onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
+              onClick={() => { if (item.key === "requests") { router.push("/requests"); } else { navTab(item.key as Exclude<NavKey, "requests">); } }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
               <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
@@ -819,7 +860,7 @@ function HomeInner() {
                     style={{ background: appMode === "local" ? "#2ecc71" : "#ffffff28", color: "#fff", border: appMode === "local" ? "none" : "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
                     title="タップでモード切替"
                   >
-                    {appMode === "local" ? "🏯 Local" : "✈️ Traveler"} ⇄
+                    {appMode === "local" ? "🏯 Local" : "✈️ Traveler"}
                   </button>
                 )}
                 {userEmail ? (
@@ -919,7 +960,32 @@ function HomeInner() {
               ))}
             </div>
 
-            {/* GUIDES */}
+            {/* LOCAL DASHBOARD (Local モード時のみ) */}
+            {appMode === "local" && currentUserId && (
+              <div style={{ padding: "0 20px 12px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Link href="/requests" style={{ display: "block", background: pendingRequestCount > 0 ? "#ad001c" : "#fff9f0", color: pendingRequestCount > 0 ? "#fff" : "#1a1008", border: `2px solid ${pendingRequestCount > 0 ? "#ad001c" : "#e8c99a"}`, borderRadius: 14, padding: 14, textDecoration: "none" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.85, marginBottom: 4 }}>📨 リクエスト</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{pendingRequestCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>件</span></div>
+                  </Link>
+                  <Link href="/bookings" style={{ display: "block", background: "#fff9f0", color: "#1a1008", border: "2px solid #e8c99a", borderRadius: 14, padding: 14, textDecoration: "none" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#8a7560", marginBottom: 4 }}>📅 予約</div>
+                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, color: "#2e8b57" }}>{upcomingBookingsCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>件</span></div>
+                  </Link>
+                </div>
+                {ownGuide ? (
+                  <Link href={`/?guide=${ownGuide.id}`} style={{ display: "block", marginTop: 10, background: "#e6f5ee", color: "#1e6b40", border: "2px solid #2e8b57", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 12, fontWeight: 800, textAlign: "center" }}>
+                    🏯 自分のガイドプロファイルを見る ({ownGuide.name})
+                  </Link>
+                ) : (
+                  <Link href="/guides/new" style={{ display: "block", marginTop: 10, background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 13, fontWeight: 900, textAlign: "center" }}>
+                    + ガイドプロファイルを作成しよう
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* GUIDES (or Travelers in Local mode) */}
             <div style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
               <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? "Travelers in Kyoto ✈️" : "Available now ✨"}</div>
               <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>See all &rarr;</Link>
@@ -1081,7 +1147,15 @@ function HomeInner() {
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
                   📍 {selectedGuide.areas.join(" · ")} 在住
+                  {ageFromBirthYear(selectedGuide.birthYear) != null && <span style={{ marginLeft: 8 }}>· {ageFromBirthYear(selectedGuide.birthYear)} y.o.</span>}
                 </div>
+                {(selectedGuide.nationality || selectedGuide.occupation) && (
+                  <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                    {selectedGuide.nationality && <span>🌐 {selectedGuide.nationality}</span>}
+                    {selectedGuide.nationality && selectedGuide.occupation && <span> · </span>}
+                    {selectedGuide.occupation && <span>💼 {selectedGuide.occupation}</span>}
+                  </div>
+                )}
                 {selectedGuide.bio && (
                   <div style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
                     {selectedGuide.bio}
@@ -1132,6 +1206,30 @@ function HomeInner() {
               </div>
             )}
 
+            {(selectedGuide.hobbies.length > 0 || selectedGuide.availableSlots.length > 0) && (
+              <div style={{ margin: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {selectedGuide.hobbies.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>🎯 Hobbies / 趣味</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {selectedGuide.hobbies.map((h) => (
+                        <span key={h} style={{ background: "#ffefd5", border: "1.5px solid #ad001c", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>{h}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {selectedGuide.availableSlots.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>📅 Available / 会える時間</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {selectedGuide.availableSlots.slice(0, 12).map((s) => (
+                        <span key={s} style={{ background: "#e6f5ee", border: "1.5px solid #2e8b57", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{formatSlotShort(s)}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {isOwn ? (
               <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>

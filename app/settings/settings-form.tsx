@@ -124,6 +124,22 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
           <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginTop: 8, lineHeight: 1.5 }}>
             Traveler = 旅行者として使う / Local = ガイドとして使う
           </div>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!confirm("モード選択を初期化して、次回ログイン時にもう一度選び直す？")) return;
+              const supabase = createClient();
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              await supabase.from("user_settings").upsert({ user_id: user.id, app_mode: null }, { onConflict: "user_id" });
+              setAppMode(null);
+              alert("モード選択をリセットしたわ。ホームに戻って画面選択してね");
+              window.location.href = "/";
+            }}
+            style={{ width: "100%", marginTop: 10, background: "#fff", color: "#8a7560", border: "1.5px dashed #e8c99a", borderRadius: 12, padding: 8, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            🔄 モード選択画面を再表示する
+          </button>
         </div>
 
         {/* Notifications */}
