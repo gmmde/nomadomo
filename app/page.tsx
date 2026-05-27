@@ -153,6 +153,7 @@ function HomeInner() {
   const [selectedGuideFollowers, setSelectedGuideFollowers] = useState<number>(0);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [heroImgError, setHeroImgError] = useState(false);
+  const [heroImgLoaded, setHeroImgLoaded] = useState(false);
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -676,6 +677,7 @@ function HomeInner() {
                   src="/home-hero.png"
                   alt=""
                   onError={() => setHeroImgError(true)}
+                  onLoad={() => setHeroImgLoaded(true)}
                   style={{
                     position: "absolute",
                     inset: 0,
@@ -683,12 +685,13 @@ function HomeInner() {
                     height: "100%",
                     objectFit: "cover",
                     zIndex: 1,
-                    // 画像自体を下端で完全透明に fade → 背景が自然に透ける
-                    maskImage: "linear-gradient(to bottom, black 0%, black 55%, rgba(0,0,0,0.85) 70%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0) 100%)",
-                    WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, rgba(0,0,0,0.85) 70%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0) 100%)",
+                    // ごく僅かに下端のみソフト fade (body 背景に滑らかに繋がる)
+                    maskImage: "linear-gradient(to bottom, black 88%, rgba(0,0,0,0) 100%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, black 88%, rgba(0,0,0,0) 100%)",
                   }}
                 />
               )}
+              {(!heroImgLoaded || heroImgError) && (<>
               <svg width="100%" height="200" viewBox="0 0 380 200" preserveAspectRatio="xMidYMid slice">
                 <rect width="380" height="200" fill="#f5ead0"/>
                 <rect x="0" y="0" width="60" height="45" fill="#e8d9b8" rx="2"/><rect x="65" y="0" width="80" height="30" fill="#ddd0b0" rx="2"/><rect x="150" y="0" width="50" height="50" fill="#e8d9b8" rx="2"/><rect x="205" y="0" width="70" height="35" fill="#ddd0b0" rx="2"/><rect x="320" y="0" width="60" height="60" fill="#ddd0b0" rx="2"/>
@@ -710,6 +713,7 @@ function HomeInner() {
                 <g transform="translate(83,90)"><g transform="rotate(20)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(92)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(164)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(236)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(308)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="5" fill="#fffde7"/><circle cx="0" cy="0" r="2.5" fill="#f9c74f"/></g>
                 <g transform="translate(52,86)"><g transform="rotate(5)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(77)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(149)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(221)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(293)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="3.5" fill="#fffde7"/><circle cx="0" cy="0" r="1.8" fill="#f9c74f"/></g>
               </svg>
+              </>)}
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.05) 100%)", zIndex: 2, pointerEvents: "none" }}/>
               <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Kyoto, Japan</div>

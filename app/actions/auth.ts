@@ -22,16 +22,23 @@ export async function signup(
   if (err) return { error: err };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // After confirming, send users back to home. Supabase still routes them
-      // through /auth/callback which we render as a no-op redirect handler.
       emailRedirectTo: undefined,
     },
   });
   if (error) return { error: error.message };
+
+  // Supabase は既に登録済みのメアドで signUp された場合、
+  // セキュリティ目的で error を返さず偽の user オブジェクト (identities=[]) を返す。
+  // ここで明示的に検知してログイン誘導する。
+  if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+    return {
+      error: "このメールアドレスは既に登録されてるわよ。ログイン画面から入って (パスワード忘れたなら下のリンクからリセット)",
+    };
+  }
 
   revalidatePath("/", "layout");
   redirect("/");
