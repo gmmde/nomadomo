@@ -155,6 +155,9 @@ function HomeInner() {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [profileImgIdx, setProfileImgIdx] = useState(0);
   const [chatUnlocked, setChatUnlocked] = useState(false);
+  const [appMode, setAppMode] = useState<"local" | "traveler" | null>(null);
+  const [appModeLoaded, setAppModeLoaded] = useState(false);
+  const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
   const [heroImgLoaded, setHeroImgLoaded] = useState(false);
 
@@ -244,6 +247,49 @@ function HomeInner() {
       .then(({ data }) => {
         setSavedIds(new Set((data ?? []).map((r) => r.guide_id as number)));
       });
+  }, [supabase, currentUserId]);
+
+  // app_mode (Local/Traveler) を user_settings から取得
+  useEffect(() => {
+    if (!currentUserId) {
+      setAppMode(null);
+      setAppModeLoaded(false);
+      return;
+    }
+    supabase
+      .from("user_settings")
+      .select("app_mode")
+      .eq("user_id", currentUserId)
+      .maybeSingle()
+      .then(({ data }) => {
+        const m = data?.app_mode as "local" | "traveler" | null | undefined;
+        setAppMode(m === "local" || m === "traveler" ? m : null);
+        setAppModeLoaded(true);
+      });
+  }, [supabase, currentUserId]);
+
+  async function saveAppMode(next: "local" | "traveler") {
+    if (!currentUserId) return;
+    setAppMode(next);
+    await supabase
+      .from("user_settings")
+      .upsert({ user_id: currentUserId, app_mode: next }, { onConflict: "user_id" });
+    // ホームに飛ばす
+    navTab("home");
+  }
+
+  // 自分宛 pending リクエスト数 (Local モード時のみ意味あり)
+  useEffect(() => {
+    if (!currentUserId) {
+      setPendingRequestCount(0);
+      return;
+    }
+    supabase
+      .from("chat_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("guide_user_id", currentUserId)
+      .eq("status", "pending")
+      .then(({ count }) => setPendingRequestCount(count ?? 0));
   }, [supabase, currentUserId]);
 
   // 自分のフォロー先一覧を取得（follows RLS で自分の行のみ取れる）
@@ -613,30 +659,40 @@ function HomeInner() {
   // 自分自身のガイドプロファイル (あれば)
   const ownGuide = guides.find((g) => g.user_id === currentUserId) ?? null;
 
-  const NAV_ITEMS: Array<{ icon: string; label: string; key: "home" | "inbox" | "saved" | "myprofile" }> = [
+  type NavKey = "home" | "inbox" | "saved" | "myprofile" | "requests";
+  const NAV_ITEMS_TRAVELER: Array<{ icon: string; label: string; key: NavKey }> = [
     { icon: "🏠", label: "Home", key: "home" },
     { icon: "💬", label: "Messages", key: "inbox" },
     { icon: "🤍", label: "Saved", key: "saved" },
     { icon: "😊", label: "Profile", key: "myprofile" },
   ];
+  const NAV_ITEMS_LOCAL: Array<{ icon: string; label: string; key: NavKey }> = [
+    { icon: "📨", label: "Requests", key: "requests" },
+    { icon: "💬", label: "Messages", key: "inbox" },
+    { icon: "🏠", label: "Browse", key: "home" },
+    { icon: "😊", label: "Profile", key: "myprofile" },
+  ];
+  const NAV_ITEMS = appMode === "local" ? NAV_ITEMS_LOCAL : NAV_ITEMS_TRAVELER;
 
-  function renderBottomNav(active: "home" | "inbox" | "saved" | "myprofile") {
+  function renderBottomNav(active: NavKey | "profile" | "chat") {
     return (
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
-          const showBadge = item.key === "inbox" && totalUnread > 0;
+          const isReq = item.key === "requests";
+          const showBadge = (item.key === "inbox" && totalUnread > 0) || (isReq && pendingRequestCount > 0);
+          const badgeCount = isReq ? pendingRequestCount : totalUnread;
           return (
             <div
               key={item.label}
-              onClick={() => navTab(item.key)}
+              onClick={() => { if (item.key === "requests") router.push("/requests"); else navTab(item.key as Exclude<NavKey, "requests">); }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
               <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
               <div style={{ fontSize: 10, color: isActive ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{item.label}</div>
               {showBadge && (
                 <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2e8b57" }}>
-                  {totalUnread > 99 ? "99+" : totalUnread}
+                  {badgeCount > 99 ? "99+" : badgeCount}
                 </div>
               )}
             </div>
@@ -661,6 +717,47 @@ function HomeInner() {
               京都で本物のローカルと出会う
             </div>
             <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid #e8c99a", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite", marginTop: 8 }} />
+          </div>
+        )}
+
+        {/* MODE PICKER (ログイン中 + app_mode 未選択時) */}
+        {!loading && currentUserId && appModeLoaded && !appMode && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "#f5ead0", display: "flex", flexDirection: "column", padding: "32px 20px 80px", overflowY: "auto" }}>
+            <div style={{ fontSize: 32, fontWeight: 900, textAlign: "center", marginTop: 40, marginBottom: 4 }}>
+              <span style={{ color: "#2ecc71" }}>Noma</span>
+              <span style={{ color: "#ad001c" }}>Domo</span>
+            </div>
+            <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, textAlign: "center", marginBottom: 36 }}>
+              どのモードで使う？
+            </div>
+
+            <button
+              onClick={() => saveAppMode("traveler")}
+              style={{ background: "linear-gradient(135deg, #ffefd5, #ffe0a0)", color: "#1a1008", border: "3px solid #ad001c", borderRadius: 22, padding: "24px 18px", marginBottom: 16, cursor: "pointer", fontFamily: "inherit", textAlign: "left", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
+            >
+              <div style={{ fontSize: 38, marginBottom: 8 }}>✈️</div>
+              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>Traveler モード</div>
+              <div style={{ fontSize: 12, color: "#5a4530", fontWeight: 700, lineHeight: 1.5 }}>
+                旅行者として地元のガイドや mate と出会う。<br/>
+                ガイドを検索 / 保存 / メッセージリクエストできる。
+              </div>
+            </button>
+
+            <button
+              onClick={() => saveAppMode("local")}
+              style={{ background: "linear-gradient(135deg, #e6f5ee, #b0e5cc)", color: "#1a1008", border: "3px solid #2e8b57", borderRadius: 22, padding: "24px 18px", marginBottom: 16, cursor: "pointer", fontFamily: "inherit", textAlign: "left", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
+            >
+              <div style={{ fontSize: 38, marginBottom: 8 }}>🏯</div>
+              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4, color: "#1e6b40" }}>Local モード</div>
+              <div style={{ fontSize: 12, color: "#1e6b40", fontWeight: 700, lineHeight: 1.5 }}>
+                ガイド / mate として旅行者を受け入れる。<br/>
+                受信リクエスト管理 / 自分のプロフィール / 予約管理ができる。
+              </div>
+            </button>
+
+            <div style={{ textAlign: "center", fontSize: 11, color: "#8a7560", fontWeight: 700, marginTop: 20 }}>
+              ⚙️ 設定からあとで切り替えられるわよ
+            </div>
           </div>
         )}
 

@@ -18,7 +18,10 @@ export type GuideFormErrors = Partial<
     | "languages"
     | "gender"
     | "birth_year"
-    | "areas",
+    | "areas"
+    | "nationality"
+    | "occupation"
+    | "hobbies",
     string
   >
 >;
@@ -40,6 +43,11 @@ function parseGuideFields(formData: FormData) {
   const languages = formData.getAll("languages").map(String).filter(Boolean);
   const avatar_path = String(formData.get("avatar_path") ?? "").trim() || null;
   const areas = formData.getAll("areas").map(String).filter(Boolean);
+  const nationality = String(formData.get("nationality") ?? "").trim().slice(0, 80) || null;
+  const occupation = String(formData.get("occupation") ?? "").trim().slice(0, 80) || null;
+  const gender_other = String(formData.get("gender_other") ?? "").trim().slice(0, 40) || null;
+  const hobbies = formData.getAll("hobbies").map(String).map((s) => s.trim()).filter(Boolean).slice(0, 20);
+  const available_slots = formData.getAll("available_slots").map(String).filter(Boolean).slice(0, 30);
   const image_paths = formData
     .getAll("image_paths")
     .map(String)
@@ -47,7 +55,7 @@ function parseGuideFields(formData: FormData) {
     .slice(0, 8);
   const genderRaw = String(formData.get("gender") ?? "").trim();
   const gender =
-    genderRaw && ["male", "female", "non-binary", "prefer_not"].includes(genderRaw)
+    genderRaw && ["male", "female", "non-binary", "other"].includes(genderRaw)
       ? genderRaw
       : null;
   const birthYearRaw = String(formData.get("birth_year") ?? "").trim();
@@ -60,7 +68,7 @@ function parseGuideFields(formData: FormData) {
 
   const errors: GuideFormErrors = {};
   if (name.length < 2) errors.name = "名前は2文字以上にして";
-  if (university.length < 2) errors.university = "大学名を入れて";
+
   if (bio.length < 10) errors.bio = "自己紹介は10文字以上書いてちょうだい";
   if (mode !== "free") {
     if (!rateRaw || !Number.isFinite(rate) || rate <= 0)
@@ -86,6 +94,11 @@ function parseGuideFields(formData: FormData) {
       birth_year,
       avatar_path,
       areas,
+      nationality,
+      occupation,
+      gender_other,
+      hobbies,
+      available_slots,
     },
     errors,
   };

@@ -11,6 +11,7 @@ type Initial = {
   email_on_new_message: boolean;
   email_on_booking: boolean;
   show_to_anon: boolean;
+  app_mode: 'local' | 'traveler' | null;
 };
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
@@ -29,6 +30,7 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
   const [emailMsg, setEmailMsg] = useState(initial.email_on_new_message);
   const [emailBook, setEmailBook] = useState(initial.email_on_booking);
   const [showAnon, setShowAnon] = useState(initial.show_to_anon);
+  const [appMode, setAppMode] = useState<'local' | 'traveler' | null>(initial.app_mode);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   // 言語切替はクライアントで即適用 (localStorage)
@@ -51,6 +53,7 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
         email_on_new_message: emailMsg,
         email_on_booking: emailBook,
         show_to_anon: showAnon,
+        app_mode: appMode,
       }, { onConflict: "user_id" });
     if (error) {
       setStatus("idle");
@@ -98,6 +101,28 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
                 {l === "ja" ? "🇯🇵 日本語" : "🇺🇸 English"}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* App mode (Local/Traveler) */}
+        <div style={sectionBox}>
+          <div style={sectionTitle}>🎭 利用モード</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setAppMode("traveler")}
+              style={{ flex: 1, background: appMode === "traveler" ? "#ad001c" : "#fff", color: appMode === "traveler" ? "#fff" : "#8a7560", border: `2px solid ${appMode === "traveler" ? "#ad001c" : "#e8c99a"}`, borderRadius: 12, padding: "10px 0", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              ✈️ Traveler
+            </button>
+            <button
+              onClick={() => setAppMode("local")}
+              style={{ flex: 1, background: appMode === "local" ? "#2e8b57" : "#fff", color: appMode === "local" ? "#fff" : "#8a7560", border: `2px solid ${appMode === "local" ? "#2e8b57" : "#e8c99a"}`, borderRadius: 12, padding: "10px 0", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              🏯 Local
+            </button>
+          </div>
+          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginTop: 8, lineHeight: 1.5 }}>
+            Traveler = 旅行者として使う / Local = ガイドとして使う
           </div>
         </div>
 

@@ -9,6 +9,8 @@ import {
 } from "@/app/actions/guides";
 import ModeAndRate from "@/app/lib/mode-and-rate";
 import AvatarPicker from "@/app/lib/avatar-picker";
+import AvailableSlots from "@/app/lib/available-slots";
+import HobbiesTags from "@/app/lib/hobbies-tags";
 import ImageUploader from "@/app/lib/image-uploader";
 
 const AREA_OPTIONS = ["Kyoto"] as const;
@@ -18,7 +20,7 @@ const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "male", label: "男性" },
   { value: "female", label: "女性" },
   { value: "non-binary", label: "ノンバイナリー" },
-  { value: "prefer_not", label: "回答しない" },
+  { value: "other", label: "その他" },
 ];
 
 
@@ -27,6 +29,11 @@ type Initial = {
   birth_year: number | null;
   avatar_path: string | null;
   areas: string[];
+  nationality: string | null;
+  occupation: string | null;
+  gender_other: string | null;
+  hobbies: string[];
+  available_slots: string[];
   id: number;
   name: string;
   university: string;
@@ -140,6 +147,9 @@ export default function EditGuideForm({
   const [birthYear, setBirthYear] = useState<string>(initial.birth_year != null ? String(initial.birth_year) : "");
   const [gender, setGender] = useState<string>(initial.gender ?? "");
   const [areas, setAreas] = useState<string[]>(initial.areas);
+  const [genderOther, setGenderOther] = useState(initial.gender_other ?? "");
+  const [nationality, setNationality] = useState(initial.nationality ?? "");
+  const [occupation, setOccupation] = useState(initial.occupation ?? "");
 
   function toggle(list: string[], v: string): string[] {
     return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
@@ -188,8 +198,8 @@ export default function EditGuideForm({
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="university">大学</label>
-              <input id="university" name="university" required value={university} onChange={(e) => setUniversity(e.target.value)} style={input} />
+              <label style={label} htmlFor="university">大学 (任意)</label>
+              <input id="university" name="university" value={university} onChange={(e) => setUniversity(e.target.value)} style={input} placeholder="任意" />
               {state?.errors?.university && <div style={err}>{state.errors.university}</div>}
             </div>
 
@@ -219,6 +229,27 @@ export default function EditGuideForm({
                   <option key={g.value} value={g.value}>{g.label}</option>
                 ))}
               </select>
+              {gender === "other" && (
+                <input
+                  name="gender_other"
+                  type="text"
+                  maxLength={40}
+                  value={genderOther}
+                  onChange={(e) => setGenderOther(e.target.value)}
+                  placeholder="自由入力"
+                  style={{ ...input, marginTop: 6 }}
+                />
+              )}
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="nationality">国籍 (任意)</label>
+              <input id="nationality" name="nationality" type="text" maxLength={80} value={nationality} onChange={(e) => setNationality(e.target.value)} style={input} placeholder="例: 日本" />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="occupation">職業 (任意)</label>
+              <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={input} placeholder="例: 学生" />
             </div>
 
             <div style={{ marginBottom: 18 }}>
@@ -235,6 +266,16 @@ export default function EditGuideForm({
                 style={input}
                 placeholder="例: 2002"
               />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>趣味 (任意)</label>
+              <HobbiesTags initial={initial.hobbies} />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>会える時間 (任意)</label>
+              <AvailableSlots initial={initial.available_slots} />
             </div>
 
             <div style={{ marginBottom: 18 }}>

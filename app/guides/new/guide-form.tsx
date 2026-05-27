@@ -5,6 +5,8 @@ import { useActionState, useState } from "react";
 import { createGuide, type GuideFormState } from "@/app/actions/guides";
 import ModeAndRate from "@/app/lib/mode-and-rate";
 import AvatarPicker from "@/app/lib/avatar-picker";
+import AvailableSlots from "@/app/lib/available-slots";
+import HobbiesTags from "@/app/lib/hobbies-tags";
 import ImageUploader from "@/app/lib/image-uploader";
 
 const AREA_OPTIONS = ["Kyoto"] as const;
@@ -14,7 +16,7 @@ const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "male", label: "男性" },
   { value: "female", label: "女性" },
   { value: "non-binary", label: "ノンバイナリー" },
-  { value: "prefer_not", label: "回答しない" },
+  { value: "other", label: "その他" },
 ];
 
 
@@ -101,6 +103,9 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
   const [birthYear, setBirthYear] = useState("");
   const [gender, setGender] = useState("");
   const [areas, setAreas] = useState<string[]>(["Kyoto"]);
+  const [genderOther, setGenderOther] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [occupation, setOccupation] = useState("");
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -144,8 +149,8 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
 
             {/* University */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="university">大学</label>
-              <input id="university" name="university" required value={university} onChange={(e) => setUniversity(e.target.value)} style={inputStyle} placeholder="例: 京都大学" />
+              <label style={labelStyle} htmlFor="university">大学 (任意)</label>
+              <input id="university" name="university" value={university} onChange={(e) => setUniversity(e.target.value)} style={inputStyle} placeholder="例: 京都大学 (任意)" />
               {state?.errors?.university && <div style={errStyle}>{state.errors.university}</div>}
             </div>
 
@@ -172,13 +177,54 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
 
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="gender">性別 (任意・検索フィルタに使われる)</label>
+              <label style={labelStyle} htmlFor="gender">性別 (任意)</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
                 <option value="">指定しない</option>
                 {GENDER_OPTIONS.map((g) => (
                   <option key={g.value} value={g.value}>{g.label}</option>
                 ))}
               </select>
+              {gender === "other" && (
+                <input
+                  name="gender_other"
+                  type="text"
+                  maxLength={40}
+                  value={genderOther}
+                  onChange={(e) => setGenderOther(e.target.value)}
+                  placeholder="自由入力"
+                  style={{ ...inputStyle, marginTop: 6 }}
+                />
+              )}
+            </div>
+
+            {/* Nationality */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle} htmlFor="nationality">国籍 (任意)</label>
+              <input
+                id="nationality"
+                name="nationality"
+                type="text"
+                maxLength={80}
+                value={nationality}
+                onChange={(e) => setNationality(e.target.value)}
+                style={inputStyle}
+                placeholder="例: 日本"
+              />
+            </div>
+
+            {/* Occupation */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle} htmlFor="occupation">職業 (任意)</label>
+              <input
+                id="occupation"
+                name="occupation"
+                type="text"
+                maxLength={80}
+                value={occupation}
+                onChange={(e) => setOccupation(e.target.value)}
+                style={inputStyle}
+                placeholder="例: 学生, エンジニア, バリスタ"
+              />
             </div>
 
             {/* Birth year */}
@@ -197,6 +243,18 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 placeholder="例: 2002"
               />
               {state?.errors?.birth_year && <div style={errStyle}>{state.errors.birth_year}</div>}
+            </div>
+
+            {/* Hobbies */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={labelStyle}>趣味 (任意)</label>
+              <HobbiesTags />
+            </div>
+
+            {/* Available slots */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={labelStyle}>会える時間 (任意)</label>
+              <AvailableSlots />
             </div>
 
             {/* Areas */}
