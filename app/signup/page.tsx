@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signup, type AuthState } from "@/app/actions/auth";
+import { useLang, t } from "@/app/lib/i18n";
 
 const wrapStyle: React.CSSProperties = {
   background: "#f5ead0",
@@ -51,10 +52,8 @@ const btnPrimary: React.CSSProperties = {
 };
 
 export default function SignupPage() {
-  const [state, action, pending] = useActionState<AuthState, FormData>(
-    signup,
-    undefined,
-  );
+  const [state, action, pending] = useActionState<AuthState, FormData>(signup, undefined);
+  const [lang] = useLang();
 
   return (
     <div style={wrapStyle}>
@@ -64,7 +63,7 @@ export default function SignupPage() {
           <span style={{ color: "#ad001c" }}>Domo</span>
         </div>
         <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
-          新規アカウント登録
+          {t("signup_subtitle", lang)}
         </div>
 
         <form action={action}>
@@ -73,8 +72,8 @@ export default function SignupPage() {
             <input id="email" name="email" type="email" required style={inputStyle} placeholder="you@example.com" />
           </div>
           <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle} htmlFor="password">Password</label>
-            <input id="password" name="password" type="password" required minLength={8} style={inputStyle} placeholder="8文字以上" />
+            <label style={labelStyle} htmlFor="password">{t("password_label", lang)}</label>
+            <input id="password" name="password" type="password" required minLength={8} style={inputStyle} placeholder={t("password_placeholder", lang)} />
           </div>
 
           {state?.error && (
@@ -84,22 +83,20 @@ export default function SignupPage() {
           )}
 
           <button type="submit" disabled={pending} style={{ ...btnPrimary, opacity: pending ? 0.6 : 1 }}>
-            {pending ? "登録中…" : "アカウントを作る"}
+            {pending ? t("signing_up", lang) : t("signup_btn", lang)}
           </button>
         </form>
 
         <div style={{ marginTop: 16, fontSize: 11, color: "#8a7560", lineHeight: 1.6, fontWeight: 600 }}>
-          Supabaseのデフォルト設定だとメール確認が必要よ。テスト中なら
-          Supabaseダッシュボード → Authentication → Sign In / Up で
-          「Confirm email」をオフにして
+          {t("signup_email_confirm_note", lang)}
         </div>
 
         <div style={{ marginTop: 20, fontSize: 13, color: "#8a7560", textAlign: "center", fontWeight: 700 }}>
-          もうアカウントある？{" "}
-          <Link href="/login" style={{ color: "#ad001c", fontWeight: 800 }}>ログイン</Link>
+          {t("have_account", lang)}{" "}
+          <Link href="/login" style={{ color: "#ad001c", fontWeight: 800 }}>{t("signin_btn", lang)}</Link>
         </div>
         <div style={{ marginTop: 24, fontSize: 13, textAlign: "center" }}>
-          <Link href="/" style={{ color: "#8a7560", fontWeight: 700 }}>← ホームに戻る</Link>
+          <Link href="/" style={{ color: "#8a7560", fontWeight: 700 }}>{t("back_home_arrow", lang)}</Link>
         </div>
       </div>
     </div>

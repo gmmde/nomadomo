@@ -8,15 +8,16 @@ import AvatarPicker from "@/app/lib/avatar-picker";
 import AvailableSlots from "@/app/lib/available-slots";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import ImageUploader from "@/app/lib/image-uploader";
+import { useLang, t } from "@/app/lib/i18n";
 
 const AREA_OPTIONS = ["Kyoto"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
-const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "male", label: "男性" },
-  { value: "female", label: "女性" },
-  { value: "non-binary", label: "ノンバイナリー" },
-  { value: "other", label: "その他" },
+const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "form_gender_female" | "form_gender_nonbinary" | "form_gender_other" }> = [
+  { value: "male", labelKey: "form_gender_male" as const },
+  { value: "female", labelKey: "form_gender_female" as const },
+  { value: "non-binary", labelKey: "form_gender_nonbinary" as const },
+  { value: "other", labelKey: "form_gender_other" as const },
 ];
 
 
@@ -106,6 +107,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
   const [genderOther, setGenderOther] = useState("");
   const [nationality, setNationality] = useState("");
   const [occupation, setOccupation] = useState("");
+  const [lang] = useLang();
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -117,46 +119,46 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
         <div style={headerStyle}>
           <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
           <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>
-            ガイド登録
+            {t("form_register_guide_title", lang)}
           </div>
           <div style={{ width: 22 }} />
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
           <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, marginBottom: 20 }}>
-            ログイン中：{userEmail}
+            {t("logged_in_as", lang)}：{userEmail}
           </div>
 
           <form action={action}>
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>写真（複数可、最大8枚）</label>
+              <label style={labelStyle}>{t("form_photos", lang)}</label>
               <ImageUploader />
             </div>
 
             {/* Avatar */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>アバター (写真または絵文字)</label>
+              <label style={labelStyle}>{t("form_avatar", lang)}</label>
               <AvatarPicker />
             </div>
 
             {/* Name */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="name">名前</label>
-              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="例: Yuki Tanaka" />
+              <label style={labelStyle} htmlFor="name">{t("form_name", lang)}</label>
+              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: Yuki Tanaka" : "e.g. Yuki Tanaka"} />
               {state?.errors?.name && <div style={errStyle}>{state.errors.name}</div>}
             </div>
 
             {/* University */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="university">大学 (任意)</label>
-              <input id="university" name="university" value={university} onChange={(e) => setUniversity(e.target.value)} style={inputStyle} placeholder="例: 京都大学 (任意)" />
+              <label style={labelStyle} htmlFor="university">{t("form_university", lang)}</label>
+              <input id="university" name="university" value={university} onChange={(e) => setUniversity(e.target.value)} style={inputStyle} placeholder={t("form_university_placeholder", lang)} />
               {state?.errors?.university && <div style={errStyle}>{state.errors.university}</div>}
             </div>
 
             {/* Bio */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="bio">自己紹介</label>
+              <label style={labelStyle} htmlFor="bio">{t("form_bio", lang)}</label>
               <textarea
                 id="bio"
                 name="bio"
@@ -165,7 +167,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 style={{ ...inputStyle, resize: "vertical", minHeight: 96 }}
-                placeholder="あなたの強みやお気に入りのスポットを書いて"
+                placeholder={t("form_bio_placeholder", lang)}
               />
               {state?.errors?.bio && <div style={errStyle}>{state.errors.bio}</div>}
             </div>
@@ -177,11 +179,11 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
 
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="gender">性別 (任意)</label>
+              <label style={labelStyle} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
-                <option value="">指定しない</option>
+                <option value="">{t("form_gender_unspecified", lang)}</option>
                 {GENDER_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>{g.label}</option>
+                  <option key={g.value} value={g.value}>{t(g.labelKey, lang)}</option>
                 ))}
               </select>
               {gender === "other" && (
@@ -191,7 +193,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                   maxLength={40}
                   value={genderOther}
                   onChange={(e) => setGenderOther(e.target.value)}
-                  placeholder="自由入力"
+                  placeholder={t("form_gender_other_placeholder", lang)}
                   style={{ ...inputStyle, marginTop: 6 }}
                 />
               )}
@@ -199,7 +201,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
 
             {/* Nationality */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="nationality">国籍 (任意)</label>
+              <label style={labelStyle} htmlFor="nationality">{t("form_nationality", lang)}</label>
               <input
                 id="nationality"
                 name="nationality"
@@ -208,13 +210,13 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 value={nationality}
                 onChange={(e) => setNationality(e.target.value)}
                 style={inputStyle}
-                placeholder="例: 日本"
+                placeholder={t("form_nationality_placeholder", lang)}
               />
             </div>
 
             {/* Occupation */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="occupation">職業 (任意)</label>
+              <label style={labelStyle} htmlFor="occupation">{t("form_occupation", lang)}</label>
               <input
                 id="occupation"
                 name="occupation"
@@ -223,13 +225,13 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 value={occupation}
                 onChange={(e) => setOccupation(e.target.value)}
                 style={inputStyle}
-                placeholder="例: 学生, エンジニア, バリスタ"
+                placeholder={t("form_occupation_placeholder", lang)}
               />
             </div>
 
             {/* Birth year */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="birth_year">生まれ年 (任意・年齢計算用)</label>
+              <label style={labelStyle} htmlFor="birth_year">{t("form_birth_year", lang)}</label>
               <input
                 id="birth_year"
                 name="birth_year"
@@ -240,26 +242,26 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 value={birthYear}
                 onChange={(e) => setBirthYear(e.target.value)}
                 style={inputStyle}
-                placeholder="例: 2002"
+                placeholder={t("form_birth_year_placeholder", lang)}
               />
               {state?.errors?.birth_year && <div style={errStyle}>{state.errors.birth_year}</div>}
             </div>
 
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>趣味 (任意)</label>
+              <label style={labelStyle}>{t("form_hobbies", lang)}</label>
               <HobbiesTags />
             </div>
 
             {/* Available slots */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>会える時間 (任意)</label>
+              <label style={labelStyle}>{t("form_available_slots", lang)}</label>
               <AvailableSlots />
             </div>
 
             {/* Areas */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>活動域 (1つ以上)</label>
+              <label style={labelStyle}>{t("form_areas", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {AREA_OPTIONS.map((a) => (
                   <button key={a} type="button" onClick={() => setAreas((s) => s.includes(a) ? s.filter((x) => x !== a) : [...s, a])} style={chipStyle(areas.includes(a))}>{a}</button>
@@ -271,7 +273,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
 
             {/* Tags */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>タグ（複数選択可）</label>
+              <label style={labelStyle}>{t("form_tags", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {TAG_OPTIONS.map((t) => (
                   <button
@@ -293,7 +295,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
 
             {/* Languages */}
             <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>話せる言語（複数選択可）</label>
+              <label style={labelStyle}>{t("form_languages", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {LANGUAGE_OPTIONS.map((l) => (
                   <button
@@ -320,7 +322,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
             )}
 
             <button type="submit" disabled={pending} style={{ ...btnPrimary, opacity: pending ? 0.6 : 1 }}>
-              {pending ? "登録中…" : "ガイドとして登録する 🎉"}
+              {pending ? t("form_registering", lang) : t("form_register_guide_btn", lang)}
             </button>
           </form>
         </div>

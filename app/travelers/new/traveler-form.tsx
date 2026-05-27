@@ -4,15 +4,16 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createTraveler, type TravelerFormState } from "@/app/actions/travelers";
 import ImageUploader from "@/app/lib/image-uploader";
+import { useLang, t } from "@/app/lib/i18n";
 import AvatarPicker from "@/app/lib/avatar-picker";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import AvailableSlots from "@/app/lib/available-slots";
 
-const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "male", label: "男性" },
-  { value: "female", label: "女性" },
-  { value: "non-binary", label: "ノンバイナリー" },
-  { value: "other", label: "その他" },
+const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "form_gender_female" | "form_gender_nonbinary" | "form_gender_other" }> = [
+  { value: "male", labelKey: "form_gender_male" as const },
+  { value: "female", labelKey: "form_gender_female" as const },
+  { value: "non-binary", labelKey: "form_gender_nonbinary" as const },
+  { value: "other", labelKey: "form_gender_other" as const },
 ];
 
 const INTEREST_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
@@ -55,6 +56,7 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
   const [nationality, setNationality] = useState("");
   const [occupation, setOccupation] = useState("");
   const [tripPeriod, setTripPeriod] = useState("");
+  const [lang] = useLang();
   function toggle(value: string) {
     setInterests((s) => s.includes(value) ? s.filter((v) => v !== value) : [...s, value]);
   }
@@ -64,24 +66,24 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
       <div style={cardStyle} className="screen-enter">
         <div style={headerStyle}>
           <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>旅行者登録</div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("form_register_traveler_title", lang)}</div>
           <div style={{ width: 22 }} />
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
           <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, marginBottom: 20 }}>
-            ログイン中：{userEmail}
+            {t("logged_in_as", lang)}：{userEmail}
           </div>
 
           <form action={action}>
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>写真（複数可、最大8枚）</label>
+              <label style={labelStyle}>{t("form_photos", lang)}</label>
               <ImageUploader />
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="name">名前</label>
+              <label style={labelStyle} htmlFor="name">{t("form_name", lang)}</label>
               <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="例: John Smith" />
               {state?.errors?.name && <div style={errStyle}>{state.errors.name}</div>}
             </div>
@@ -112,21 +114,21 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
 
             {/* Avatar */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>アバター (写真または絵文字)</label>
+              <label style={labelStyle}>{t("form_avatar", lang)}</label>
               <AvatarPicker />
             </div>
 
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="gender">性別 (任意)</label>
+              <label style={labelStyle} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
-                <option value="">指定しない</option>
+                <option value="">{t("form_gender_unspecified", lang)}</option>
                 {GENDER_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>{g.label}</option>
+                  <option key={g.value} value={g.value}>{t(g.labelKey, lang)}</option>
                 ))}
               </select>
               {gender === "other" && (
-                <input name="gender_other" type="text" maxLength={40} value={genderOther} onChange={(e) => setGenderOther(e.target.value)} placeholder="自由入力" style={{ ...inputStyle, marginTop: 6 }} />
+                <input name="gender_other" type="text" maxLength={40} value={genderOther} onChange={(e) => setGenderOther(e.target.value)} placeholder={t("form_gender_other_placeholder", lang)} style={{ ...inputStyle, marginTop: 6 }} />
               )}
             </div>
 
@@ -144,7 +146,7 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
 
             {/* Occupation */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="occupation">職業 (任意)</label>
+              <label style={labelStyle} htmlFor="occupation">{t("form_occupation", lang)}</label>
               <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={inputStyle} placeholder="例: ソフトウェアエンジニア" />
             </div>
 
@@ -156,13 +158,13 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
 
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>趣味 (任意)</label>
+              <label style={labelStyle}>{t("form_hobbies", lang)}</label>
               <HobbiesTags />
             </div>
 
             {/* Available slots */}
             <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>会える時間 (任意)</label>
+              <label style={labelStyle}>{t("form_available_slots", lang)}</label>
               <AvailableSlots />
             </div>
 

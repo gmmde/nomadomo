@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signin, type AuthState } from "@/app/actions/auth";
+import { useLang, t } from "@/app/lib/i18n";
 
 const wrapStyle: React.CSSProperties = {
   background: "#f5ead0",
@@ -51,10 +52,8 @@ const btnPrimary: React.CSSProperties = {
 };
 
 export default function LoginPage() {
-  const [state, action, pending] = useActionState<AuthState, FormData>(
-    signin,
-    undefined,
-  );
+  const [state, action, pending] = useActionState<AuthState, FormData>(signin, undefined);
+  const [lang] = useLang();
 
   return (
     <div style={wrapStyle}>
@@ -64,7 +63,7 @@ export default function LoginPage() {
           <span style={{ color: "#ad001c" }}>Domo</span>
         </div>
         <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
-          ログインしてガイドを始めよう
+          {t("login_subtitle", lang)}
         </div>
 
         <form action={action}>
@@ -73,8 +72,8 @@ export default function LoginPage() {
             <input id="email" name="email" type="email" required style={inputStyle} placeholder="you@example.com" />
           </div>
           <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle} htmlFor="password">Password</label>
-            <input id="password" name="password" type="password" required minLength={8} style={inputStyle} placeholder="8文字以上" />
+            <label style={labelStyle} htmlFor="password">{t("password_label", lang)}</label>
+            <input id="password" name="password" type="password" required minLength={8} style={inputStyle} placeholder={t("password_placeholder", lang)} />
           </div>
 
           {state?.error && (
@@ -84,22 +83,22 @@ export default function LoginPage() {
           )}
 
           <button type="submit" disabled={pending} style={{ ...btnPrimary, opacity: pending ? 0.6 : 1 }}>
-            {pending ? "ログイン中…" : "ログイン"}
+            {pending ? t("signing_in", lang) : t("signin_btn", lang)}
           </button>
         </form>
 
         <div style={{ marginTop: 14, fontSize: 13, textAlign: "center" }}>
           <Link href="/forgot-password" style={{ color: "#8a7560", fontWeight: 700, textDecoration: "underline" }}>
-            パスワード忘れた？
+            {t("forgot_password_link", lang)}
           </Link>
         </div>
 
         <div style={{ marginTop: 14, fontSize: 13, color: "#8a7560", textAlign: "center", fontWeight: 700 }}>
-          アカウントない？{" "}
-          <Link href="/signup" style={{ color: "#ad001c", fontWeight: 800 }}>新規登録</Link>
+          {t("no_account", lang)}{" "}
+          <Link href="/signup" style={{ color: "#ad001c", fontWeight: 800 }}>{t("signup_link", lang)}</Link>
         </div>
         <div style={{ marginTop: 24, fontSize: 13, textAlign: "center" }}>
-          <Link href="/" style={{ color: "#8a7560", fontWeight: 700 }}>← ホームに戻る</Link>
+          <Link href="/" style={{ color: "#8a7560", fontWeight: 700 }}>{t("back_home_arrow", lang)}</Link>
         </div>
       </div>
     </div>

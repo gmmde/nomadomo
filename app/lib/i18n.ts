@@ -27,10 +27,11 @@ export const dict: Dict = {
   // mode picker
   mode_picker_title: { en: "How are you using NomaDomo?", ja: "どのモードで使う？" },
   traveler_mode: { en: "Traveler", ja: "Traveler モード" },
-  traveler_mode_desc: { en: "Meet local Kyoto guides and mates as a traveler.", ja: "旅行者として地元のガイドや mate と出会う。" },
   local_mode: { en: "Local", ja: "Local モード" },
-  local_mode_desc: { en: "Meet travelers as a guide or mate.", ja: "ガイド / mate として旅行者と出会う。" },
   mode_picker_hint: { en: "You can switch later from settings ⚙️", ja: "⚙️ 設定からあとで切り替えられるわよ" },
+  mode_picker_traveler_desc: { en: "Meet local Kyoto guides and mates as a traveler.", ja: "旅行者として地元のガイドや mate と出会う。" },
+  mode_picker_local_desc: { en: "Meet travelers as a guide or mate.", ja: "ガイド / mate として旅行者と出会う。" },
+  mode_picker_settings_hint: { en: "⚙️ You can switch later from settings.", ja: "⚙️ 設定からあとで切り替えられるわよ" },
 
   // profile / message
   message_request: { en: "Send message request", ja: "メッセージリクエスト" },
@@ -123,11 +124,6 @@ export const dict: Dict = {
   settings_aria: { en: "Settings", ja: "設定" },
   save_aria: { en: "Save", ja: "お気に入り" },
 
-  // mode picker descriptions
-  mode_picker_traveler_desc: { en: "Meet local Kyoto guides and mates as a traveler.", ja: "旅行者として地元のガイドや mate と出会う。" },
-  mode_picker_local_desc: { en: "Meet travelers as a guide or mate.", ja: "ガイド / mate として旅行者と出会う。" },
-  mode_picker_settings_hint: { en: "⚙️ You can switch later from settings.", ja: "⚙️ 設定からあとで切り替えられるわよ" },
-
   // guide profile (Tinder)
   living_in: { en: "lives in", ja: "在住" },
   yo: { en: "y.o.", ja: "歳" },
@@ -163,9 +159,88 @@ export const dict: Dict = {
   // inbox extras
   inbox_pending_requests: { en: "📨 New requests", ja: "📨 新着リクエスト" },
   inbox_pending_unit: { en: "pending", ja: "件" },
-
-  // travelers list
   travelers_list_title: { en: "✈️ Travelers", ja: "✈️ 旅行者一覧" },
+
+  // auth pages
+  login_subtitle: { en: "Log in to start guiding", ja: "ログインしてガイドを始めよう" },
+  signup_subtitle: { en: "Create a new account", ja: "新規アカウント登録" },
+  signin_btn: { en: "Log in", ja: "ログイン" },
+  signing_in: { en: "Logging in…", ja: "ログイン中…" },
+  signup_btn: { en: "Create account", ja: "アカウントを作る" },
+  signing_up: { en: "Creating…", ja: "登録中…" },
+  password_label: { en: "Password", ja: "パスワード" },
+  password_placeholder: { en: "8+ characters", ja: "8文字以上" },
+  forgot_password_link: { en: "Forgot password?", ja: "パスワード忘れた？" },
+  no_account: { en: "No account?", ja: "アカウントない？" },
+  have_account: { en: "Already have an account?", ja: "もうアカウントある？" },
+  signup_link: { en: "Sign up", ja: "新規登録" },
+  back_home_arrow: { en: "← Back to home", ja: "← ホームに戻る" },
+  signup_email_confirm_note: {
+    en: "By default Supabase requires email confirmation. For testing, turn off 'Confirm email' in Supabase Dashboard → Authentication → Sign In / Up.",
+    ja: "Supabaseのデフォルト設定だとメール確認が必要よ。テスト中ならSupabaseダッシュボード → Authentication → Sign In / Up で「Confirm email」をオフにして",
+  },
+  forgot_title: { en: "Reset your password", ja: "パスワードリセット" },
+  forgot_desc: { en: "Enter your email — we'll send a reset link.", ja: "メアド入れて。リセット用のリンクを送るわよ。" },
+  send_reset_email: { en: "Send reset email", ja: "リセットメール送信" },
+  reset_sent: { en: "✅ Reset link sent — check your inbox.", ja: "✅ メール送ったわ。受信箱を確認して" },
+  reset_title: { en: "Set a new password", ja: "新しいパスワードを設定" },
+  reset_new_password: { en: "New password", ja: "新しいパスワード" },
+  reset_save_btn: { en: "Update password", ja: "パスワードを更新" },
+  reset_done: { en: "✅ Password updated. Logging you in…", ja: "✅ パスワード更新したわ。ログイン中…" },
+
+  // forms
+  form_photos: { en: "Photos (up to 8)", ja: "写真（複数可、最大8枚）" },
+  form_avatar: { en: "Avatar (photo or emoji)", ja: "アバター (写真または絵文字)" },
+  form_name: { en: "Name", ja: "名前" },
+  form_university: { en: "University (optional)", ja: "大学 (任意)" },
+  form_university_placeholder: { en: "e.g. Kyoto University (optional)", ja: "例: 京都大学 (任意)" },
+  form_bio: { en: "Bio", ja: "自己紹介" },
+  form_bio_placeholder: { en: "Tell people about your strengths and favorite spots", ja: "あなたの強みやお気に入りのスポットを書いて" },
+  form_bio_traveler_placeholder: { en: "Tell guides about your trip and what you'd like to do", ja: "ガイドに伝えたい旅の目的やしたいことを書いて" },
+  form_gender: { en: "Gender (optional)", ja: "性別 (任意)" },
+  form_gender_unspecified: { en: "Unspecified", ja: "指定しない" },
+  form_gender_male: { en: "Male", ja: "男性" },
+  form_gender_female: { en: "Female", ja: "女性" },
+  form_gender_nonbinary: { en: "Non-binary", ja: "ノンバイナリー" },
+  form_gender_other: { en: "Other", ja: "その他" },
+  form_gender_other_placeholder: { en: "Free text", ja: "自由入力" },
+  form_nationality: { en: "Nationality (optional)", ja: "国籍 (任意)" },
+  form_nationality_placeholder: { en: "e.g. Japan", ja: "例: 日本" },
+  form_occupation: { en: "Occupation (optional)", ja: "職業 (任意)" },
+  form_occupation_placeholder: { en: "e.g. Student, Engineer, Barista", ja: "例: 学生, エンジニア, バリスタ" },
+  form_birth_year: { en: "Birth year (optional, for age display)", ja: "生まれ年 (任意・年齢計算用)" },
+  form_birth_year_placeholder: { en: "e.g. 2002", ja: "例: 2002" },
+  form_hobbies: { en: "Hobbies (optional)", ja: "趣味 (任意)" },
+  form_available_slots: { en: "Available time (optional)", ja: "会える時間 (任意)" },
+  form_areas: { en: "Areas (pick 1+)", ja: "活動域 (1つ以上)" },
+  form_tags: { en: "Tags (multi-select)", ja: "タグ（複数選択可）" },
+  form_languages: { en: "Languages you speak (multi-select)", ja: "話せる言語（複数選択可）" },
+  form_register_guide_title: { en: "Become a guide", ja: "ガイド登録" },
+  form_edit_guide_title: { en: "Edit guide profile", ja: "ガイド編集" },
+  form_register_traveler_title: { en: "Become a traveler", ja: "旅行者登録" },
+  form_edit_traveler_title: { en: "Edit traveler profile", ja: "旅行者編集" },
+  form_country: { en: "Where are you from?", ja: "国 (出身地)" },
+  form_country_placeholder: { en: "e.g. France, USA, UK", ja: "例: フランス, USA, イギリス" },
+  form_trip_period: { en: "Trip period (optional)", ja: "旅行期間 (任意)" },
+  form_trip_period_placeholder: { en: "e.g. Apr 10 – Apr 17", ja: "例: 4月10日 – 4月17日" },
+  form_interests: { en: "Interests", ja: "興味" },
+  form_register_guide_btn: { en: "Register as guide 🎉", ja: "ガイドとして登録する 🎉" },
+  form_registering: { en: "Registering…", ja: "登録中…" },
+  form_register_traveler_btn: { en: "Register as traveler ✈️", ja: "旅行者として登録する ✈️" },
+  form_save_btn: { en: "Save changes", ja: "更新する" },
+  form_saving: { en: "Saving…", ja: "更新中…" },
+  form_delete_guide: { en: "Delete guide profile", ja: "ガイドプロファイルを削除" },
+  form_delete_confirm: { en: "Delete for real? Can't undo.", ja: "本当に削除する？取り消せないわよ。" },
+
+  // booking
+  booking_title: { en: "Book a guide", ja: "予約申込" },
+  booking_start: { en: "Start date & time", ja: "開始日時" },
+  booking_days: { en: "Days (1–7)", ja: "日数 (1〜7 日)" },
+  booking_total: { en: "Total", ja: "合計金額" },
+  booking_msg_label: { en: "Message to guide (optional)", ja: "ガイドへのメッセージ（任意）" },
+  booking_msg_placeholder: { en: "Preferred place, theme, group size, etc.", ja: "希望する場所、テーマ、人数など" },
+  booking_payment_note: { en: "💡 No payment system yet. If approved, arrange payment by DM.", ja: "💡 まだ決済機能はないわよ。承認されたら直接 DM で支払い方法を相談して。" },
+  booking_send_btn: { en: "Send booking request", ja: "予約リクエストを送る" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {

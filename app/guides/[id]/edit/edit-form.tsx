@@ -12,15 +12,16 @@ import AvatarPicker from "@/app/lib/avatar-picker";
 import AvailableSlots from "@/app/lib/available-slots";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import ImageUploader from "@/app/lib/image-uploader";
+import { useLang, t } from "@/app/lib/i18n";
 
 const AREA_OPTIONS = ["Kyoto"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
-const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "male", label: "男性" },
-  { value: "female", label: "女性" },
-  { value: "non-binary", label: "ノンバイナリー" },
-  { value: "other", label: "その他" },
+const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "form_gender_female" | "form_gender_nonbinary" | "form_gender_other" }> = [
+  { value: "male", labelKey: "form_gender_male" as const },
+  { value: "female", labelKey: "form_gender_female" as const },
+  { value: "non-binary", labelKey: "form_gender_nonbinary" as const },
+  { value: "other", labelKey: "form_gender_other" as const },
 ];
 
 
@@ -150,13 +151,14 @@ export default function EditGuideForm({
   const [genderOther, setGenderOther] = useState(initial.gender_other ?? "");
   const [nationality, setNationality] = useState(initial.nationality ?? "");
   const [occupation, setOccupation] = useState(initial.occupation ?? "");
+  const [lang] = useLang();
 
   function toggle(list: string[], v: string): string[] {
     return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
   }
 
   function onDelete(e: React.FormEvent<HTMLFormElement>) {
-    if (!confirm("本当に削除する？取り消せないわよ。")) {
+    if (!confirm(t("form_delete_confirm", lang))) {
       e.preventDefault();
     }
   }
@@ -167,14 +169,14 @@ export default function EditGuideForm({
         <div style={header}>
           <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
           <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>
-            ガイド編集
+            {t("form_edit_guide_title", lang)}
           </div>
           <div style={{ width: 22 }} />
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
           <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, marginBottom: 20 }}>
-            ログイン中：{userEmail}
+            {t("logged_in_as", lang)}：{userEmail}
           </div>
 
           <form action={action}>
@@ -182,29 +184,29 @@ export default function EditGuideForm({
 
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>写真（複数可、最大8枚）</label>
+              <label style={label}>{t("form_photos", lang)}</label>
               <ImageUploader initial={initial.image_paths} />
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>アバター (写真または絵文字)</label>
+              <label style={label}>{t("form_avatar", lang)}</label>
               <AvatarPicker initialEmoji={initial.emoji} initialAvatarPath={initial.avatar_path} />
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="name">名前</label>
+              <label style={label} htmlFor="name">{t("form_name", lang)}</label>
               <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={input} />
               {state?.errors?.name && <div style={err}>{state.errors.name}</div>}
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="university">大学 (任意)</label>
-              <input id="university" name="university" value={university} onChange={(e) => setUniversity(e.target.value)} style={input} placeholder="任意" />
+              <label style={label} htmlFor="university">{t("form_university", lang)}</label>
+              <input id="university" name="university" value={university} onChange={(e) => setUniversity(e.target.value)} style={input} placeholder={t("form_university_placeholder", lang)} />
               {state?.errors?.university && <div style={err}>{state.errors.university}</div>}
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="bio">自己紹介</label>
+              <label style={label} htmlFor="bio">{t("form_bio", lang)}</label>
               <textarea
                 id="bio"
                 name="bio"
@@ -222,11 +224,11 @@ export default function EditGuideForm({
             {state?.errors?.rate_per_day && <div style={err}>{state.errors.rate_per_day}</div>}
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="gender">性別 (任意)</label>
+              <label style={label} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
-                <option value="">指定しない</option>
+                <option value="">{t("form_gender_unspecified", lang)}</option>
                 {GENDER_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>{g.label}</option>
+                  <option key={g.value} value={g.value}>{t(g.labelKey, lang)}</option>
                 ))}
               </select>
               {gender === "other" && (
@@ -236,24 +238,24 @@ export default function EditGuideForm({
                   maxLength={40}
                   value={genderOther}
                   onChange={(e) => setGenderOther(e.target.value)}
-                  placeholder="自由入力"
+                  placeholder={t("form_gender_other_placeholder", lang)}
                   style={{ ...input, marginTop: 6 }}
                 />
               )}
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="nationality">国籍 (任意)</label>
-              <input id="nationality" name="nationality" type="text" maxLength={80} value={nationality} onChange={(e) => setNationality(e.target.value)} style={input} placeholder="例: 日本" />
+              <label style={label} htmlFor="nationality">{t("form_nationality", lang)}</label>
+              <input id="nationality" name="nationality" type="text" maxLength={80} value={nationality} onChange={(e) => setNationality(e.target.value)} style={input} placeholder={t("form_nationality_placeholder", lang)} />
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="occupation">職業 (任意)</label>
-              <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={input} placeholder="例: 学生" />
+              <label style={label} htmlFor="occupation">{t("form_occupation", lang)}</label>
+              <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={input} placeholder={t("form_occupation_placeholder", lang)} />
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label} htmlFor="birth_year">生まれ年 (任意)</label>
+              <label style={label} htmlFor="birth_year">{t("form_birth_year", lang)}</label>
               <input
                 id="birth_year"
                 name="birth_year"
@@ -264,22 +266,22 @@ export default function EditGuideForm({
                 value={birthYear}
                 onChange={(e) => setBirthYear(e.target.value)}
                 style={input}
-                placeholder="例: 2002"
+                placeholder={t("form_birth_year_placeholder", lang)}
               />
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>趣味 (任意)</label>
+              <label style={label}>{t("form_hobbies", lang)}</label>
               <HobbiesTags initial={initial.hobbies} />
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>会える時間 (任意)</label>
+              <label style={label}>{t("form_available_slots", lang)}</label>
               <AvailableSlots initial={initial.available_slots} />
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>活動域 (1つ以上)</label>
+              <label style={label}>{t("form_areas", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {AREA_OPTIONS.map((a) => (
                   <button key={a} type="button" onClick={() => setAreas((s) => s.includes(a) ? s.filter((x) => x !== a) : [...s, a])} style={chip(areas.includes(a))}>{a}</button>
@@ -290,7 +292,7 @@ export default function EditGuideForm({
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={label}>タグ（複数選択可）</label>
+              <label style={label}>{t("form_tags", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {TAG_OPTIONS.map((t) => (
                   <button key={t} type="button" onClick={() => setTags((s) => toggle(s, t))} style={chip(tags.includes(t))}>
@@ -303,7 +305,7 @@ export default function EditGuideForm({
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={label}>話せる言語（複数選択可）</label>
+              <label style={label}>{t("form_languages", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {LANGUAGE_OPTIONS.map((l) => (
                   <button key={l} type="button" onClick={() => setLanguages((s) => toggle(s, l))} style={chip(languages.includes(l))}>
@@ -322,14 +324,14 @@ export default function EditGuideForm({
             )}
 
             <button type="submit" disabled={pending} style={{ ...primary, opacity: pending ? 0.6 : 1, marginBottom: 12 }}>
-              {pending ? "更新中…" : "更新する"}
+              {pending ? t("form_saving", lang) : t("form_save_btn", lang)}
             </button>
           </form>
 
           <form action={deleteGuide} onSubmit={onDelete}>
             <input type="hidden" name="id" value={initial.id} />
             <button type="submit" style={danger}>
-              ガイドプロファイルを削除
+              {t("form_delete_guide", lang)}
             </button>
           </form>
         </div>

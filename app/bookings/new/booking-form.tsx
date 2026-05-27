@@ -1,9 +1,9 @@
 "use client";
 import BackButton from "@/app/lib/back-button";
 
-import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { createBooking, type BookingFormState } from "@/app/actions/bookings";
+import { useLang, t } from "@/app/lib/i18n";
 
 const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 24px" };
@@ -12,7 +12,6 @@ const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight:
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
 function defaultDateTime(): string {
-  // 明日の昼 12 時を datetime-local の文字列形式で
   const d = new Date();
   d.setDate(d.getDate() + 1);
   d.setHours(12, 0, 0, 0);
@@ -30,19 +29,17 @@ type Props = {
 };
 
 export default function BookingForm({ guideId, guideName, guideEmoji, guideUniversity, ratePerDay }: Props) {
-  const [state, action, pending] = useActionState<BookingFormState, FormData>(
-    createBooking,
-    undefined,
-  );
+  const [state, action, pending] = useActionState<BookingFormState, FormData>(createBooking, undefined);
   const [days, setDays] = useState(1);
   const total = useMemo(() => ratePerDay * days, [ratePerDay, days]);
+  const [lang] = useLang();
 
   return (
     <div style={wrap}>
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <BackButton />
-          <div style={{ fontSize: 20, fontWeight: 900 }}>予約申込</div>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>{t("booking_title", lang)}</div>
         </div>
 
         <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
@@ -58,12 +55,12 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           <input type="hidden" name="guide_id" value={guideId} />
 
           <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="start_at">開始日時</label>
+            <label style={label} htmlFor="start_at">{t("booking_start", lang)}</label>
             <input id="start_at" name="start_at" type="datetime-local" required defaultValue={defaultDateTime()} style={input} />
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="hours">日数 (1〜7 日)</label>
+            <label style={label} htmlFor="hours">{t("booking_days", lang)}</label>
             <input
               id="hours"
               name="hours"
@@ -79,19 +76,19 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           </div>
 
           <div style={{ background: "#ffefd5", border: "2px solid #ad001c", borderRadius: 14, padding: 14, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 800 }}>合計金額</span>
+            <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 800 }}>{t("booking_total", lang)}</span>
             <span style={{ fontSize: 22, fontWeight: 900, color: "#ad001c" }}>¥{total.toLocaleString()}</span>
           </div>
 
           <div style={{ marginBottom: 20 }}>
-            <label style={label} htmlFor="message">ガイドへのメッセージ（任意）</label>
+            <label style={label} htmlFor="message">{t("booking_msg_label", lang)}</label>
             <textarea
               id="message"
               name="message"
               maxLength={500}
               rows={4}
               style={{ ...input, resize: "vertical", minHeight: 90 }}
-              placeholder="希望する場所、テーマ、人数など"
+              placeholder={t("booking_msg_placeholder", lang)}
             />
           </div>
 
@@ -102,11 +99,11 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           )}
 
           <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>
-            💡 まだ決済機能はないわよ。承認されたら直接 DM で支払い方法を相談して。
+            {t("booking_payment_note", lang)}
           </div>
 
           <button type="submit" disabled={pending} style={{ ...primary, opacity: pending ? 0.6 : 1 }}>
-            {pending ? "送信中…" : "予約リクエストを送る"}
+            {pending ? t("sending", lang) : t("booking_send_btn", lang)}
           </button>
         </form>
       </div>

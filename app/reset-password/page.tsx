@@ -1,10 +1,10 @@
 "use client";
 import BackButton from "@/app/lib/back-button";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
+import { useLang, t } from "@/app/lib/i18n";
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "32px 24px" };
@@ -17,40 +17,36 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [ready, setReady] = useState(false);
-  const [bootMsg, setBootMsg] = useState<string>("リカバリセッション確認中…");
+  const [bootMsg, setBootMsg] = useState<string>("Verifying recovery session…");
   const [state, setState] = useState<{ status: "idle" | "saving" | "ok" | "error"; msg?: string }>({ status: "idle" });
+  const [lang] = useLang();
 
-  // recovery 経由でアクセスされた時の認証ハンドリング
   useEffect(() => {
     const supabase = createClient();
 
     async function init() {
       const url = new URL(window.location.href);
 
-      // 1. Supabase からのエラー (?error=... or ?error_description=...)
       const error = url.searchParams.get("error") ?? url.hash.match(/error=([^&]+)/)?.[1];
       const errorDesc = url.searchParams.get("error_description") ?? url.hash.match(/error_description=([^&]+)/)?.[1];
       if (error) {
-        setBootMsg(`❌ Supabase エラー: ${error}${errorDesc ? ` - ${decodeURIComponent(errorDesc).replace(/\+/g, " ")}` : ""}`);
+        setBootMsg(`❌ Supabase error: ${error}${errorDesc ? ` - ${decodeURIComponent(errorDesc).replace(/\+/g, " ")}` : ""}`);
         return;
       }
 
-      // 2. PKCE フロー: ?code=xxx で来る
       const code = url.searchParams.get("code");
       if (code) {
         const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
         if (exErr) {
-          setBootMsg(`❌ code 交換失敗: ${exErr.message}`);
+          setBootMsg(`❌ Code exchange failed: ${exErr.message}`);
           return;
         }
         setReady(true);
-        // URL の code を消す
         url.searchParams.delete("code");
         window.history.replaceState({}, "", url.toString());
         return;
       }
 
-      // 3. OTP/暗黙フロー: #access_token=... で来る
       if (window.location.hash.includes("access_token")) {
         const params = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = params.get("access_token");
@@ -58,7 +54,7 @@ export default function ResetPasswordPage() {
         if (accessToken && refreshToken) {
           const { error: setErr } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
           if (setErr) {
-            setBootMsg(`❌ セッション復元失敗: ${setErr.message}`);
+            setBootMsg(`❌ Session restore failed: ${setErr.message}`);
             return;
           }
           setReady(true);
@@ -67,20 +63,17 @@ export default function ResetPasswordPage() {
         }
       }
 
-      // 4. 既にセッションあり (リロード後)
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         setReady(true);
         return;
       }
 
-      // 5. 何もない: 直接アクセス or 期限切れ
-      setBootMsg("⚠️ このページはパスワード再設定メールのリンクから開いて。\n直接アクセスしても何もできないわよ。\nリンクが期限切れ (1時間) の可能性もあるから、もう一度送り直して。");
+      setBootMsg("⚠️ Open this page from the password-reset email link. Direct access doesn't work. The link may have expired (1 hour) — request a new one.");
     }
 
     init();
 
-    // PASSWORD_RECOVERY イベントも保険で監視
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
@@ -90,11 +83,11 @@ export default function ResetPasswordPage() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (password.length < 8) {
-      setState({ status: "error", msg: "パスワードは8文字以上にして" });
+      setState({ status: "error", msg: lang === "ja" ? "パスワードは8文字以上にして" : "Password must be at least 8 characters" });
       return;
     }
     if (password !== confirm) {
-      setState({ status: "error", msg: "確認用パスワードが一致しないわよ" });
+      setState({ status: "error", msg: lang === "ja" ? "確認用パスワードが一致しないわよ" : "Passwords do not match" });
       return;
     }
     setState({ status: "saving" });
@@ -116,7 +109,7 @@ export default function ResetPasswordPage() {
           <span style={{ color: "#ad001c" }}>Domo</span>
         </div>
         <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
-          新しいパスワードを設定
+          {t("reset_title", lang)}
         </div>
 
         {!ready ? (
@@ -125,27 +118,27 @@ export default function ResetPasswordPage() {
           </div>
         ) : state.status === "ok" ? (
           <div style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 12, padding: 16, color: "#2e8b57", fontSize: 13, fontWeight: 700, lineHeight: 1.6 }}>
-            ✅ パスワード更新したわ。ホームに飛ばすわよ…
+            {t("reset_done", lang)}
           </div>
         ) : (
           <form onSubmit={onSubmit}>
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="password">新しいパスワード</label>
-              <input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} style={input} placeholder="8文字以上" />
+              <label style={label} htmlFor="password">{t("reset_new_password", lang)}</label>
+              <input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} style={input} placeholder={t("password_placeholder", lang)} />
             </div>
             <div style={{ marginBottom: 20 }}>
-              <label style={label} htmlFor="confirm">確認（もう一度）</label>
-              <input id="confirm" type="password" required minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} style={input} placeholder="同じパスワード" />
+              <label style={label} htmlFor="confirm">{lang === "ja" ? "確認（もう一度）" : "Confirm (again)"}</label>
+              <input id="confirm" type="password" required minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} style={input} placeholder={lang === "ja" ? "同じパスワード" : "Same password"} />
             </div>
 
             {state.status === "error" && (
               <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
-                {state.msg ?? "更新失敗"}
+                {state.msg ?? "Update failed"}
               </div>
             )}
 
             <button type="submit" disabled={state.status === "saving"} style={{ ...primary, opacity: state.status === "saving" ? 0.6 : 1 }}>
-              {state.status === "saving" ? "更新中…" : "パスワードを更新"}
+              {state.status === "saving" ? t("sending", lang) : t("reset_save_btn", lang)}
             </button>
           </form>
         )}
