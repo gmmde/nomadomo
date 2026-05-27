@@ -30,7 +30,7 @@ type Guide = {
   languages: string[];
   rate: string;       // 表示用フォーマット (free なら "Free")
   ratePerDay: number | null;
-  mode: "free" | "paid" | "both";
+  mode: "free" | "paid";
   stars: string;
   bio: string;
   tour_count: number;
@@ -83,9 +83,17 @@ function pairChannel(prefix: string, a: string, b: string) {
 }
 
 function ratingDisplay(g: { stars: string; tour_count: number }, lang: "en" | "ja" = "en") {
-  // 新規ガイド（実績ゼロ）は ★0.0 ではなく「✨ New」と出す
   if (g.tour_count === 0 || Number(g.stars) <= 0) return lang === "ja" ? "✨ 新規" : "✨ New";
   return `★ ${g.stars}`;
+}
+
+function tourCountDisplay(n: number): string {
+  if (n < 10) return "~10";
+  return String(n);
+}
+
+function isTrustedLocal(stars: string, tour_count: number): boolean {
+  return tour_count >= 3 && Number(stars) >= 4.0;
 }
 
 // Admin email list (Vercel env var ADMIN_EMAILS でも上書き可)
@@ -141,10 +149,9 @@ function ageFromBirthYear(y: number | null): number | null {
   return new Date().getFullYear() - y;
 }
 
-function modeCardStyle(mode: "free" | "paid" | "both") {
+function modeCardStyle(mode: "free" | "paid") {
   if (mode === "free") return { bg: "#e6f5ee", border: "#9fc9b6" };
-  if (mode === "paid") return { bg: "#fceaec", border: "#e8b5bc" };
-  return { bg: "#ffffffee", border: "#f0d9b5" };
+  return { bg: "#fceaec", border: "#e8b5bc" };
 }
 
 function HomeInner() {
@@ -370,7 +377,7 @@ function HomeInner() {
   // travelers 用 signed URL バッチ取得
   const travelerAvatarUrls = useSignedUrls(travelersList.map((t) => t.avatar_path).filter((p): p is string => Boolean(p)));
 
-  // 自分宛 pending リクエスト一覧 + 件数 (Local モード時のみ意味あり)
+  // 自分宛 pending リクエスト一覧 + 件数 + Realtime 購読
   useEffect(() => {
     if (!currentUserId) {
       setPendingRequestCount(0);
@@ -378,22 +385,20 @@ function HomeInner() {
       return;
     }
     let cancelled = false;
-    (async () => {
+    async function refresh() {
       const { data } = await supabase
         .from("chat_requests")
         .select("id, traveler_id, message, created_at")
-        .eq("guide_user_id", currentUserId)
+        .eq("guide_user_id", currentUserId!)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
       const rows = (data ?? []) as Array<{ id: number; traveler_id: string; message: string | null; created_at: string }>;
       if (cancelled) return;
       setPendingRequestCount(rows.length);
-
       if (rows.length === 0) {
         setPendingRequests([]);
         return;
       }
-      // sender 情報: travelers → guides の順で名前解決
       const senderIds = [...new Set(rows.map((r) => r.traveler_id))];
       const [tRes, gRes] = await Promise.all([
         supabase.from("travelers").select("user_id, name, emoji").in("user_id", senderIds),
@@ -415,8 +420,20 @@ function HomeInner() {
         createdAt: r.created_at,
       }));
       if (!cancelled) setPendingRequests(enriched);
-    })();
-    return () => { cancelled = true; };
+    }
+    refresh();
+    const ch = supabase
+      .channel(`chatreq-notify-${currentUserId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "chat_requests", filter: `guide_user_id=eq.${currentUserId}` },
+        () => { refresh(); },
+      )
+      .subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(ch);
+    };
   }, [supabase, currentUserId]);
 
   // 自分のフォロー先一覧を取得（follows RLS で自分の行のみ取れる）
@@ -663,7 +680,7 @@ function HomeInner() {
             ? `¥${Number(g.rate_per_day).toLocaleString()}/day`
             : "—",
         ratePerDay: g.rate_per_day != null ? Number(g.rate_per_day) : null,
-        mode: ((g.mode as string) ?? "paid") as "free" | "paid" | "both",
+        mode: (((g.mode as string) === "free" ? "free" : "paid") as "free" | "paid"),
         stars: Number(g.rating).toFixed(1),
         bio: g.bio ?? "",
         tour_count: g.tour_count ?? 0,
@@ -733,8 +750,8 @@ function HomeInner() {
 
   const visibleGuides = (() => {
     if (activeFilter === "All") return guides;
-    if (activeFilter === "🤝 mate") return guides.filter((g) => g.mode === "free" || g.mode === "both");
-    if (activeFilter === "💼 guide") return guides.filter((g) => g.mode === "paid" || g.mode === "both");
+    if (activeFilter === "🤝 mate") return guides.filter((g) => g.mode === "free");
+    if (activeFilter === "💼 guide") return guides.filter((g) => g.mode === "paid");
     const kw = filterKeyword[activeFilter] ?? "";
     return guides.filter((g) => g.tags.includes(kw));
   })();
@@ -812,7 +829,7 @@ function HomeInner() {
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
-          const inboxCombined = totalUnread + (appMode === "local" ? pendingRequestCount : 0);
+          const inboxCombined = totalUnread + pendingRequestCount;
           const showBadge = item.key === "inbox" && inboxCombined > 0;
           const badgeCount = inboxCombined;
           return (
@@ -1077,7 +1094,7 @@ function HomeInner() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 13, color: g.mode === "free" ? "#2e8b57" : g.mode === "paid" ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{g.mode === "free" ? "🤝 Free" : g.rate}</span>
-                      <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span>
+                      {g.mode === "paid" ? <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span> : isTrustedLocal(g.stars, g.tour_count) ? <span style={{ fontSize: 10, color: "#2e8b57", fontWeight: 800 }}>{t("trusted_local", lang)}</span> : null}
                     </div>
                   </div>
                 ))}
@@ -1141,8 +1158,8 @@ function HomeInner() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                   <span style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{selectedGuide.name}</span>
                   {selectedGuide.mode !== "free" && <span style={{ fontSize: 18 }}>✨</span>}
-                  <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: selectedGuide.mode === "paid" ? "rgba(173,0,28,0.85)" : selectedGuide.mode === "free" ? "rgba(46,139,87,0.85)" : "rgba(26,16,8,0.85)" }}>
-                    {selectedGuide.mode === "paid" ? "GUIDE" : selectedGuide.mode === "free" ? "MATE" : "MATE & GUIDE"}
+                  <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: selectedGuide.mode === "paid" ? "rgba(173,0,28,0.85)" : "rgba(46,139,87,0.85)" }}>
+                    {selectedGuide.mode === "paid" ? "GUIDE" : "MATE"}
                   </span>
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
@@ -1189,13 +1206,28 @@ function HomeInner() {
             </div>
 
             <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { display: "flex", margin: "0 20px 16px", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 14, overflow: "hidden" }; })()}>
-              {[[String(selectedGuide.tour_count), t("stat_tours", lang)], [selectedGuide.tour_count === 0 ? t("rating_new", lang) : selectedGuide.stars, t("stat_rating", lang)], [selectedGuide.languages.join("/"), t("stat_languages", lang)]].map(([n, l], i, arr) => (
-                <div key={l} style={{ flex: 1, padding: "12px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{n}</div>
-                  <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
-                </div>
-              ))}
+              {(() => {
+                const cells: Array<[string, string]> = [];
+                if (selectedGuide.mode === "paid") {
+                  cells.push([tourCountDisplay(selectedGuide.tour_count), t("stat_tours", lang)]);
+                  cells.push([selectedGuide.tour_count === 0 ? t("rating_new", lang) : selectedGuide.stars, t("stat_rating", lang)]);
+                }
+                cells.push([selectedGuide.languages.join("/"), t("stat_languages", lang)]);
+                return cells.map(([n, l], i, arr) => (
+                  <div key={l} style={{ flex: 1, padding: "12px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{n}</div>
+                    <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
+                  </div>
+                ));
+              })()}
             </div>
+            {isTrustedLocal(selectedGuide.stars, selectedGuide.tour_count) && (
+              <div style={{ margin: "0 20px 12px", textAlign: "center" }}>
+                <span style={{ display: "inline-block", background: "#e6f5ee", border: "2px solid #2e8b57", borderRadius: 14, padding: "5px 14px", fontSize: 12, fontWeight: 900, color: "#2e8b57" }}>
+                  {t("trusted_local", lang)}
+                </span>
+              </div>
+            )}
 
             {selectedGuide.mode !== "free" && (
               <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

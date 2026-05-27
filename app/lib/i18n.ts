@@ -7,14 +7,11 @@ export type Lang = "en" | "ja";
 type Dict = Record<string, { en: string; ja: string }>;
 
 export const dict: Dict = {
-  // nav
   nav_home: { en: "Home", ja: "ホーム" },
   nav_messages: { en: "Messages", ja: "メッセージ" },
   nav_saved: { en: "Saved", ja: "保存" },
   nav_profile: { en: "Profile", ja: "プロフィール" },
   nav_requests: { en: "Requests", ja: "リクエスト" },
-
-  // home / topbar
   login: { en: "Login", ja: "ログイン" },
   available_now: { en: "Available now", ja: "今すぐ予約可" },
   see_all: { en: "See all →", ja: "すべて見る →" },
@@ -23,45 +20,14 @@ export const dict: Dict = {
   travelers_in_kyoto: { en: "Travelers in Kyoto", ja: "京都の旅行者" },
   search_placeholder: { en: "Temples, ramen, nightlife…", ja: "Temples, ramen, nightlife…" },
   search_button: { en: "Search", ja: "検索" },
-
-  // mode picker
   mode_picker_title: { en: "How are you using NomaDomo?", ja: "どのモードで使う？" },
-  traveler_mode: { en: "Traveler", ja: "Traveler モード" },
-  local_mode: { en: "Local", ja: "Local モード" },
   mode_picker_hint: { en: "You can switch later from settings ⚙️", ja: "⚙️ 設定からあとで切り替えられるわよ" },
   mode_picker_traveler_desc: { en: "Meet local Kyoto guides and mates as a traveler.", ja: "旅行者として地元のガイドや mate と出会う。" },
   mode_picker_local_desc: { en: "Meet travelers as a guide or mate.", ja: "ガイド / mate として旅行者と出会う。" },
   mode_picker_settings_hint: { en: "⚙️ You can switch later from settings.", ja: "⚙️ 設定からあとで切り替えられるわよ" },
-
-  // profile / message
-  message_request: { en: "Send message request", ja: "メッセージリクエスト" },
-  message_label: { en: "Message", ja: "メッセージ" },
-  follow: { en: "+ Follow", ja: "+ Follow" },
-  following: { en: "✓ Following", ja: "✓ Following" },
   followers: { en: "followers", ja: "followers" },
-  tours: { en: "Tours", ja: "Tours" },
-  rating: { en: "Rating", ja: "Rating" },
-  languages: { en: "Languages", ja: "Languages" },
-  starting_from: { en: "Starting from", ja: "Starting from" },
-  hobbies_label: { en: "Hobbies", ja: "趣味" },
-  available_label: { en: "Available", ja: "会える時間" },
-  free_mate: { en: "Free mate — no charge", ja: "無料で会える mate よ" },
-
-  // chat request form
-  chat_req_form_title: { en: "Message Request", ja: "メッセージリクエスト" },
-  chat_req_explainer_full: {
-    en: "DMs aren't open by default. Tell them when, where, and why you'd like to meet — once they accept, you can chat.",
-    ja: "いきなり DM は送れない仕組みよ。「いつ・どこで・なぜ会いたいか」を相手に送ると、承認されたらチャットが開けるわ。",
-  },
-  chat_req_explainer_simple: {
-    en: "DMs aren't open by default. Send a short intro message — once they accept, you can chat.",
-    ja: "いきなり DM は送れない仕組みよ。最初の挨拶メッセージを書いて、相手が承認したらチャットが開けるわ。",
-  },
-  preferred_date: { en: "Preferred date & time", ja: "希望日時" },
-  preferred_place: { en: "Where would you like to go?", ja: "行きたい場所" },
-  send_request: { en: "Send a message", ja: "メッセージを送る" },
-
-  // settings page
+  chat_req_explainer_full: { en: "DMs aren't open by default. Tell them when, where, and why you'd like to meet — once they accept, you can chat.", ja: "いきなり DM は送れない仕組みよ。「いつ・どこで・なぜ会いたいか」を相手に送ると、承認されたらチャットが開けるわ。" },
+  chat_req_explainer_simple: { en: "DMs aren't open by default. Send a short intro message — once they accept, you can chat.", ja: "いきなり DM は送れない仕組みよ。最初の挨拶メッセージを書いて、相手が承認したらチャットが開けるわ。" },
   settings_title: { en: "Settings", ja: "設定" },
   settings_language: { en: "Language", ja: "言語" },
   settings_app_mode: { en: "App mode", ja: "利用モード" },
@@ -75,20 +41,14 @@ export const dict: Dict = {
   settings_logout: { en: "Logout", ja: "ログアウト" },
   settings_save: { en: "Save", ja: "保存する" },
   settings_saved: { en: "✅ Saved", ja: "✅ 保存したわよ" },
-  settings_about_text: {
-    en: "NomaDomo matches Kyoto student guides with travelers. Still in MVP — please send bugs and feedback.",
-    ja: "NomaDomo は京都の大学生ガイドと旅行者をマッチングするアプリよ。MVP 段階だから不具合あったら通報してね。",
-  },
+  settings_about_text: { en: "NomaDomo matches Kyoto student guides with travelers. Still in MVP — please send bugs and feedback.", ja: "NomaDomo は京都の大学生ガイドと旅行者をマッチングするアプリよ。MVP 段階だから不具合あったら通報してね。" },
   reset_app_mode: { en: "🔄 Re-show mode picker", ja: "🔄 モード選択画面を再表示する" },
   reset_app_mode_confirm: { en: "Reset mode choice — pick again next time?", ja: "モード選択を初期化して、次回ログイン時にもう一度選び直す？" },
   back_to_home: { en: "Back to home", ja: "ホームに戻る" },
-
-  // my profile
   my_profile: { en: "My profile", ja: "マイプロフィール" },
   profile_unregistered: { en: "Profile not set up", ja: "プロファイル未登録" },
   profile_unregistered_hint: { en: "Tap a button below to register as a traveler or guide.", ja: "下のボタンから旅行者 or ガイドとして登録してね" },
   my_bookings: { en: "📅 Bookings", ja: "📅 予約一覧" },
-  my_requests: { en: "📨 Message requests", ja: "📨 メッセージリクエスト" },
   admin_analytics: { en: "📊 Admin analytics", ja: "📊 分析ダッシュボード (admin)" },
   edit_guide_profile: { en: "✏️ Edit guide profile", ja: "✏️ ガイドプロファイルを編集" },
   register_as_guide: { en: "+ Register as guide", ja: "+ ガイドとして登録" },
@@ -98,34 +58,23 @@ export const dict: Dict = {
   logged_in_as: { en: "Logged in as", ja: "ログイン中" },
   open_own_guide_profile: { en: "Open your own guide profile", ja: "自分のガイドプロファイルを開く" },
   traveler_from: { en: "Traveler · From", ja: "Traveler · From" },
-
-  // saved
   saved_title: { en: "Saved guides ❤️", ja: "保存したガイド ❤️" },
   saved_login_required: { en: "Log in to use saves", ja: "ログインするとお気に入り使えるわよ" },
   saved_empty: { en: "No saves yet. Tap 🤍 on a guide profile to add.", ja: "まだお気に入りなし。ガイド詳細で 🤍 をタップして追加して" },
-
-  // inbox / chat
   inbox_title: { en: "Messages 💬", ja: "メッセージ 💬" },
   inbox_login_required: { en: "Log in to use messages", ja: "ログインするとメッセージ使えるわよ" },
   inbox_empty: { en: "No conversations yet. Send a request → once accepted, chat begins.", ja: "まだ会話なし。メッセージリクエストを送って、承認されたら会話開始" },
   chat_login_required: { en: "Log in to message", ja: "ログインするとメッセージできるわよ" },
   chat_empty: { en: "No messages yet. Say hi 👇", ja: "まだメッセージなし。最初の一言を送ってみて 👇" },
   online_now: { en: "● Online now", ja: "● オンライン中" },
-
-  // home extras
   no_travelers: { en: "No traveler profiles yet", ja: "まだ旅行者登録なし" },
   local_dashboard_requests: { en: "📨 Requests", ja: "📨 リクエスト" },
   local_dashboard_bookings: { en: "📅 Bookings", ja: "📅 予約" },
   own_guide_open: { en: "🏯 View your guide profile", ja: "🏯 自分のガイドプロファイルを見る" },
   create_guide_profile: { en: "+ Create a guide profile", ja: "+ ガイドプロファイルを作成しよう" },
   items_unit: { en: "", ja: "件" },
-  new_badge: { en: "✨ New", ja: "✨ 新規" },
   switch_mode_tooltip: { en: "Tap to switch mode", ja: "タップでモード切替" },
   settings_aria: { en: "Settings", ja: "設定" },
-  save_aria: { en: "Save", ja: "お気に入り" },
-
-  // guide profile (Tinder)
-  living_in: { en: "lives in", ja: "在住" },
   yo: { en: "y.o.", ja: "歳" },
   stat_tours: { en: "Tours", ja: "ツアー" },
   stat_rating: { en: "Rating", ja: "評価" },
@@ -139,11 +88,8 @@ export const dict: Dict = {
   demo_guide_no_msg: { en: "Demo guide — messaging disabled", ja: "デモガイド・メッセージ不可" },
   login_to_message: { en: "Login to message", ja: "ログインしてメッセージ" },
   message_btn: { en: "💬 Message", ja: "💬 メッセージ" },
-  message_request_btn: { en: "📨 Message request", ja: "📨 メッセージリクエスト" },
   report_link: { en: "🚩 Report", ja: "🚩 通報" },
   booking_form_paid: { en: "📅 Booking form (paid)", ja: "📅 予約フォーム (有料)" },
-
-  // chat request form
   send_btn: { en: "Send a message", ja: "メッセージを送る" },
   sending: { en: "Sending…", ja: "送信中…" },
   request_sent_ok: { en: "✅ Request sent.", ja: "✅ リクエスト送信したわ。" },
@@ -155,13 +101,9 @@ export const dict: Dict = {
   preferred_date_label: { en: "📅 Preferred date & time", ja: "📅 希望日時" },
   preferred_place_label: { en: "📍 Where to meet", ja: "📍 行きたい場所" },
   preferred_place_placeholder: { en: "e.g. Arashiyama bamboo grove, Fushimi Inari, Gion", ja: "例: 嵐山の竹林、伏見稲荷、祇園のお茶屋" },
-
-  // inbox extras
   inbox_pending_requests: { en: "📨 New requests", ja: "📨 新着リクエスト" },
-  inbox_pending_unit: { en: "pending", ja: "件" },
+  inbox_view_all_requests: { en: "📨 View all message requests", ja: "📨 メッセージリクエスト一覧" },
   travelers_list_title: { en: "✈️ Travelers", ja: "✈️ 旅行者一覧" },
-
-  // auth pages
   login_subtitle: { en: "Log in to start guiding", ja: "ログインしてガイドを始めよう" },
   signup_subtitle: { en: "Create a new account", ja: "新規アカウント登録" },
   signin_btn: { en: "Log in", ja: "ログイン" },
@@ -175,11 +117,7 @@ export const dict: Dict = {
   have_account: { en: "Already have an account?", ja: "もうアカウントある？" },
   signup_link: { en: "Sign up", ja: "新規登録" },
   back_home_arrow: { en: "← Back to home", ja: "← ホームに戻る" },
-  signup_email_confirm_note: {
-    en: "By default Supabase requires email confirmation. For testing, turn off 'Confirm email' in Supabase Dashboard → Authentication → Sign In / Up.",
-    ja: "Supabaseのデフォルト設定だとメール確認が必要よ。テスト中ならSupabaseダッシュボード → Authentication → Sign In / Up で「Confirm email」をオフにして",
-  },
-  forgot_title: { en: "Reset your password", ja: "パスワードリセット" },
+  signup_email_confirm_note: { en: "By default Supabase requires email confirmation.", ja: "Supabaseのデフォルト設定だとメール確認が必要よ。" },
   forgot_desc: { en: "Enter your email — we'll send a reset link.", ja: "メアド入れて。リセット用のリンクを送るわよ。" },
   send_reset_email: { en: "Send reset email", ja: "リセットメール送信" },
   reset_sent: { en: "✅ Reset link sent — check your inbox.", ja: "✅ メール送ったわ。受信箱を確認して" },
@@ -187,8 +125,6 @@ export const dict: Dict = {
   reset_new_password: { en: "New password", ja: "新しいパスワード" },
   reset_save_btn: { en: "Update password", ja: "パスワードを更新" },
   reset_done: { en: "✅ Password updated. Logging you in…", ja: "✅ パスワード更新したわ。ログイン中…" },
-
-  // forms
   form_photos: { en: "Photos (up to 8)", ja: "写真（複数可、最大8枚）" },
   form_avatar: { en: "Avatar (photo or emoji)", ja: "アバター (写真または絵文字)" },
   form_name: { en: "Name", ja: "名前" },
@@ -196,7 +132,6 @@ export const dict: Dict = {
   form_university_placeholder: { en: "e.g. Kyoto University (optional)", ja: "例: 京都大学 (任意)" },
   form_bio: { en: "Bio", ja: "自己紹介" },
   form_bio_placeholder: { en: "Tell people about your strengths and favorite spots", ja: "あなたの強みやお気に入りのスポットを書いて" },
-  form_bio_traveler_placeholder: { en: "Tell guides about your trip and what you'd like to do", ja: "ガイドに伝えたい旅の目的やしたいことを書いて" },
   form_gender: { en: "Gender (optional)", ja: "性別 (任意)" },
   form_gender_unspecified: { en: "Unspecified", ja: "指定しない" },
   form_gender_male: { en: "Male", ja: "男性" },
@@ -219,11 +154,6 @@ export const dict: Dict = {
   form_edit_guide_title: { en: "Edit guide profile", ja: "ガイド編集" },
   form_register_traveler_title: { en: "Become a traveler", ja: "旅行者登録" },
   form_edit_traveler_title: { en: "Edit traveler profile", ja: "旅行者編集" },
-  form_country: { en: "Where are you from?", ja: "国 (出身地)" },
-  form_country_placeholder: { en: "e.g. France, USA, UK", ja: "例: フランス, USA, イギリス" },
-  form_trip_period: { en: "Trip period (optional)", ja: "旅行期間 (任意)" },
-  form_trip_period_placeholder: { en: "e.g. Apr 10 – Apr 17", ja: "例: 4月10日 – 4月17日" },
-  form_interests: { en: "Interests", ja: "興味" },
   form_register_guide_btn: { en: "Register as guide 🎉", ja: "ガイドとして登録する 🎉" },
   form_registering: { en: "Registering…", ja: "登録中…" },
   form_register_traveler_btn: { en: "Register as traveler ✈️", ja: "旅行者として登録する ✈️" },
@@ -231,8 +161,6 @@ export const dict: Dict = {
   form_saving: { en: "Saving…", ja: "更新中…" },
   form_delete_guide: { en: "Delete guide profile", ja: "ガイドプロファイルを削除" },
   form_delete_confirm: { en: "Delete for real? Can't undo.", ja: "本当に削除する？取り消せないわよ。" },
-
-  // booking
   booking_title: { en: "Book a guide", ja: "予約申込" },
   booking_start: { en: "Start date & time", ja: "開始日時" },
   booking_days: { en: "Days (1–7)", ja: "日数 (1〜7 日)" },
@@ -241,16 +169,18 @@ export const dict: Dict = {
   booking_msg_placeholder: { en: "Preferred place, theme, group size, etc.", ja: "希望する場所、テーマ、人数など" },
   booking_payment_note: { en: "💡 No payment system yet. If approved, arrange payment by DM.", ja: "💡 まだ決済機能はないわよ。承認されたら直接 DM で支払い方法を相談して。" },
   booking_send_btn: { en: "Send booking request", ja: "予約リクエストを送る" },
-
-  // translation
   translate_btn_en: { en: "🌐 Translate to English", ja: "🌐 英語に翻訳" },
   translate_btn_ja: { en: "🌐 Translate to Japanese", ja: "🌐 日本語に翻訳" },
   translate_show_original: { en: "Show original", ja: "原文を表示" },
-  translate_show_translated: { en: "Show translation", ja: "翻訳を表示" },
   translating: { en: "Translating…", ja: "翻訳中…" },
-
-  // inbox extras (extra)
-  inbox_view_all_requests: { en: "📨 View all message requests", ja: "📨 メッセージリクエスト一覧" },
+  guide_mode_label: { en: "Guide mode", ja: "ガイドのモード" },
+  mode_free_title: { en: "🤝 Free — meet as mates", ja: "🤝 友達として無料で会う (mate)" },
+  mode_free_sub: { en: "Be a free local — I just want to meet travelers and hang out.", ja: "無料ガイドでもいいので、とにかく外国人観光客と交流したい！" },
+  mode_paid_title: { en: "💼 Paid — guide for a fee", ja: "💼 有料で街を案内する (guide)" },
+  mode_paid_sub: { en: "I'd like to be paid to show people around as an amateur city guide.", ja: "アマチュアの観光ガイドとして、お金をもらって街を案内したい！" },
+  rate_per_day_label: { en: "Rate per day (¥)", ja: "一日あたりの料金 (¥)" },
+  rate_range_hint: { en: "Suggested: ¥3000–10000 / day", ja: "目安: ¥3000〜10000 / day" },
+  trusted_local: { en: "✨ Trusted local", ja: "✨ 信頼できる local" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {

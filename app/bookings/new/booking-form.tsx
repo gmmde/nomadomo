@@ -25,7 +25,7 @@ type Props = {
   guideEmoji: string;
   guideUniversity: string;
   ratePerDay: number;
-  mode: "free" | "paid" | "both";
+  mode: "free" | "paid";
 };
 
 export default function BookingForm({ guideId, guideName, guideEmoji, guideUniversity, ratePerDay }: Props) {

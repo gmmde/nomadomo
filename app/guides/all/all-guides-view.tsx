@@ -15,7 +15,7 @@ export type GuideRow = {
   tags: string[];
   languages: string[];
   rate_per_day: number | null;
-  mode: "free" | "paid" | "both";
+  mode: "free" | "paid";
   rating: number;
   tour_count: number;
   user_id: string | null;
@@ -59,10 +59,9 @@ function ageFromBirth(year: number | null): number | null {
 }
 
 
-function modeCardStyle(mode: "free" | "paid" | "both") {
+function modeCardStyle(mode: "free" | "paid") {
   if (mode === "free") return { bg: "#e6f5ee", border: "#9fc9b6" };
-  if (mode === "paid") return { bg: "#fceaec", border: "#e8b5bc" };
-  return { bg: "#ffffffee", border: "#f0d9b5" };
+  return { bg: "#fceaec", border: "#e8b5bc" };
 }
 
 function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
@@ -87,8 +86,8 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
 
   const filtered = useMemo(() => {
     let rs = guides;
-    if (modeFilter === "mate") rs = rs.filter((g) => g.mode === "free" || g.mode === "both");
-    if (modeFilter === "guide") rs = rs.filter((g) => g.mode === "paid" || g.mode === "both");
+    if (modeFilter === "mate") rs = rs.filter((g) => g.mode === "free");
+    if (modeFilter === "guide") rs = rs.filter((g) => g.mode === "paid");
     if (areas.length > 0) rs = rs.filter((g) => areas.some((a) => g.areas.includes(a)));
     const q = query.trim().toLowerCase();
     if (q) {

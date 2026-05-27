@@ -36,7 +36,7 @@ export default async function NewBookingPage({ searchParams }: Props) {
       guideEmoji={(guide.emoji as string) ?? "🧑"}
       guideUniversity={(guide.university as string) ?? ""}
       ratePerDay={Number(guide.rate_per_day ?? 0)}
-      mode={(guide.mode as string ?? "paid") as "free" | "paid" | "both"}
+      mode={(((guide.mode as string) === "free" ? "free" : "paid") as "free" | "paid")}
     />
   );
 }

@@ -33,7 +33,7 @@ export default async function NewChatRequestPage({ params }: Props) {
       guideName={guide.name as string}
       guideEmoji={(guide.emoji as string) ?? "🧑"}
       guideUniversity={(guide.university as string) ?? ""}
-      guideMode={((guide.mode as string) ?? "paid") as "free" | "paid" | "both"}
+      guideMode={(((guide.mode as string) === "free" ? "free" : "paid") as "free" | "paid")}
     />
   );
 }

@@ -18,26 +18,26 @@ export function useTranslate() {
   });
 
   const translate = useCallback(async (fields: Record<string, string>, target: "en" | "ja") => {
+    const source: "en" | "ja" = target === "en" ? "ja" : "en";
     setState((s) => ({ ...s, loading: true, err: null }));
     try {
-      const source = target === "en" ? "ja" : "en";
-      const langpair = `${source}|${target}`;
-      const entries = await Promise.all(
-        Object.entries(fields)
-          .filter(([, v]) => v && v.trim().length > 0)
-          .map(async ([key, text]) => {
-            try {
-              const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 500))}&langpair=${langpair}`;
-              const r = await fetch(url);
-              const data = await r.json();
-              const translated = data?.responseData?.translatedText ?? text;
-              return [key, translated] as const;
-            } catch {
-              return [key, text] as const;
-            }
-          }),
-      );
-      setState({ showing: "translated", translations: Object.fromEntries(entries), loading: false, err: null });
+      const r = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields, source, target }),
+      });
+      if (!r.ok) {
+        const txt = await r.text().catch(() => "");
+        throw new Error(`translate API ${r.status}: ${txt.slice(0, 120)}`);
+      }
+      const data = (await r.json()) as { translations?: Record<string, string>; error?: string };
+      if (data.error) throw new Error(data.error);
+      setState({
+        showing: "translated",
+        translations: data.translations ?? {},
+        loading: false,
+        err: null,
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "translation failed";
       setState((s) => ({ ...s, loading: false, err: msg }));

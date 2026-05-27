@@ -26,7 +26,7 @@ type Props = {
   guideName: string;
   guideEmoji: string;
   guideUniversity: string;
-  guideMode: "free" | "paid" | "both";
+  guideMode: "free" | "paid";
 };
 
 export default function RequestForm({ guideUserId, guideName, guideEmoji, guideUniversity, guideMode }: Props) {

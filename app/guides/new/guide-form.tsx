@@ -173,7 +173,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
             </div>
 
             {/* Mode selector */}
-            <ModeAndRate state={state} initialMode="both" initialRate={3000} />
+            <ModeAndRate state={state} initialMode="free" initialRate={3000} />
             {state?.errors?.mode && <div style={errStyle}>{state.errors.mode}</div>}
             {state?.errors?.rate_per_day && <div style={errStyle}>{state.errors.rate_per_day}</div>}
 

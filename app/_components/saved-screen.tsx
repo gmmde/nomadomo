@@ -11,7 +11,7 @@ type GuideCard = {
   avatarPath: string | null;
   uni: string;
   rate: string;
-  mode: "free" | "paid" | "both";
+  mode: "free" | "paid";
 };
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
   avatarUrls: Record<string, string>;
   onSelect: (g: GuideCard) => void;
   toggleSave: (id: number) => void | Promise<void>;
-  modeCardStyle: (mode: "free" | "paid" | "both") => { bg: string; border: string };
+  modeCardStyle: (mode: "free" | "paid") => { bg: string; border: string };
   bottomNav: ReactNode;
   lang: Lang;
 };

@@ -41,7 +41,7 @@ type Initial = {
   bio: string;
   emoji: string;
   rate_per_day: number | null;
-  mode: "free" | "paid" | "both";
+  mode: "free" | "paid";
   tags: string[];
   languages: string[];
   image_paths: string[];

@@ -35,8 +35,8 @@ function parseGuideFields(formData: FormData) {
   const university = String(formData.get("university") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
   const emoji = String(formData.get("emoji") ?? "").trim() || "🧑";
-  const modeRaw = String(formData.get("mode") ?? "both").trim();
-  const mode = (["free", "paid", "both"].includes(modeRaw) ? modeRaw : "both") as "free" | "paid" | "both";
+  const modeRaw = String(formData.get("mode") ?? "free").trim();
+  const mode = (["free", "paid"].includes(modeRaw) ? modeRaw : "free") as "free" | "paid";
   const rateRaw = String(formData.get("rate_per_day") ?? "").trim();
   const rate = Number(rateRaw);
   const tags = formData.getAll("tags").map(String).filter(Boolean);

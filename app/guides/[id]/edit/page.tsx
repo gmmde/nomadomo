@@ -38,7 +38,7 @@ export default async function EditGuidePage({ params }: Props) {
         bio: (guide.bio as string) ?? "",
         emoji: (guide.emoji as string) ?? "🧑",
         rate_per_day: (guide.rate_per_day as number | null) ?? null,
-        mode: ((guide.mode as string) ?? "paid") as "free" | "paid" | "both",
+        mode: (((guide.mode as string) === "free" ? "free" : "paid") as "free" | "paid"),
         tags: (guide.tags as string[]) ?? [],
         languages: (guide.languages as string[]) ?? [],
         image_paths: (guide.image_paths as string[]) ?? [],

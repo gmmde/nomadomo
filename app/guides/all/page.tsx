@@ -20,7 +20,7 @@ export default async function AllGuidesPage() {
     tags: (g.tags as string[]) ?? [],
     languages: (g.languages as string[]) ?? [],
     rate_per_day: g.rate_per_day != null ? Number(g.rate_per_day) : null,
-    mode: ((g.mode as string) ?? "paid") as "free" | "paid" | "both",
+    mode: (((g.mode as string) === "free" ? "free" : "paid") as "free" | "paid"),
     rating: Number(g.rating) || 0,
     tour_count: Number(g.tour_count) || 0,
     user_id: (g.user_id as string | null) ?? null,
