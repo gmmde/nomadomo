@@ -8,7 +8,7 @@ export default async function AllGuidesPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("guides")
-    .select("id, name, emoji, university, bio, tags, languages, rate_per_day, mode, rating, tour_count, user_id, image_paths, gender, birth_year, avatar_path, created_at")
+    .select("id, name, emoji, university, bio, tags, languages, rate_per_day, mode, rating, tour_count, user_id, image_paths, gender, birth_year, avatar_path, areas, created_at")
     .order("rating", { ascending: false });
 
   const rows: GuideRow[] = (data ?? []).map((g) => ({
@@ -27,6 +27,7 @@ export default async function AllGuidesPage() {
     gender: (g.gender as string | null) ?? null,
     birth_year: (g.birth_year as number | null) ?? null,
     avatar_path: (g.avatar_path as string | null) ?? null,
+    areas: (g.areas as string[]) ?? ["Kyoto"],
     created_at: g.created_at as string,
   }));
 

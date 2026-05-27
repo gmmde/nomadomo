@@ -17,7 +17,8 @@ export type GuideFormErrors = Partial<
     | "tags"
     | "languages"
     | "gender"
-    | "birth_year",
+    | "birth_year"
+    | "areas",
     string
   >
 >;
@@ -38,6 +39,7 @@ function parseGuideFields(formData: FormData) {
   const tags = formData.getAll("tags").map(String).filter(Boolean);
   const languages = formData.getAll("languages").map(String).filter(Boolean);
   const avatar_path = String(formData.get("avatar_path") ?? "").trim() || null;
+  const areas = formData.getAll("areas").map(String).filter(Boolean);
   const image_paths = formData
     .getAll("image_paths")
     .map(String)
@@ -67,6 +69,7 @@ function parseGuideFields(formData: FormData) {
   if (tags.length === 0) errors.tags = "タグを1つ以上選んで";
   if (languages.length === 0) errors.languages = "言語を1つ以上選んで";
   if (birthYearRaw && !birth_year) errors.birth_year = "西暦 (例: 2002) で";
+  if (areas.length === 0) errors.areas = "活動域を1つ以上選んで";
 
   return {
     fields: {
@@ -82,6 +85,7 @@ function parseGuideFields(formData: FormData) {
       gender,
       birth_year,
       avatar_path,
+      areas,
     },
     errors,
   };

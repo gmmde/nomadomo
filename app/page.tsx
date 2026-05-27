@@ -11,6 +11,7 @@ type Guide = {
   name: string;
   emoji: string;
   avatarPath: string | null;
+  areas: string[];
   uni: string;
   tags: string[];
   languages: string[];
@@ -442,7 +443,7 @@ function HomeInner() {
     async function fetchGuides() {
       const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -456,6 +457,7 @@ function HomeInner() {
         name: g.name,
         emoji: g.emoji ?? "🧑",
         avatarPath: (g.avatar_path as string | null) ?? null,
+        areas: (g.areas as string[]) ?? ["Kyoto"],
         uni: g.university ?? "",
         user_id: (g.user_id as string | null) ?? null,
         tags: g.tags ?? [],
@@ -848,7 +850,8 @@ function HomeInner() {
               <div style={{ fontSize: 11, fontWeight: 900, color: selectedGuide.mode === "paid" ? "#ad001c" : selectedGuide.mode === "free" ? "#2e8b57" : "#1a1008", marginBottom: 4 }}>
                 {selectedGuide.mode === "paid" ? "💼 PAID GUIDE" : selectedGuide.mode === "free" ? "🤝 MATE (FREE)" : "✨ MATE & GUIDE"}
               </div>
-              <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, marginBottom: 10 }}>{selectedGuide.uni}</div>
+              <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, marginBottom: 6 }}>{selectedGuide.uni}</div>
+              <div style={{ fontSize: 11, color: "#2e8b57", fontWeight: 800, marginBottom: 10 }}>📍 {selectedGuide.areas.join(" · ")}</div>
 
               {/* フォロワー数 (常に表示) + フォローボタン (他人ガイドのみ) */}
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 14, marginBottom: 4 }}>

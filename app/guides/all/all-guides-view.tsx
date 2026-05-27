@@ -22,12 +22,14 @@ export type GuideRow = {
   gender: string | null;
   birth_year: number | null;
   avatar_path: string | null;
+  areas: string[];
   created_at: string;
 };
 
 type SortKey = "recommended" | "newest" | "price_asc" | "price_desc";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"];
+const AREA_OPTIONS = ["Kyoto"];
 const LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"];
 const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "", label: "指定なし" },
@@ -75,6 +77,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
   const [ageMax, setAgeMax] = useState<number | "">("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [modeFilter, setModeFilter] = useState<"all" | "mate" | "guide">("all");
+  const [areas, setAreas] = useState<string[]>([]);
   const avatarPaths = guides.map((g) => g.avatar_path).filter((p): p is string => Boolean(p));
   const avatarUrls = useSignedUrls(avatarPaths);
 
@@ -86,6 +89,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
     let rs = guides;
     if (modeFilter === "mate") rs = rs.filter((g) => g.mode === "free" || g.mode === "both");
     if (modeFilter === "guide") rs = rs.filter((g) => g.mode === "paid" || g.mode === "both");
+    if (areas.length > 0) rs = rs.filter((g) => areas.some((a) => g.areas.includes(a)));
     const q = query.trim().toLowerCase();
     if (q) {
       rs = rs.filter((g) =>
@@ -124,7 +128,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         break;
     }
     return rs;
-  }, [guides, query, sort, tags, langs, gender, ageMin, ageMax, modeFilter]);
+  }, [guides, query, sort, tags, langs, gender, ageMin, ageMax, modeFilter, areas]);
 
   function clearAll() {
     setQuery("");
@@ -135,6 +139,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
     setAgeMin("");
     setAgeMax("");
     setModeFilter("all");
+    setAreas([]);
   }
 
   return (
@@ -178,7 +183,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             onClick={() => setFiltersOpen((v) => !v)}
             style={{ background: filtersOpen ? "#ad001c" : "#fff", color: filtersOpen ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
           >
-            🎛 絞り込み{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0)})` : ""}
+            🎛 絞り込み{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length})` : ""}
           </button>
         </div>
 
@@ -195,6 +200,12 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                   border: `2px solid ${modeFilter === v ? c : "#e8c99a"}`,
                   borderRadius: 14, padding: "6px 8px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit",
                 }}>{label}</button>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>活動域</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+              {AREA_OPTIONS.map((a) => (
+                <button key={a} onClick={() => toggleArr(areas, setAreas, a)} style={chip(areas.includes(a), "#2e8b57")}>📍 {a}</button>
               ))}
             </div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>タグ</div>

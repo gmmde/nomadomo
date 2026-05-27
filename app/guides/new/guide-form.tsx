@@ -7,6 +7,7 @@ import ModeAndRate from "@/app/lib/mode-and-rate";
 import AvatarPicker from "@/app/lib/avatar-picker";
 import ImageUploader from "@/app/lib/image-uploader";
 
+const AREA_OPTIONS = ["Kyoto"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
 const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
@@ -99,6 +100,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
   const [bio, setBio] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [gender, setGender] = useState("");
+  const [areas, setAreas] = useState<string[]>(["Kyoto"]);
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -195,6 +197,18 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 placeholder="例: 2002"
               />
               {state?.errors?.birth_year && <div style={errStyle}>{state.errors.birth_year}</div>}
+            </div>
+
+            {/* Areas */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={labelStyle}>活動域 (1つ以上)</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {AREA_OPTIONS.map((a) => (
+                  <button key={a} type="button" onClick={() => setAreas((s) => s.includes(a) ? s.filter((x) => x !== a) : [...s, a])} style={chipStyle(areas.includes(a))}>{a}</button>
+                ))}
+              </div>
+              {areas.map((a) => <input key={a} type="hidden" name="areas" value={a} />)}
+              {state?.errors?.areas && <div style={errStyle}>{state.errors.areas}</div>}
             </div>
 
             {/* Tags */}

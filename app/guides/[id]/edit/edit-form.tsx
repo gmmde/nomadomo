@@ -11,6 +11,7 @@ import ModeAndRate from "@/app/lib/mode-and-rate";
 import AvatarPicker from "@/app/lib/avatar-picker";
 import ImageUploader from "@/app/lib/image-uploader";
 
+const AREA_OPTIONS = ["Kyoto"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
 const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
@@ -25,6 +26,7 @@ type Initial = {
   gender: string | null;
   birth_year: number | null;
   avatar_path: string | null;
+  areas: string[];
   id: number;
   name: string;
   university: string;
@@ -137,6 +139,7 @@ export default function EditGuideForm({
   const [bio, setBio] = useState(initial.bio);
   const [birthYear, setBirthYear] = useState<string>(initial.birth_year != null ? String(initial.birth_year) : "");
   const [gender, setGender] = useState<string>(initial.gender ?? "");
+  const [areas, setAreas] = useState<string[]>(initial.areas);
 
   function toggle(list: string[], v: string): string[] {
     return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
@@ -232,6 +235,17 @@ export default function EditGuideForm({
                 style={input}
                 placeholder="例: 2002"
               />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>活動域 (1つ以上)</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {AREA_OPTIONS.map((a) => (
+                  <button key={a} type="button" onClick={() => setAreas((s) => s.includes(a) ? s.filter((x) => x !== a) : [...s, a])} style={chip(areas.includes(a))}>{a}</button>
+                ))}
+              </div>
+              {areas.map((a) => <input key={a} type="hidden" name="areas" value={a} />)}
+              {state?.errors?.areas && <div style={err}>{state.errors.areas}</div>}
             </div>
 
             <div style={{ marginBottom: 18 }}>
