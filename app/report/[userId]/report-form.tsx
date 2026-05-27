@@ -29,23 +29,23 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <BackButton />
-          <div style={{ fontSize: 20, fontWeight: 900 }}>通報</div>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>Report</div>
         </div>
 
         <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "2px solid #e8c99a" }}>{targetEmoji}</div>
           <div>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>通報対象</div>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>Reporting</div>
             <div style={{ fontSize: 14, fontWeight: 900 }}>{targetName}</div>
           </div>
         </div>
 
         {state?.success ? (
           <div style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 12, padding: 16, color: "#2e8b57", fontSize: 13, fontWeight: 700, lineHeight: 1.6 }}>
-            ✅ 通報を受け付けたわ。内容を確認次第対応するわよ。
+            ✅ Report received. We will review and respond.
             <div style={{ marginTop: 16 }}>
               <Link href="/" style={{ display: "inline-block", background: "#2e8b57", color: "#fff", padding: "8px 16px", borderRadius: 12, textDecoration: "none", fontWeight: 800 }}>
-                ホームに戻る
+                Back to home
               </Link>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
             {targetMessageId && <input type="hidden" name="target_message_id" value={targetMessageId} />}
 
             <div style={{ marginBottom: 20 }}>
-              <label style={label} htmlFor="reason">通報理由（5〜500文字）</label>
+              <label style={label} htmlFor="reason">Reason (5–500 chars)</label>
               <textarea
                 id="reason"
                 name="reason"
@@ -64,7 +64,7 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
                 maxLength={500}
                 rows={6}
                 style={{ ...input, resize: "vertical", minHeight: 120 }}
-                placeholder="例: スパム、ハラスメント、不適切な内容、なりすまし、など具体的に"
+                placeholder="e.g. spam, harassment, inappropriate content, impersonation, etc."
               />
             </div>
 
@@ -75,11 +75,11 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
             )}
 
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>
-              ⚠️ 通報は虚偽なくお願いね。悪意ある通報を繰り返すアカウントは制限することがあるわ。
+              ⚠️ Please only report in good faith. Accounts that repeatedly file malicious reports may be restricted.
             </div>
 
             <button type="submit" disabled={pending} style={{ ...primary, opacity: pending ? 0.6 : 1 }}>
-              {pending ? "送信中…" : "通報を送信"}
+              {pending ? "Sending…" : "Submit report"}
             </button>
           </form>
         )}

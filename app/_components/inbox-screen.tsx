@@ -63,22 +63,26 @@ export default function InboxScreen({
         <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
       </div>
       <div style={{ padding: "20px" }}>
-        {currentUserId && pendingRequests.length > 0 && (
+        {currentUserId && (
           <Link
             href="/requests"
-            style={{ display: "block", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, marginBottom: 16, textDecoration: "none" }}
+            style={{ display: "block", background: pendingRequests.length > 0 ? "#ad001c" : "#fff", color: pendingRequests.length > 0 ? "#fff" : "#1a1008", border: pendingRequests.length > 0 ? "none" : "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 16, textDecoration: "none" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ fontSize: 28 }}>📨</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 2 }}>
-                  {t("inbox_pending_requests", lang)} ({pendingRequests.length})
+                  {pendingRequests.length > 0
+                    ? `${t("inbox_pending_requests", lang)} (${pendingRequests.length})`
+                    : t("inbox_view_all_requests", lang)}
                 </div>
-                <div style={{ fontSize: 12, opacity: 0.92, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {pendingRequests.slice(0, 3).map((r) => `${r.senderEmoji} ${r.senderName}`).join(" · ")}
-                </div>
+                {pendingRequests.length > 0 && (
+                  <div style={{ fontSize: 12, opacity: 0.92, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {pendingRequests.slice(0, 3).map((r) => `${r.senderEmoji} ${r.senderName}`).join(" · ")}
+                  </div>
+                )}
               </div>
-              <div style={{ fontSize: 18 }}>→</div>
+              <div style={{ fontSize: 18, color: pendingRequests.length > 0 ? "#fff" : "#8a7560" }}>→</div>
             </div>
           </Link>
         )}
@@ -120,7 +124,8 @@ export default function InboxScreen({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
-                    <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
+                    <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}
+</div>
                   </div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>
                     {new Date(p.lastAt).toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" })}

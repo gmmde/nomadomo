@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useSignedUrls } from "../lib/use-signed-urls";
 import { useLang, t } from "../lib/i18n";
+import { useTranslate } from "../lib/use-translate";
 
 export type TravelerProfileData = {
   user_id: string;
@@ -46,6 +47,7 @@ function formatSlotShort(s: string): string {
 export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
   const [lang] = useLang();
+  const tr = useTranslate();
 
   const allPaths = [
     ...(traveler.avatar_path ? [traveler.avatar_path] : []),
@@ -62,11 +64,45 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
   const interestTags = [...new Set([...(traveler.hobbies ?? []), ...(traveler.interests ?? [])])];
   const isDemo = !traveler.user_id;
 
+  // Translation target = opposite of current UI lang
   const translateTarget: "en" | "ja" = lang === "ja" ? "en" : "ja";
-  const translateSrc: "en" | "ja" = translateTarget === "en" ? "ja" : "en";
-  const translateLabel = translateTarget === "en" ? "🌐 JP → EN" : "🌐 EN → JP";
-  const translateText = [traveler.bio, traveler.occupation, traveler.nationality].filter(Boolean).join("\n\n");
-  const translateUrl = `https://translate.google.com/?sl=${translateSrc}&tl=${translateTarget}&text=${encodeURIComponent(translateText)}&op=translate`;
+
+  // Use translated versions when toggle is on
+  const showTranslated = tr.showing === "translated";
+  const dispBio = showTranslated ? (tr.translations.bio ?? traveler.bio) : traveler.bio;
+  const dispOccupation = showTranslated ? (tr.translations.occupation ?? traveler.occupation ?? "") : (traveler.occupation ?? "");
+  const dispNationality = showTranslated ? (tr.translations.nationality ?? traveler.nationality ?? "") : (traveler.nationality ?? "");
+  const dispCountry = showTranslated ? (tr.translations.country ?? traveler.country) : traveler.country;
+  const dispTripPeriod = showTranslated ? (tr.translations.trip_period ?? traveler.trip_period ?? "") : (traveler.trip_period ?? "");
+
+  const hasTranslatable = (traveler.bio || traveler.occupation || traveler.nationality || traveler.trip_period || traveler.country).trim().length > 0;
+
+  async function onTranslateClick() {
+    if (tr.showing === "translated") {
+      tr.toggle();
+      return;
+    }
+    if (Object.keys(tr.translations).length > 0) {
+      tr.toggle();
+      return;
+    }
+    await tr.translate(
+      {
+        bio: traveler.bio,
+        occupation: traveler.occupation ?? "",
+        nationality: traveler.nationality ?? "",
+        country: traveler.country,
+        trip_period: traveler.trip_period ?? "",
+      },
+      translateTarget,
+    );
+  }
+
+  const translateBtnLabel = tr.loading
+    ? t("translating", lang)
+    : showTranslated
+      ? t("translate_show_original", lang)
+      : (translateTarget === "en" ? t("translate_btn_en", lang) : t("translate_btn_ja", lang));
 
   return (
     <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5ead0" }}>
@@ -109,24 +145,24 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
               <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: "rgba(46,139,87,0.85)" }}>TRAVELER</span>
             </div>
             <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-              ✈ From {traveler.country}
+              ✈ From {dispCountry}
               {age != null && <span style={{ marginLeft: 8 }}>· {age} {t("yo", lang)}</span>}
             </div>
-            {(traveler.nationality || traveler.occupation) && (
+            {(dispNationality || dispOccupation) && (
               <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                {traveler.nationality && <span>🌐 {traveler.nationality}</span>}
-                {traveler.nationality && traveler.occupation && <span> · </span>}
-                {traveler.occupation && <span>💼 {traveler.occupation}</span>}
+                {dispNationality && <span>🌐 {dispNationality}</span>}
+                {dispNationality && dispOccupation && <span> · </span>}
+                {dispOccupation && <span>💼 {dispOccupation}</span>}
               </div>
             )}
-            {traveler.trip_period && (
+            {dispTripPeriod && (
               <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                📅 {traveler.trip_period}
+                📅 {dispTripPeriod}
               </div>
             )}
-            {traveler.bio && (
+            {dispBio && (
               <div style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                {traveler.bio}
+                {dispBio}
               </div>
             )}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
@@ -137,18 +173,19 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
           </div>
         </div>
 
-        {!isOwn && translateText.trim().length > 0 && (
+        {!isOwn && hasTranslatable && (
           <div style={{ padding: "10px 20px 0", display: "flex", justifyContent: "flex-end" }}>
-            <a
-              href={translateUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff9f0", border: "1.5px solid #e8c99a", borderRadius: 16, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#1a1008", textDecoration: "none" }}
-              title="Open Google Translate in a new tab"
+            <button
+              onClick={onTranslateClick}
+              disabled={tr.loading}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, background: showTranslated ? "#2e8b57" : "#fff9f0", border: showTranslated ? "1.5px solid #2e8b57" : "1.5px solid #e8c99a", borderRadius: 16, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: showTranslated ? "#fff" : "#1a1008", cursor: tr.loading ? "wait" : "pointer", fontFamily: "inherit", opacity: tr.loading ? 0.7 : 1 }}
             >
-              {translateLabel}
-            </a>
+              {translateBtnLabel}
+            </button>
           </div>
+        )}
+        {tr.err && (
+          <div style={{ padding: "4px 20px 0", fontSize: 10, color: "#ad001c", textAlign: "right", fontWeight: 700 }}>{tr.err}</div>
         )}
 
         <div style={{ padding: "10px 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

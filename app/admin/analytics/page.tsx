@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/app/lib/supabase/server";
 
-export const metadata = { title: "分析ダッシュボード - NomaDomo" };
+export const metadata = { title: "Analytics dashboard - NomaDomo" };
 export const dynamic = "force-dynamic";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "tonoikenta@icloud.com")
@@ -70,50 +70,50 @@ export default async function AnalyticsPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, padding: "20px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <Link href="/" style={{ color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 18, fontWeight: 900 }}>📊 分析ダッシュボード</div>
+          <div style={{ fontSize: 18, fontWeight: 900 }}>📊 Analytics dashboard</div>
         </div>
 
         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 16 }}>
-          ログイン中: {user.email} (admin)
+          Logged in: {user.email} (admin)
         </div>
 
-        <Section title="全体">
+        <Section title="Overall">
           <Grid>
-            <Card label="ガイド (合計)" value={fmt(guidesAll.count)} sub={`実ユーザー: ${fmt(guidesReal.count)}`} />
-            <Card label="旅行者" value={fmt(travelersAll.count)} />
-            <Card label="メッセージ" value={fmt(messagesAll.count)} />
-            <Card label="フォロー" value={fmt(followsAll.count)} />
-            <Card label="保存 (Saved)" value={fmt(savedAll.count)} />
-            <Card label="通報" value={fmt(reportsAll.count)} />
+            <Card label="Guides (total)" value={fmt(guidesAll.count)} sub={`Real users: ${fmt(guidesReal.count)}`} />
+            <Card label="Travelers" value={fmt(travelersAll.count)} />
+            <Card label="Messages" value={fmt(messagesAll.count)} />
+            <Card label="Follows" value={fmt(followsAll.count)} />
+            <Card label="Saved" value={fmt(savedAll.count)} />
+            <Card label="Reports" value={fmt(reportsAll.count)} />
           </Grid>
         </Section>
 
-        <Section title="予約">
+        <Section title="Bookings">
           <Grid>
-            <Card label="全予約" value={fmt(bookingsAll.count)} />
-            <Card label="申請中" value={fmt(bookingsPending.count)} accent="#f5c649" />
-            <Card label="承認済み" value={fmt(bookingsAccepted.count)} accent="#2e8b57" />
-            <Card label="完了" value={fmt(bookingsCompleted.count)} accent="#2ecc71" />
+            <Card label="All bookings" value={fmt(bookingsAll.count)} />
+            <Card label="Pending" value={fmt(bookingsPending.count)} accent="#f5c649" />
+            <Card label="Accepted" value={fmt(bookingsAccepted.count)} accent="#2e8b57" />
+            <Card label="Completed" value={fmt(bookingsCompleted.count)} accent="#2ecc71" />
           </Grid>
-          <Card label="承認/完了 合計金額" value={`¥${grossYen.toLocaleString()}`} big />
+          <Card label="Accepted/completed total" value={`¥${grossYen.toLocaleString()}`} big />
         </Section>
 
-        <Section title="直近7日間">
+        <Section title="Last 7 days">
           <Grid>
-            <Card label="新規ガイド" value={fmt(last7Guides.count)} />
-            <Card label="新規旅行者" value={fmt(last7Travelers.count)} />
-            <Card label="送信メッセージ" value={fmt(last7Messages.count)} />
-            <Card label="新規予約" value={fmt(last7Bookings.count)} />
+            <Card label="New guides" value={fmt(last7Guides.count)} />
+            <Card label="New travelers" value={fmt(last7Travelers.count)} />
+            <Card label="Sent messages" value={fmt(last7Messages.count)} />
+            <Card label="New bookings" value={fmt(last7Bookings.count)} />
           </Grid>
         </Section>
 
-        <Section title="メッセージ推移 (14日)">
+        <Section title="Messages trend (14d)">
           <DailyBar data={dailyMessages} />
         </Section>
 
-        <Section title="人気タグ (TOP 10)">
+        <Section title="Top tags (TOP 10)">
           {sortedTags.length === 0 ? (
-            <div style={{ fontSize: 12, color: "#8a7560" }}>データなし</div>
+            <div style={{ fontSize: 12, color: "#8a7560" }}>No data</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {sortedTags.map(([tag, n]) => {
@@ -201,7 +201,7 @@ function DailyBar({ data }: { data: Array<{ day: string; count: number }> }) {
         {data.map((d) => {
           const h = (d.count / max) * 70 + 2;
           return (
-            <div key={d.day} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }} title={`${d.day}: ${d.count}件`}>
+            <div key={d.day} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }} title={`${d.day}: ${d.count}`}>
               <div style={{ fontSize: 8, fontWeight: 800, color: "#8a7560" }}>{d.count || ""}</div>
               <div style={{ width: "100%", height: `${h}px`, background: d.count > 0 ? "#ad001c" : "#f0d9b5", borderRadius: 2 }} />
             </div>

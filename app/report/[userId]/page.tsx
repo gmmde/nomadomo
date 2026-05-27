@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import ReportForm from "./report-form";
 
-export const metadata = { title: "通報 - NomaDomo" };
+export const metadata = { title: "Report - NomaDomo" };
 
 type Props = {
   params: Promise<{ userId: string }>;
@@ -30,7 +30,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
     ? await supabase.from("travelers").select("name").eq("user_id", userId).maybeSingle()
     : { data: null };
 
-  const targetName = (g?.name as string | undefined) ?? (t?.name as string | undefined) ?? `ユーザー (${userId.slice(0, 8)})`;
+  const targetName = (g?.name as string | undefined) ?? (t?.name as string | undefined) ?? `User (${userId.slice(0, 8)})`;
   const targetEmoji = (g?.emoji as string | undefined) ?? "👤";
 
   return (

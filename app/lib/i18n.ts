@@ -241,6 +241,16 @@ export const dict: Dict = {
   booking_msg_placeholder: { en: "Preferred place, theme, group size, etc.", ja: "希望する場所、テーマ、人数など" },
   booking_payment_note: { en: "💡 No payment system yet. If approved, arrange payment by DM.", ja: "💡 まだ決済機能はないわよ。承認されたら直接 DM で支払い方法を相談して。" },
   booking_send_btn: { en: "Send booking request", ja: "予約リクエストを送る" },
+
+  // translation
+  translate_btn_en: { en: "🌐 Translate to English", ja: "🌐 英語に翻訳" },
+  translate_btn_ja: { en: "🌐 Translate to Japanese", ja: "🌐 日本語に翻訳" },
+  translate_show_original: { en: "Show original", ja: "原文を表示" },
+  translate_show_translated: { en: "Show translation", ja: "翻訳を表示" },
+  translating: { en: "Translating…", ja: "翻訳中…" },
+
+  // inbox extras (extra)
+  inbox_view_all_requests: { en: "📨 View all message requests", ja: "📨 メッセージリクエスト一覧" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {

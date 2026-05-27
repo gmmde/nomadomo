@@ -12,6 +12,7 @@ import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
 import { useLang, t } from "./lib/i18n";
+import { useTranslate } from "./lib/use-translate";
 
 type Guide = {
   id: string;
@@ -204,6 +205,7 @@ function HomeInner() {
   const [heroImgError, setHeroImgError] = useState(false);
   const [heroImgLoaded, setHeroImgLoaded] = useState(false);
   const [lang] = useLang();
+  const guideTr = useTranslate();
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -456,7 +458,8 @@ function HomeInner() {
   // プロフィール画面の画像カルーセル: 選択ガイドが変わったら index リセット
   useEffect(() => {
     setProfileImgIdx(0);
-  }, [selectedGuide?.id]);
+    guideTr.reset();
+  }, [selectedGuide?.id, guideTr]);
 
   // フォロートグル（楽観的更新）
   async function toggleFollow(followeeUserId: string) {
@@ -1143,7 +1146,7 @@ function HomeInner() {
                   </span>
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                  🎓 {selectedGuide.uni}
+                  🎓 {guideTr.showing === "translated" ? (guideTr.translations.university ?? selectedGuide.uni) : selectedGuide.uni}
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
                   📍 {lang === "ja" ? `${selectedGuide.areas.join(" · ")} 在住` : `Lives in ${selectedGuide.areas.join(" · ")}`}
@@ -1151,14 +1154,14 @@ function HomeInner() {
                 </div>
                 {(selectedGuide.nationality || selectedGuide.occupation) && (
                   <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                    {selectedGuide.nationality && <span>🌐 {selectedGuide.nationality}</span>}
+                    {selectedGuide.nationality && <span>🌐 {guideTr.showing === "translated" ? (guideTr.translations.nationality ?? selectedGuide.nationality) : selectedGuide.nationality}</span>}
                     {selectedGuide.nationality && selectedGuide.occupation && <span> · </span>}
-                    {selectedGuide.occupation && <span>💼 {selectedGuide.occupation}</span>}
+                    {selectedGuide.occupation && <span>💼 {guideTr.showing === "translated" ? (guideTr.translations.occupation ?? selectedGuide.occupation) : selectedGuide.occupation}</span>}
                   </div>
                 )}
                 {selectedGuide.bio && (
                   <div style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-                    {selectedGuide.bio}
+                    {guideTr.showing === "translated" ? (guideTr.translations.bio ?? selectedGuide.bio) : selectedGuide.bio}
                   </div>
                 )}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
@@ -1232,16 +1235,41 @@ function HomeInner() {
             )}
             {!isOwn && (selectedGuide.bio || selectedGuide.occupation || selectedGuide.nationality) && (() => {
               const target: "en" | "ja" = lang === "ja" ? "en" : "ja";
-              const src = target === "en" ? "ja" : "en";
-              const txt = [selectedGuide.bio, selectedGuide.occupation, selectedGuide.nationality].filter(Boolean).join("\n\n");
-              const url = `https://translate.google.com/?sl=${src}&tl=${target}&text=${encodeURIComponent(txt)}&op=translate`;
-              const label = target === "en" ? "🌐 JP → EN" : "🌐 EN → JP";
+              const showingTr = guideTr.showing === "translated";
+              const hasCache = Object.keys(guideTr.translations).length > 0;
+              async function onClick() {
+                if (showingTr || hasCache) {
+                  guideTr.toggle();
+                  return;
+                }
+                await guideTr.translate(
+                  {
+                    bio: selectedGuide?.bio ?? "",
+                    occupation: selectedGuide?.occupation ?? "",
+                    nationality: selectedGuide?.nationality ?? "",
+                    university: selectedGuide?.uni ?? "",
+                  },
+                  target,
+                );
+              }
+              const label = guideTr.loading
+                ? t("translating", lang)
+                : showingTr
+                  ? t("translate_show_original", lang)
+                  : (target === "en" ? t("translate_btn_en", lang) : t("translate_btn_ja", lang));
               return (
-                <div style={{ padding: "0 20px 8px", display: "flex", justifyContent: "flex-end" }}>
-                  <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff9f0", border: "1.5px solid #e8c99a", borderRadius: 16, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#1a1008", textDecoration: "none" }} title="Open Google Translate in a new tab">
-                    {label}
-                  </a>
-                </div>
+                <>
+                  <div style={{ padding: "0 20px 4px", display: "flex", justifyContent: "flex-end" }}>
+                    <button
+                      onClick={onClick}
+                      disabled={guideTr.loading}
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4, background: showingTr ? "#2e8b57" : "#fff9f0", border: showingTr ? "1.5px solid #2e8b57" : "1.5px solid #e8c99a", borderRadius: 16, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: showingTr ? "#fff" : "#1a1008", cursor: guideTr.loading ? "wait" : "pointer", fontFamily: "inherit", opacity: guideTr.loading ? 0.7 : 1 }}
+                    >
+                      {label}
+                    </button>
+                  </div>
+                  {guideTr.err && <div style={{ padding: "0 20px 4px", fontSize: 10, color: "#ad001c", textAlign: "right", fontWeight: 700 }}>{guideTr.err}</div>}
+                </>
               );
             })()}
             {isOwn ? (

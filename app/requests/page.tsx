@@ -3,7 +3,7 @@ import { createClient } from "@/app/lib/supabase/server";
 import { respondChatRequest } from "@/app/actions/chat-requests";
 import BackButton from "@/app/lib/back-button";
 
-export const metadata = { title: "メッセージリクエスト - NomaDomo" };
+export const metadata = { title: "Message requests - NomaDomo" };
 export const dynamic = "force-dynamic";
 
 type Req = {
@@ -18,9 +18,9 @@ type Req = {
 };
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending: { label: "🟡 承認待ち", color: "#f5c649" },
-  accepted: { label: "✅ 承認済み", color: "#2e8b57" },
-  declined: { label: "❌ 拒否", color: "#ad001c" },
+  pending: { label: "🟡 Pending", color: "#f5c649" },
+  accepted: { label: "✅ Accepted", color: "#2e8b57" },
+  declined: { label: "❌ Declined", color: "#ad001c" },
 };
 
 export default async function RequestsPage() {
@@ -39,7 +39,6 @@ export default async function RequestsPage() {
   const incoming = all.filter((r) => r.guide_user_id === user.id);
   const outgoing = all.filter((r) => r.traveler_id === user.id);
 
-  // 名前解決: 旅行者は travelers, ガイドは guides
   const travelerIds = [...new Set(incoming.map((r) => r.traveler_id))];
   const guideUserIds = [...new Set(outgoing.map((r) => r.guide_user_id))];
 
@@ -60,28 +59,28 @@ export default async function RequestsPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <BackButton />
-          <div style={{ fontSize: 18, fontWeight: 900 }}>📨 メッセージリクエスト</div>
+          <div style={{ fontSize: 18, fontWeight: 900 }}>📨 Message requests</div>
         </div>
 
-        {/* 受信 (ガイドとして) */}
+        {/* Incoming (as guide / local) */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 900, marginBottom: 10, textTransform: "uppercase" }}>
-            あなたへのリクエスト ({incoming.length})
+            Requests to you ({incoming.length})
           </div>
           {incoming.length === 0 ? (
-            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700, padding: "16px 0" }}>まだ受信なし</div>
+            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700, padding: "16px 0" }}>No requests yet</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {incoming.map((r) => {
-                const tname = tMap.get(r.traveler_id) ?? `ユーザー (${r.traveler_id.slice(0, 8)})`;
+                const tname = tMap.get(r.traveler_id) ?? `User (${r.traveler_id.slice(0, 8)})`;
                 const s = STATUS_LABEL[r.status] ?? { label: r.status, color: "#8a7560" };
                 return (
                   <div key={r.id} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <div style={{ fontSize: 14, fontWeight: 900 }}>{tname} さんから</div>
+                      <div style={{ fontSize: 14, fontWeight: 900 }}>From {tname}</div>
                       <div style={{ fontSize: 10, fontWeight: 900, color: s.color }}>{s.label}</div>
                     </div>
-                    {r.preferred_date && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📅 {new Date(r.preferred_date).toLocaleString("ja-JP")}</div>}
+                    {r.preferred_date && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📅 {new Date(r.preferred_date).toLocaleString()}</div>}
                     {r.preferred_place && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📍 {r.preferred_place}</div>}
                     {r.message && <div style={{ fontSize: 12, color: "#555", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 }}>&ldquo;{r.message}&rdquo;</div>}
                     {r.status === "pending" && (
@@ -89,12 +88,12 @@ export default async function RequestsPage() {
                         <form action={respondChatRequest}>
                           <input type="hidden" name="id" value={r.id} />
                           <input type="hidden" name="action" value="accept" />
-                          <button type="submit" style={{ background: "#2e8b57", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>✅ 承認 (チャット解錠)</button>
+                          <button type="submit" style={{ background: "#2e8b57", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>✅ Accept (unlock chat)</button>
                         </form>
                         <form action={respondChatRequest}>
                           <input type="hidden" name="id" value={r.id} />
                           <input type="hidden" name="action" value="decline" />
-                          <button type="submit" style={{ background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>拒否</button>
+                          <button type="submit" style={{ background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>Decline</button>
                         </form>
                       </div>
                     )}
@@ -105,13 +104,13 @@ export default async function RequestsPage() {
           )}
         </div>
 
-        {/* 送信 (旅行者として) */}
+        {/* Outgoing (as traveler) */}
         <div>
           <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 900, marginBottom: 10, textTransform: "uppercase" }}>
-            あなたが送ったリクエスト ({outgoing.length})
+            Requests you sent ({outgoing.length})
           </div>
           {outgoing.length === 0 ? (
-            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700, padding: "16px 0" }}>まだ送信なし</div>
+            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700, padding: "16px 0" }}>Nothing sent yet</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {outgoing.map((r) => {
@@ -120,10 +119,10 @@ export default async function RequestsPage() {
                 return (
                   <div key={r.id} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <div style={{ fontSize: 14, fontWeight: 900 }}>{g?.emoji ?? "🧑"} {g?.name ?? "ガイド"} へ</div>
+                      <div style={{ fontSize: 14, fontWeight: 900 }}>To {g?.emoji ?? "🧑"} {g?.name ?? "Guide"}</div>
                       <div style={{ fontSize: 10, fontWeight: 900, color: s.color }}>{s.label}</div>
                     </div>
-                    {r.preferred_date && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📅 {new Date(r.preferred_date).toLocaleString("ja-JP")}</div>}
+                    {r.preferred_date && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📅 {new Date(r.preferred_date).toLocaleString()}</div>}
                     {r.preferred_place && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📍 {r.preferred_place}</div>}
                     {r.message && <div style={{ fontSize: 12, color: "#555", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 }}>&ldquo;{r.message}&rdquo;</div>}
                   </div>
