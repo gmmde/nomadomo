@@ -988,7 +988,7 @@ function HomeInner() {
                   {travelersList.map((t) => (
                     <Link
                       key={t.id}
-                      href={`/chat-request/u/${t.user_id}/new?kind=simple`}
+                      href={`/travelers/${t.user_id}`}
                       style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 12, textDecoration: "none", color: "inherit" }}
                     >
                       <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>

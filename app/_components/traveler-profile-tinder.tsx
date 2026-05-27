@@ -1,0 +1,198 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { useSignedUrls } from "../lib/use-signed-urls";
+
+export type TravelerProfileData = {
+  user_id: string;
+  name: string;
+  emoji: string;
+  avatar_path: string | null;
+  country: string;
+  bio: string;
+  nationality: string | null;
+  occupation: string | null;
+  trip_period: string | null;
+  birth_year: number | null;
+  interests: string[];
+  hobbies: string[];
+  languages: string[];
+  available_slots: string[];
+  image_paths: string[];
+};
+
+type Props = {
+  traveler: TravelerProfileData;
+  currentUserId: string | null;
+  isOwn: boolean;
+};
+
+function ageFromBirthYear(y: number | null): number | null {
+  if (!y) return null;
+  return new Date().getFullYear() - y;
+}
+
+function formatSlotShort(s: string): string {
+  const [day, time] = s.split(":");
+  if (!day || !time) return s;
+  const map: Record<string, string> = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
+  const [start, end] = time.split("-");
+  const fmt = (t: string) => (t.length === 4 ? `${t.slice(0, 2)}:${t.slice(2)}` : t);
+  return `${map[day] ?? day} ${fmt(start ?? "")}-${fmt(end ?? "")}`;
+}
+
+export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }: Props) {
+  const [imgIdx, setImgIdx] = useState(0);
+
+  const allPaths = [
+    ...(traveler.avatar_path ? [traveler.avatar_path] : []),
+    ...traveler.image_paths,
+  ];
+  const signed = useSignedUrls(allPaths);
+
+  const carouselImages: Array<{ src: string | null; path: string }> = [];
+  if (traveler.avatar_path) carouselImages.push({ src: signed[traveler.avatar_path] ?? null, path: traveler.avatar_path });
+  for (const p of traveler.image_paths) carouselImages.push({ src: signed[p] ?? null, path: p });
+  const cur = carouselImages[imgIdx] ?? null;
+  const total = carouselImages.length;
+  const age = ageFromBirthYear(traveler.birth_year);
+  const interestTags = [...new Set([...(traveler.hobbies ?? []), ...(traveler.interests ?? [])])];
+
+  return (
+    <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5ead0" }}>
+      <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", margin: "0 auto", background: "#f5ead0", position: "relative" }}>
+        {/* image carousel 70vh */}
+        <div style={{ position: "relative", height: "70vh", minHeight: 480, background: "#1a1008", overflow: "hidden" }}>
+          {cur?.src ? (
+            <img src={cur.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 120, background: "#ffefd5" }}>
+              {traveler.emoji}
+            </div>
+          )}
+
+          {total > 1 && (
+            <div style={{ position: "absolute", top: 10, left: 10, right: 10, display: "flex", gap: 4, zIndex: 3 }}>
+              {carouselImages.map((_, i) => (
+                <div key={i} style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.3)", borderRadius: 2 }}>
+                  <div style={{ height: "100%", background: "#fff", width: i <= imgIdx ? "100%" : "0%", borderRadius: 2 }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {total > 1 && (
+            <>
+              <div onClick={() => setImgIdx((i) => Math.max(0, i - 1))} style={{ position: "absolute", top: 30, left: 0, width: "40%", height: "calc(100% - 200px)", zIndex: 2, cursor: "pointer" }} />
+              <div onClick={() => setImgIdx((i) => Math.min(total - 1, i + 1))} style={{ position: "absolute", top: 30, right: 0, width: "40%", height: "calc(100% - 200px)", zIndex: 2, cursor: "pointer" }} />
+            </>
+          )}
+
+          {/* topbar */}
+          <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 14px", zIndex: 4 }}>
+            <Link href="/" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", textDecoration: "none", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>←</Link>
+            <Link href="/settings" aria-label="設定" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+          </div>
+
+          {/* bottom overlay */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "60px 18px 20px", background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.85))", color: "#fff", zIndex: 3 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <span style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{traveler.name}</span>
+              <span style={{ fontSize: 18 }}>✈️</span>
+              <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: "rgba(46,139,87,0.85)" }}>TRAVELER</span>
+            </div>
+            <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+              ✈ From {traveler.country}
+              {age != null && <span style={{ marginLeft: 8 }}>· {age} y.o.</span>}
+            </div>
+            {(traveler.nationality || traveler.occupation) && (
+              <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                {traveler.nationality && <span>🌐 {traveler.nationality}</span>}
+                {traveler.nationality && traveler.occupation && <span> · </span>}
+                {traveler.occupation && <span>💼 {traveler.occupation}</span>}
+              </div>
+            )}
+            {traveler.trip_period && (
+              <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                📅 {traveler.trip_period}
+              </div>
+            )}
+            {traveler.bio && (
+              <div style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                {traveler.bio}
+              </div>
+            )}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
+              {[...interestTags, ...traveler.languages].slice(0, 6).map((t) => (
+                <span key={t} style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "2px 7px", fontSize: 10, color: "#fff", fontWeight: 700 }}>{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Lower content */}
+        <div style={{ padding: "14px 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: 13, color: "#1a1008", fontWeight: 800 }}>
+            <span style={{ fontSize: 18, fontWeight: 900, color: "#2e8b57" }}>✈️</span>
+            <span style={{ marginLeft: 6, color: "#8a7560" }}>Visiting Kyoto</span>
+          </div>
+          {traveler.languages.length > 0 && (
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>
+              🗣 {traveler.languages.join(" / ")}
+            </div>
+          )}
+        </div>
+
+        {(interestTags.length > 0 || traveler.available_slots.length > 0) && (
+          <div style={{ margin: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {interestTags.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>🎯 Hobbies / Interests</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {interestTags.map((h) => (
+                    <span key={h} style={{ background: "#ffefd5", border: "1.5px solid #ad001c", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>{h}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {traveler.available_slots.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>📅 Free time in Kyoto</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {traveler.available_slots.slice(0, 12).map((s) => (
+                    <span key={s} style={{ background: "#e6f5ee", border: "1.5px solid #2e8b57", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{formatSlotShort(s)}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isOwn ? (
+          <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
+            <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+              ✏️ Edit traveler profile
+            </Link>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>This is your own traveler profile.</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ position: "sticky", bottom: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(8px)", borderTop: "2px solid #f0d9b5", padding: "14px 20px", display: "flex", gap: 12, alignItems: "center", marginTop: "auto" }}>
+              {!currentUserId ? (
+                <Link href={`/login?next=/travelers/${traveler.user_id}`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>Login to message</Link>
+              ) : (
+                <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>📨 Message request</Link>
+              )}
+            </div>
+            {currentUserId && (
+              <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, padding: "8px 20px 16px" }}>
+                <Link href={`/report/${traveler.user_id}`} style={{ color: "#8a7560", textDecoration: "underline" }}>🚩 Report</Link>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
