@@ -81,7 +81,7 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
         <div style={sectionBox}>
           <div style={sectionTitle}>🌐 {t("settings_language", lang)}</div>
           <div style={{ display: "flex", gap: 8 }}>
-            {(["ja", "en"] as Lang[]).map((l) => (
+            {(["en", "ja"] as Lang[]).map((l) => (
               <button
                 key={l}
                 onClick={() => onLangChange(l)}
@@ -98,7 +98,7 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
                   fontFamily: "inherit",
                 }}
               >
-                {l === "ja" ? "🇯🇵 日本語" : "🇺🇸 English"}
+                {l === "en" ? "🇺🇸 English" : "🇯🇵 日本語"}
               </button>
             ))}
           </div>

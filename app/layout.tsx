@@ -14,24 +14,25 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nomadomo.vercel.ap
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "NomaDomo - 京都で本物のローカルと出会う",
+    default: "NomaDomo - Meet a real local in Kyoto",
     template: "%s | NomaDomo",
   },
-  description: "京都の大学生ガイドと旅行者をマッチング。観光ツアーじゃ味わえない地元の体験を。",
-  keywords: ["京都", "ガイド", "旅行", "Kyoto", "local guide", "travel", "学生ガイド"],
+  description: "Match with Kyoto student guides and locals. Free mates or paid amateur guides — get the real Kyoto experience, not a tourist tour.",
+  keywords: ["Kyoto", "Japan", "local guide", "travel", "student guide", "mate", "京都", "ガイド"],
   authors: [{ name: "gmmde" }],
   openGraph: {
     type: "website",
-    locale: "ja_JP",
+    locale: "en_US",
+    alternateLocale: ["ja_JP"],
     url: SITE_URL,
     siteName: "NomaDomo",
-    title: "NomaDomo - 京都で本物のローカルと出会う",
-    description: "京都の大学生ガイドと旅行者をマッチング。観光ツアーじゃ味わえない地元の体験を。",
+    title: "NomaDomo - Meet a real local in Kyoto",
+    description: "Match with Kyoto student guides and locals. Free mates or paid amateur guides — get the real Kyoto experience.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NomaDomo - 京都で本物のローカルと出会う",
-    description: "京都の大学生ガイドと旅行者をマッチング。",
+    title: "NomaDomo - Meet a real local in Kyoto",
+    description: "Match with Kyoto student guides — free mates or paid amateur guides.",
   },
   robots: {
     index: true,
@@ -53,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className="h-full">
+    <html lang="en" className="h-full">
       <body className={`${nunito.className} min-h-full flex flex-col`}>
         {children}
         <Analytics />
