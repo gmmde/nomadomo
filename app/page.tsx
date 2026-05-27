@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "./lib/supabase/client";
 import { useSignedUrls } from "./lib/use-signed-urls";
+import Splash from "./_components/splash";
+import Lightbox from "./_components/lightbox";
+import ModePicker from "./_components/mode-picker";
 import { signout } from "./actions/auth";
 
 type Guide = {
@@ -792,56 +795,11 @@ function HomeInner() {
       <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", position: "relative" }}>
 
         {/* SPLASH (initial mount) */}
-        {loading && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-            <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: -1 }}>
-              <span style={{ color: "#2ecc71" }}>Noma</span>
-              <span style={{ color: "#ad001c" }}>Domo</span>
-            </div>
-            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>
-              京都で本物のローカルと出会う
-            </div>
-            <div style={{ width: 32, height: 32, borderRadius: "50%", border: "3px solid #e8c99a", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite", marginTop: 8 }} />
-          </div>
-        )}
+        {loading && <Splash />}
 
-        {/* MODE PICKER (ログイン中 + app_mode 未選択時) */}
+        {/* MODE PICKER */}
         {!loading && currentUserId && appModeLoaded && !appMode && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "#f5ead0", display: "flex", flexDirection: "column", padding: "32px 20px 80px", overflowY: "auto" }}>
-            <div style={{ fontSize: 32, fontWeight: 900, textAlign: "center", marginTop: 40, marginBottom: 4 }}>
-              <span style={{ color: "#2ecc71" }}>Noma</span>
-              <span style={{ color: "#ad001c" }}>Domo</span>
-            </div>
-            <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, textAlign: "center", marginBottom: 36 }}>
-              どのモードで使う？
-            </div>
-
-            <button
-              onClick={() => saveAppMode("traveler")}
-              style={{ background: "linear-gradient(135deg, #ffefd5, #ffe0a0)", color: "#1a1008", border: "3px solid #ad001c", borderRadius: 22, padding: "24px 18px", marginBottom: 16, cursor: "pointer", fontFamily: "inherit", textAlign: "left", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-            >
-              <div style={{ fontSize: 38, marginBottom: 8 }}>✈️</div>
-              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>Traveler モード</div>
-              <div style={{ fontSize: 12, color: "#5a4530", fontWeight: 700, lineHeight: 1.5 }}>
-                旅行者として地元のガイドや mate と出会う。
-              </div>
-            </button>
-
-            <button
-              onClick={() => saveAppMode("local")}
-              style={{ background: "linear-gradient(135deg, #e6f5ee, #b0e5cc)", color: "#1a1008", border: "3px solid #2e8b57", borderRadius: 22, padding: "24px 18px", marginBottom: 16, cursor: "pointer", fontFamily: "inherit", textAlign: "left", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
-            >
-              <div style={{ fontSize: 38, marginBottom: 8 }}>🏯</div>
-              <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4, color: "#1e6b40" }}>Local モード</div>
-              <div style={{ fontSize: 12, color: "#1e6b40", fontWeight: 700, lineHeight: 1.5 }}>
-                ガイド / mate として旅行者と出会う。
-              </div>
-            </button>
-
-            <div style={{ textAlign: "center", fontSize: 11, color: "#8a7560", fontWeight: 700, marginTop: 20 }}>
-              ⚙️ 設定からあとで切り替えられるわよ
-            </div>
-          </div>
+          <ModePicker onPick={saveAppMode} />
         )}
 
         {/* HOME */}
@@ -1572,22 +1530,7 @@ function HomeInner() {
         )}
 
         {/* LIGHTBOX */}
-        {lightboxUrl && (
-          <div
-            onClick={() => setLightboxUrl(null)}
-            className="fade-enter"
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, cursor: "zoom-out" }}
-          >
-            <img src={lightboxUrl} alt="" className="zoom-enter" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }} />
-            <button
-              onClick={(e) => { e.stopPropagation(); setLightboxUrl(null); }}
-              style={{ position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.18)", color: "#fff", border: "2px solid rgba(255,255,255,0.4)", borderRadius: "50%", width: 36, height: 36, fontSize: 18, cursor: "pointer", fontWeight: 900 }}
-              aria-label="閉じる"
-            >
-              ×
-            </button>
-          </div>
-        )}
+        <Lightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
 
       </div>
     </div>
