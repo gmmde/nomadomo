@@ -153,6 +153,8 @@ function HomeInner() {
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [selectedGuideFollowers, setSelectedGuideFollowers] = useState<number>(0);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [profileImgIdx, setProfileImgIdx] = useState(0);
+  const [chatUnlocked, setChatUnlocked] = useState(false);
   const [heroImgError, setHeroImgError] = useState(false);
   const [heroImgLoaded, setHeroImgLoaded] = useState(false);
 
@@ -270,6 +272,20 @@ function HomeInner() {
         setSelectedGuideFollowers(typeof data === "number" ? data : 0);
       });
   }, [supabase, selectedGuide?.user_id]);
+
+  // チャット解錠状態 (accepted chat_request があれば true)
+  useEffect(() => {
+    setChatUnlocked(false);
+    if (!selectedGuide?.user_id || !currentUserId || selectedGuide.user_id === currentUserId) return;
+    supabase
+      .rpc("has_accepted_chat_request", { a: currentUserId, b: selectedGuide.user_id })
+      .then(({ data }) => setChatUnlocked(data === true));
+  }, [supabase, selectedGuide?.user_id, currentUserId]);
+
+  // プロフィール画面の画像カルーセル: 選択ガイドが変わったら index リセット
+  useEffect(() => {
+    setProfileImgIdx(0);
+  }, [selectedGuide?.id]);
 
   // フォロートグル（楽観的更新）
   async function toggleFollow(followeeUserId: string) {
@@ -825,165 +841,174 @@ function HomeInner() {
           </div>
         )}
 
-        {/* GUIDE PROFILE */}
-        {screen === "profile" && selectedGuide && (
-          <div className="screen-enter" style={{ minHeight: "100vh" }}>
-            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Guide profile</div>
-              {currentUserId && (
+        {/* GUIDE PROFILE (Tinder 風) */}
+        {screen === "profile" && selectedGuide && (() => {
+          const carouselImages: Array<{ src: string | null; path: string }> = [];
+          if (selectedGuide.avatarPath) carouselImages.push({ src: avatarUrls[selectedGuide.avatarPath] ?? null, path: selectedGuide.avatarPath });
+          for (const p of selectedGuide.image_paths) carouselImages.push({ src: galleryUrls[p] ?? null, path: p });
+          const cur = carouselImages[profileImgIdx] ?? null;
+          const total = carouselImages.length;
+          const isOwn = currentUserId === selectedGuide.user_id;
+          const isDemo = !selectedGuide.user_id;
+          const age = selectedGuide.tour_count; // placeholder, real age would need birth_year
+          return (
+          <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+            {/* 画像エリア (Tinder 風: 70vh の大きな画像) */}
+            <div style={{ position: "relative", height: "70vh", minHeight: 480, background: "#1a1008", overflow: "hidden" }}>
+              {cur?.src ? (
+                <img src={cur.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 120, background: "#ffefd5" }}>
+                  {selectedGuide.emoji}
+                </div>
+              )}
+
+              {/* Progress bars (Instagram stories 風) */}
+              {total > 1 && (
+                <div style={{ position: "absolute", top: 10, left: 10, right: 10, display: "flex", gap: 4, zIndex: 3 }}>
+                  {carouselImages.map((_, i) => (
+                    <div key={i} style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.3)", borderRadius: 2 }}>
+                      <div style={{ height: "100%", background: "#fff", width: i < profileImgIdx ? "100%" : i === profileImgIdx ? "100%" : "0%", borderRadius: 2 }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* タップゾーン: 左半分 = prev, 右半分 = next */}
+              {total > 1 && (
+                <>
+                  <div onClick={() => setProfileImgIdx((i) => Math.max(0, i - 1))} style={{ position: "absolute", top: 30, left: 0, width: "40%", height: "calc(100% - 200px)", zIndex: 2, cursor: "pointer" }} />
+                  <div onClick={() => setProfileImgIdx((i) => Math.min(total - 1, i + 1))} style={{ position: "absolute", top: 30, right: 0, width: "40%", height: "calc(100% - 200px)", zIndex: 2, cursor: "pointer" }} />
+                </>
+              )}
+
+              {/* トップバー: 戻る + 歯車 */}
+              <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 14px", zIndex: 4 }}>
+                <button onClick={goBack} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", border: "none", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>←</button>
+                <Link href="/settings" aria-label="設定" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+              </div>
+
+              {/* 下部オーバーレイ (グラデ + テキスト) */}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "60px 18px 20px", background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.85))", color: "#fff", zIndex: 3 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{selectedGuide.name}</span>
+                  {selectedGuide.mode !== "free" && <span style={{ fontSize: 18 }}>✨</span>}
+                  <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: selectedGuide.mode === "paid" ? "rgba(173,0,28,0.85)" : selectedGuide.mode === "free" ? "rgba(46,139,87,0.85)" : "rgba(26,16,8,0.85)" }}>
+                    {selectedGuide.mode === "paid" ? "GUIDE" : selectedGuide.mode === "free" ? "MATE" : "MATE & GUIDE"}
+                  </span>
+                </div>
+                <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                  🎓 {selectedGuide.uni}
+                </div>
+                <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                  📍 {selectedGuide.areas.join(" · ")} 在住
+                </div>
+                {selectedGuide.bio && (
+                  <div style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+                    {selectedGuide.bio}
+                  </div>
+                )}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
+                  {[...selectedGuide.tags, ...selectedGuide.languages].slice(0, 6).map((t) => (
+                    <span key={t} style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "2px 7px", fontSize: 10, color: "#fff", fontWeight: 700 }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* スクロール下: stats + 詳細 + 自分のガイドなら編集 */}
+            <div style={{ padding: "14px 20px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: "#1a1008", fontWeight: 800 }}>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{selectedGuideFollowers}</span>
+                <span style={{ marginLeft: 4, color: "#8a7560" }}>followers</span>
+              </div>
+              {currentUserId && selectedGuide.user_id && !isOwn && (
                 <button
-                  onClick={() => toggleSave(Number(selectedGuide.id))}
-                  style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: 0, width: 28 }}
-                  aria-label="お気に入り"
+                  onClick={() => selectedGuide.user_id && toggleFollow(selectedGuide.user_id)}
+                  style={{ background: followingIds.has(selectedGuide.user_id) ? "#fff" : "#2e8b57", color: followingIds.has(selectedGuide.user_id) ? "#2e8b57" : "#fff", border: "2px solid #2e8b57", borderRadius: 20, padding: "6px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
                 >
-                  {savedIds.has(Number(selectedGuide.id)) ? "❤️" : "🤍"}
+                  {followingIds.has(selectedGuide.user_id) ? "✓ Following" : "+ Follow"}
                 </button>
               )}
-              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
-            </div>
-            <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
-              <div style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", overflow: "hidden" }}>{selectedGuide.avatarPath && avatarUrls[selectedGuide.avatarPath] ? <img src={avatarUrls[selectedGuide.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : selectedGuide.emoji}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>
-                {selectedGuide.name}{selectedGuide.mode !== "free" ? " ✨" : ""}
-              </div>
-              <div style={{ fontSize: 11, fontWeight: 900, color: selectedGuide.mode === "paid" ? "#ad001c" : selectedGuide.mode === "free" ? "#2e8b57" : "#1a1008", marginBottom: 4 }}>
-                {selectedGuide.mode === "paid" ? "💼 PAID GUIDE" : selectedGuide.mode === "free" ? "🤝 MATE (FREE)" : "✨ MATE & GUIDE"}
-              </div>
-              <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, marginBottom: 6 }}>{selectedGuide.uni}</div>
-              <div style={{ fontSize: 11, color: "#2e8b57", fontWeight: 800, marginBottom: 10 }}>📍 {selectedGuide.areas.join(" · ")}</div>
-
-              {/* フォロワー数 (常に表示) + フォローボタン (他人ガイドのみ) */}
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 14, marginBottom: 4 }}>
-                <div style={{ fontSize: 13, color: "#1a1008", fontWeight: 800 }}>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{selectedGuideFollowers}</span>
-                  <span style={{ marginLeft: 4, color: "#8a7560" }}>followers</span>
-                </div>
-                {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
-                  <button
-                    onClick={() => selectedGuide.user_id && toggleFollow(selectedGuide.user_id)}
-                    style={{
-                      background: followingIds.has(selectedGuide.user_id) ? "#fff" : "#2e8b57",
-                      color: followingIds.has(selectedGuide.user_id) ? "#2e8b57" : "#fff",
-                      border: "2px solid #2e8b57",
-                      borderRadius: 20,
-                      padding: "6px 16px",
-                      fontSize: 13,
-                      fontWeight: 900,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {followingIds.has(selectedGuide.user_id) ? "✓ Following" : "+ Follow"}
-                  </button>
-                )}
-                {!selectedGuide.user_id && (
-                  <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic" }}>デモガイド</span>
-                )}
-              </div>
             </div>
 
-
-            <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { display: "flex", margin: "0 20px 20px", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 18, overflow: "hidden" }; })()}>
+            <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { display: "flex", margin: "0 20px 16px", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 14, overflow: "hidden" }; })()}>
               {[[String(selectedGuide.tour_count), "Tours"], [selectedGuide.tour_count === 0 ? "新規" : selectedGuide.stars, "Rating"], [selectedGuide.languages.join("/"), "Languages"]].map(([n, l], i, arr) => (
-                <div key={l} style={{ flex: 1, padding: "14px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: "#ad001c" }}>{n}</div>
+                <div key={l} style={{ flex: 1, padding: "12px 0", textAlign: "center", borderRight: i < arr.length - 1 ? "2px solid #e8c99a" : "none" }}>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: "#ad001c" }}>{n}</div>
                   <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, textTransform: "uppercase" }}>{l}</div>
                 </div>
               ))}
             </div>
-            <div style={(() => { const s = modeCardStyle(selectedGuide.mode); return { background: s.bg, border: `2px solid ${s.border}`, borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }; })()}>
-              "{selectedGuide.bio}"
-            </div>
-            <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {selectedGuide.tags.map(t => (
-                <span key={t} style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "7px 14px", fontSize: 12, color: "#2e8b57", fontWeight: 700 }}>{t}</span>
-              ))}
-            </div>
-            {selectedGuide.image_paths.length > 0 && (
-              <div style={{ padding: "0 20px 16px" }}>
-                <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", margin: "0 -20px", padding: "0 20px" }}>
-                  {selectedGuide.image_paths.map((p) => (
-                    galleryUrls[p] ? (
-                      <img
-                        key={p}
-                        src={galleryUrls[p]}
-                        alt=""
-                        onClick={() => galleryUrls[p] && setLightboxUrl(galleryUrls[p])}
-                        style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover", scrollSnapAlign: "center", cursor: "pointer" }}
-                      />
-                    ) : (
-                      <div
-                        key={p}
-                        style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite", scrollSnapAlign: "center" }}
-                        aria-hidden="true"
-                      />
-                    )
-                  ))}
-                </div>
-                {selectedGuide.image_paths.length > 1 && (
-                  <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 6 }}>
-                    ← スワイプして他の写真を見る →
-                  </div>
-                )}
-              </div>
-            )}
+
             {selectedGuide.mode !== "free" && (
               <div style={{ padding: "0 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>Starting from</span>
-                <span style={{ fontSize: 24, fontWeight: 900, color: "#2e8b57" }}>{selectedGuide.rate}</span>
+                <span style={{ fontSize: 22, fontWeight: 900, color: "#2e8b57" }}>{selectedGuide.rate}</span>
               </div>
             )}
             {selectedGuide.mode === "free" && (
-              <div style={{ padding: "0 20px 12px", textAlign: "center", fontSize: 13, color: "#ad001c", fontWeight: 900 }}>
-                🤝 無料で会える mate よ！料金なし
+              <div style={{ padding: "0 20px 12px", textAlign: "center", fontSize: 13, color: "#2e8b57", fontWeight: 900 }}>
+                🤝 無料で会える mate よ
               </div>
             )}
-            {currentUserId && selectedGuide.user_id === currentUserId ? (
-              <div style={{ margin: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+
+            {isOwn ? (
+              <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
+                <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   ✏️ プロファイル編集
                 </Link>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
-                  これはあなたのガイドプロファイルよ
-                </div>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>これはあなたのガイドプロファイルよ</div>
               </div>
             ) : (
-              <button
-                onClick={() => {
-                  if (!selectedGuide.user_id) return;
-                  setChatPeer({
-                    id: selectedGuide.user_id,
-                    name: selectedGuide.name,
-                    emoji: selectedGuide.emoji,
-                    guideId: selectedGuide.id,
-                  });
-                  setChatOrigin("profile");
-                  setScreen("chat");
-                }}
-                disabled={!selectedGuide.user_id || !currentUserId}
-                title={!selectedGuide.user_id ? "デモガイドにはメッセージング不可" : (!currentUserId ? "ログインが必要" : undefined)}
-                style={{ margin: "0 20px", display: "block", width: "calc(100% - 40px)", background: selectedGuide.user_id && currentUserId ? "#ad001c" : "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: selectedGuide.user_id && currentUserId ? "pointer" : "not-allowed", fontFamily: "inherit" }}
-              >
-                {!selectedGuide.user_id ? "デモガイド・メッセージ不可" : !currentUserId ? "ログインしてメッセージ" : `Message ${selectedGuide.name} 💬`}
-              </button>
-            )}
-            {currentUserId && selectedGuide.user_id && selectedGuide.user_id !== currentUserId && (
               <>
-                <div style={{ margin: "10px 20px 0" }}>
-                  <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    📅 予約をリクエストする
-                  </Link>
+                {/* sticky 下部: message + heart */}
+                <div style={{ position: "sticky", bottom: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(8px)", borderTop: "2px solid #f0d9b5", padding: "14px 20px", display: "flex", gap: 12, alignItems: "center", marginTop: "auto" }}>
+                  {isDemo ? (
+                    <button disabled style={{ flex: 1, background: "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, cursor: "not-allowed", fontFamily: "inherit" }}>デモガイド・メッセージ不可</button>
+                  ) : !currentUserId ? (
+                    <Link href="/login" style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>ログインしてメッセージ</Link>
+                  ) : chatUnlocked ? (
+                    <button
+                      onClick={() => {
+                        if (!selectedGuide.user_id) return;
+                        setChatPeer({ id: selectedGuide.user_id, name: selectedGuide.name, emoji: selectedGuide.emoji, guideId: selectedGuide.id });
+                        setChatOrigin("profile");
+                        setScreen("chat");
+                      }}
+                      style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      💬 message
+                    </button>
+                  ) : (
+                    <Link href={`/chat-request/${selectedGuide.id}/new`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                      📨 メッセージリクエスト
+                    </Link>
+                  )}
+                  {currentUserId && (
+                    <button
+                      onClick={() => toggleSave(Number(selectedGuide.id))}
+                      style={{ width: 56, height: 56, borderRadius: "50%", background: "#fff", border: "2px solid #ad001c", fontSize: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+                      aria-label="お気に入り"
+                    >
+                      {savedIds.has(Number(selectedGuide.id)) ? "❤️" : "🤍"}
+                    </button>
+                  )}
                 </div>
-                <div style={{ textAlign: "center", marginTop: 14 }}>
-                  <Link href={`/report/${selectedGuide.user_id}`} style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textDecoration: "underline" }}>
-                    🚩 このガイドを通報
-                  </Link>
-                </div>
+                {currentUserId && selectedGuide.user_id && (
+                  <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, padding: "8px 20px 16px" }}>
+                    <Link href={`/report/${selectedGuide.user_id}`} style={{ color: "#8a7560", textDecoration: "underline", marginRight: 12 }}>🚩 通報</Link>
+                    {selectedGuide.mode !== "free" && (
+                      <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ color: "#2e8b57", textDecoration: "underline", fontWeight: 800 }}>📅 予約フォーム (有料)</Link>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
-        )}
+          );
+        })()}
+        {/* Old profile section removed below */}
 
         {/* CHAT */}
         {screen === "chat" && chatPeer && (
@@ -1128,6 +1153,9 @@ function HomeInner() {
                 <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   📅 予約一覧
                 </Link>
+                <Link href="/requests" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  📨 メッセージリクエスト
+                </Link>
                 {userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase()) && (
                   <Link href="/admin/analytics" style={{ display: "block", width: "100%", background: "#1a1008", color: "#fff", border: "none", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                     📊 分析ダッシュボード (admin)
@@ -1215,7 +1243,7 @@ function HomeInner() {
                 </div>
               ) : inboxPeers.length === 0 ? (
                 <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-                  まだ会話なし。ガイド詳細から「Message」してみて
+                  まだ会話なし。ガイドにメッセージリクエスト → 承認されると会話開始
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1233,10 +1261,7 @@ function HomeInner() {
                       >
                         <div style={{ position: "relative" }}>
                           <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (p.guideId) openGuideProfile(p.guideId);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); if (p.guideId) openGuideProfile(p.guideId); }}
                             style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default", overflow: "hidden" }}
                             title={p.guideId ? "ガイド詳細" : undefined}
                           >{(() => { const pg = p.guideId ? guides.find((x) => x.id === p.guideId) : null; return pg?.avatarPath && avatarUrls[pg.avatarPath] ? <img src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji; })()}</div>
@@ -1247,6 +1272,7 @@ function HomeInner() {
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
                           <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
                         </div>
                         <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
@@ -1261,19 +1287,14 @@ function HomeInner() {
           </div>
         )}
 
-        {/* LIGHTBOX (full screen image viewer) */}
+        {/* LIGHTBOX */}
         {lightboxUrl && (
           <div
             onClick={() => setLightboxUrl(null)}
             className="fade-enter"
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, cursor: "zoom-out" }}
           >
-            <img
-              src={lightboxUrl}
-              alt=""
-              className="zoom-enter"
-              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }}
-            />
+            <img src={lightboxUrl} alt="" className="zoom-enter" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8 }} />
             <button
               onClick={(e) => { e.stopPropagation(); setLightboxUrl(null); }}
               style={{ position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.18)", color: "#fff", border: "2px solid rgba(255,255,255,0.4)", borderRadius: "50%", width: 36, height: 36, fontSize: 18, cursor: "pointer", fontWeight: 900 }}
