@@ -39,6 +39,9 @@ const danger: React.CSSProperties = { width: "100%", background: "#fff", color: 
 export default function EditTravelerForm({ userEmail, initial }: { userEmail: string; initial: Initial }) {
   const [state, action, pending] = useActionState<TravelerFormState, FormData>(updateTraveler, undefined);
   const [interests, setInterests] = useState<string[]>(initial.interests);
+  const [name, setName] = useState(initial.name);
+  const [country, setCountry] = useState(initial.country);
+  const [bio, setBio] = useState(initial.bio);
   function toggle(v: string) {
     setInterests((s) => s.includes(v) ? s.filter((x) => x !== v) : [...s, v]);
   }
@@ -69,13 +72,13 @@ export default function EditTravelerForm({ userEmail, initial }: { userEmail: st
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="name">名前</label>
-              <input id="name" name="name" required defaultValue={initial.name} style={input} />
+              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={input} />
               {state?.errors?.name && <div style={err}>{state.errors.name}</div>}
             </div>
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="country">出身国</label>
-              <input id="country" name="country" required defaultValue={initial.country} style={input} />
+              <input id="country" name="country" required value={country} onChange={(e) => setCountry(e.target.value)} style={input} />
               {state?.errors?.country && <div style={err}>{state.errors.country}</div>}
             </div>
 
@@ -86,7 +89,8 @@ export default function EditTravelerForm({ userEmail, initial }: { userEmail: st
                 name="bio"
                 rows={4}
                 maxLength={2000}
-                defaultValue={initial.bio}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 style={{ ...input, resize: "vertical", minHeight: 90 }}
               />
               {state?.errors?.bio && <div style={err}>{state.errors.bio}</div>}

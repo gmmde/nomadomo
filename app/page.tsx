@@ -1063,7 +1063,15 @@ function HomeInner() {
               {travelerProfile ? (
                 <>
                   <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{travelerProfile.name}</div>
-                  <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>Traveler · From {travelerProfile.country}</div>
+                  <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>
+                    Traveler · From {travelerProfile.country}
+                    {ownGuide && <span style={{ marginLeft: 6, color: "#ad001c" }}>+ ガイド「{ownGuide.name}」</span>}
+                  </div>
+                </>
+              ) : ownGuide ? (
+                <>
+                  <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{ownGuide.name}</div>
+                  <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>ガイド · {ownGuide.uni}</div>
                 </>
               ) : (
                 <>
@@ -1122,9 +1130,15 @@ function HomeInner() {
                     📊 分析ダッシュボード (admin)
                   </Link>
                 )}
-                <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                  + ガイドとして登録
-                </Link>
+                {ownGuide ? (
+                  <Link href={`/guides/${ownGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    ✏️ ガイドプロファイルを編集
+                  </Link>
+                ) : (
+                  <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    + ガイドとして登録
+                  </Link>
+                )}
                 {travelerProfile ? (
                   <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                     ✏️ 旅行者プロファイルを編集

@@ -94,6 +94,11 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
   );
   const [tags, setTags] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [name, setName] = useState("");
+  const [university, setUniversity] = useState("");
+  const [bio, setBio] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [gender, setGender] = useState("");
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -131,14 +136,14 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
             {/* Name */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="name">名前</label>
-              <input id="name" name="name" required style={inputStyle} placeholder="例: Yuki Tanaka" />
+              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="例: Yuki Tanaka" />
               {state?.errors?.name && <div style={errStyle}>{state.errors.name}</div>}
             </div>
 
             {/* University */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="university">大学</label>
-              <input id="university" name="university" required style={inputStyle} placeholder="例: 京都大学" />
+              <input id="university" name="university" required value={university} onChange={(e) => setUniversity(e.target.value)} style={inputStyle} placeholder="例: 京都大学" />
               {state?.errors?.university && <div style={errStyle}>{state.errors.university}</div>}
             </div>
 
@@ -150,6 +155,8 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 name="bio"
                 required
                 rows={4}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 style={{ ...inputStyle, resize: "vertical", minHeight: 96 }}
                 placeholder="あなたの強みやお気に入りのスポットを書いて"
               />
@@ -164,7 +171,7 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="gender">性別 (任意・検索フィルタに使われる)</label>
-              <select id="gender" name="gender" style={inputStyle} defaultValue="">
+              <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle}>
                 <option value="">指定しない</option>
                 {GENDER_OPTIONS.map((g) => (
                   <option key={g.value} value={g.value}>{g.label}</option>
@@ -182,6 +189,8 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
                 min={1900}
                 max={new Date().getFullYear()}
                 step={1}
+                value={birthYear}
+                onChange={(e) => setBirthYear(e.target.value)}
                 style={inputStyle}
                 placeholder="例: 2002"
               />

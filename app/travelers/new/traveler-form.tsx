@@ -36,6 +36,9 @@ const btnPrimary: React.CSSProperties = { width: "100%", background: "#2e8b57", 
 export default function TravelerForm({ userEmail }: { userEmail: string }) {
   const [state, action, pending] = useActionState<TravelerFormState, FormData>(createTraveler, undefined);
   const [interests, setInterests] = useState<string[]>([]);
+  const [name, setName] = useState("");
+  const [country, setCountry] = useState("");
+  const [bio, setBio] = useState("");
   function toggle(value: string) {
     setInterests((s) => s.includes(value) ? s.filter((v) => v !== value) : [...s, value]);
   }
@@ -63,13 +66,13 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
 
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="name">名前</label>
-              <input id="name" name="name" required style={inputStyle} placeholder="例: John Smith" />
+              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="例: John Smith" />
               {state?.errors?.name && <div style={errStyle}>{state.errors.name}</div>}
             </div>
 
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="country">出身国</label>
-              <input id="country" name="country" required list="country-list" style={inputStyle} placeholder="例: Japan" />
+              <input id="country" name="country" required list="country-list" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} placeholder="例: Japan" />
               <datalist id="country-list">
                 {COUNTRY_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
               </datalist>
@@ -83,6 +86,8 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
                 name="bio"
                 rows={4}
                 maxLength={2000}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 style={{ ...inputStyle, resize: "vertical", minHeight: 90 }}
                 placeholder="どこから来た？何が好き？ガイドに知っておいてほしいこと"
               />

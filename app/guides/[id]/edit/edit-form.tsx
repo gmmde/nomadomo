@@ -132,6 +132,11 @@ export default function EditGuideForm({
   );
   const [tags, setTags] = useState<string[]>(initial.tags);
   const [languages, setLanguages] = useState<string[]>(initial.languages);
+  const [name, setName] = useState(initial.name);
+  const [university, setUniversity] = useState(initial.university);
+  const [bio, setBio] = useState(initial.bio);
+  const [birthYear, setBirthYear] = useState<string>(initial.birth_year != null ? String(initial.birth_year) : "");
+  const [gender, setGender] = useState<string>(initial.gender ?? "");
 
   function toggle(list: string[], v: string): string[] {
     return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
@@ -175,13 +180,13 @@ export default function EditGuideForm({
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="name">名前</label>
-              <input id="name" name="name" required defaultValue={initial.name} style={input} />
+              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={input} />
               {state?.errors?.name && <div style={err}>{state.errors.name}</div>}
             </div>
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="university">大学</label>
-              <input id="university" name="university" required defaultValue={initial.university} style={input} />
+              <input id="university" name="university" required value={university} onChange={(e) => setUniversity(e.target.value)} style={input} />
               {state?.errors?.university && <div style={err}>{state.errors.university}</div>}
             </div>
 
@@ -192,7 +197,8 @@ export default function EditGuideForm({
                 name="bio"
                 required
                 rows={4}
-                defaultValue={initial.bio}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 style={{ ...input, resize: "vertical", minHeight: 96 }}
               />
               {state?.errors?.bio && <div style={err}>{state.errors.bio}</div>}
@@ -204,7 +210,7 @@ export default function EditGuideForm({
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="gender">性別 (任意)</label>
-              <select id="gender" name="gender" defaultValue={initial.gender ?? ""} style={input}>
+              <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
                 <option value="">指定しない</option>
                 {GENDER_OPTIONS.map((g) => (
                   <option key={g.value} value={g.value}>{g.label}</option>
@@ -221,7 +227,8 @@ export default function EditGuideForm({
                 min={1900}
                 max={new Date().getFullYear()}
                 step={1}
-                defaultValue={initial.birth_year ?? ""}
+                value={birthYear}
+                onChange={(e) => setBirthYear(e.target.value)}
                 style={input}
                 placeholder="例: 2002"
               />
