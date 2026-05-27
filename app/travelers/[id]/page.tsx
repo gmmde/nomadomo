@@ -5,11 +5,12 @@ import TravelerProfileTinder, { type TravelerProfileData } from "@/app/_componen
 export const metadata = { title: "Traveler profile - NomaDomo" };
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ userId: string }> };
+type Props = { params: Promise<{ id: string }> };
 
 export default async function TravelerProfilePage({ params }: Props) {
-  const { userId } = await params;
-  if (!userId) notFound();
+  const { id } = await params;
+  const numericId = Number(id);
+  if (!Number.isFinite(numericId) || numericId <= 0) notFound();
 
   const supabase = await createClient();
   const {
@@ -19,15 +20,15 @@ export default async function TravelerProfilePage({ params }: Props) {
   const { data } = await supabase
     .from("travelers")
     .select(
-      "user_id, name, emoji, avatar_path, country, bio, nationality, occupation, trip_period, birth_year, interests, hobbies, languages, available_slots, image_paths",
+      "id, user_id, name, emoji, avatar_path, country, bio, nationality, occupation, trip_period, birth_year, interests, hobbies, languages, available_slots, image_paths",
     )
-    .eq("user_id", userId)
+    .eq("id", numericId)
     .maybeSingle();
 
   if (!data) notFound();
 
   const traveler: TravelerProfileData = {
-    user_id: data.user_id as string,
+    user_id: (data.user_id as string | null) ?? "",
     name: (data.name as string) ?? "",
     emoji: (data.emoji as string) ?? "🧑",
     avatar_path: (data.avatar_path as string | null) ?? null,
@@ -48,7 +49,7 @@ export default async function TravelerProfilePage({ params }: Props) {
     <TravelerProfileTinder
       traveler={traveler}
       currentUserId={user?.id ?? null}
-      isOwn={user?.id === traveler.user_id}
+      isOwn={!!user && user.id === traveler.user_id}
     />
   );
 }

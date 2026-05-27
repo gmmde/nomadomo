@@ -43,7 +43,7 @@ export default async function AllTravelersPage() {
             {rows.map((t) => (
               <Link
                 key={t.id}
-                href={`/travelers/${t.user_id}`}
+                href={`/travelers/${t.id}`}
                 style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, textDecoration: "none", color: "inherit" }}
               >
                 <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0 }}>

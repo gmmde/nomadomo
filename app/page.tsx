@@ -254,15 +254,16 @@ function HomeInner() {
     return () => sub.subscription.unsubscribe();
   }, [supabase]);
 
-  // ログイン中なら自分の旅行者プロファイル取得（RLSで自分の行のみ取得可）
+  // ログイン中なら自分の旅行者プロファイル取得（明示的に user_id で絞る）
   useEffect(() => {
-    if (!userEmail) {
+    if (!currentUserId) {
       setTravelerProfile(null);
       return;
     }
     supabase
       .from("travelers")
       .select("name, country, interests, bio, image_paths")
+      .eq("user_id", currentUserId)
       .maybeSingle()
       .then(({ data }) => {
         setTravelerProfile(
@@ -277,7 +278,7 @@ function HomeInner() {
             : null,
         );
       });
-  }, [supabase, userEmail]);
+  }, [supabase, currentUserId]);
 
   // 自分のお気に入りガイドID一覧を取得
   useEffect(() => {
@@ -797,8 +798,8 @@ function HomeInner() {
   ];
   const NAV_ITEMS_LOCAL: Array<{ icon: string; label: string; key: NavKey }> = [
     { icon: "🏠", label: t("nav_home", lang), key: "home" },
-    { icon: "📨", label: t("nav_requests", lang), key: "requests" },
     { icon: "💬", label: t("nav_messages", lang), key: "inbox" },
+    { icon: "🤍", label: t("nav_saved", lang), key: "saved" },
     { icon: "😊", label: t("nav_profile", lang), key: "myprofile" },
   ];
   const NAV_ITEMS = appMode === "local" ? NAV_ITEMS_LOCAL : NAV_ITEMS_TRAVELER;
@@ -838,8 +839,8 @@ function HomeInner() {
         {/* SPLASH (initial mount) */}
         {loading && <Splash />}
 
-        {/* MODE PICKER */}
-        {!loading && currentUserId && appModeLoaded && !appMode && (
+        {/* MODE PICKER — guides loading に gate しない（新規ユーザは即座に出すべき） */}
+        {currentUserId && appModeLoaded && !appMode && (
           <ModePicker onPick={saveAppMode} />
         )}
 
@@ -1024,7 +1025,7 @@ function HomeInner() {
                   {travelersList.map((t) => (
                     <Link
                       key={t.id}
-                      href={`/travelers/${t.user_id}`}
+                      href={`/travelers/${t.id}`}
                       style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 12, textDecoration: "none", color: "inherit" }}
                     >
                       <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>
@@ -1229,6 +1230,20 @@ function HomeInner() {
                 )}
               </div>
             )}
+            {!isOwn && (selectedGuide.bio || selectedGuide.occupation || selectedGuide.nationality) && (() => {
+              const target: "en" | "ja" = lang === "ja" ? "en" : "ja";
+              const src = target === "en" ? "ja" : "en";
+              const txt = [selectedGuide.bio, selectedGuide.occupation, selectedGuide.nationality].filter(Boolean).join("\n\n");
+              const url = `https://translate.google.com/?sl=${src}&tl=${target}&text=${encodeURIComponent(txt)}&op=translate`;
+              const label = target === "en" ? "🌐 JP → EN" : "🌐 EN → JP";
+              return (
+                <div style={{ padding: "0 20px 8px", display: "flex", justifyContent: "flex-end" }}>
+                  <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff9f0", border: "1.5px solid #e8c99a", borderRadius: 16, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#1a1008", textDecoration: "none" }} title="Open Google Translate in a new tab">
+                    {label}
+                  </a>
+                </div>
+              );
+            })()}
             {isOwn ? (
               <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
@@ -1258,7 +1273,7 @@ function HomeInner() {
                     </button>
                   ) : (
                     <Link href={`/chat-request/${selectedGuide.id}/new`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                      {t("message_request_btn", lang)}
+                      {t("send_btn", lang)}
                     </Link>
                   )}
                   {currentUserId && (

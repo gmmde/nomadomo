@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSignedUrls } from "../lib/use-signed-urls";
+import { useLang, t } from "../lib/i18n";
 
 export type TravelerProfileData = {
   user_id: string;
@@ -44,6 +45,7 @@ function formatSlotShort(s: string): string {
 
 export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
+  const [lang] = useLang();
 
   const allPaths = [
     ...(traveler.avatar_path ? [traveler.avatar_path] : []),
@@ -58,11 +60,17 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
   const total = carouselImages.length;
   const age = ageFromBirthYear(traveler.birth_year);
   const interestTags = [...new Set([...(traveler.hobbies ?? []), ...(traveler.interests ?? [])])];
+  const isDemo = !traveler.user_id;
+
+  const translateTarget: "en" | "ja" = lang === "ja" ? "en" : "ja";
+  const translateSrc: "en" | "ja" = translateTarget === "en" ? "ja" : "en";
+  const translateLabel = translateTarget === "en" ? "🌐 JP → EN" : "🌐 EN → JP";
+  const translateText = [traveler.bio, traveler.occupation, traveler.nationality].filter(Boolean).join("\n\n");
+  const translateUrl = `https://translate.google.com/?sl=${translateSrc}&tl=${translateTarget}&text=${encodeURIComponent(translateText)}&op=translate`;
 
   return (
     <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5ead0" }}>
       <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", margin: "0 auto", background: "#f5ead0", position: "relative" }}>
-        {/* image carousel 70vh */}
         <div style={{ position: "relative", height: "70vh", minHeight: 480, background: "#1a1008", overflow: "hidden" }}>
           {cur?.src ? (
             <img src={cur.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -89,13 +97,11 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
             </>
           )}
 
-          {/* topbar */}
           <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 14px", zIndex: 4 }}>
             <Link href="/" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", textDecoration: "none", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>←</Link>
-            <Link href="/settings" aria-label="設定" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+            <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
           </div>
 
-          {/* bottom overlay */}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "60px 18px 20px", background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.85))", color: "#fff", zIndex: 3 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <span style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{traveler.name}</span>
@@ -104,7 +110,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
             </div>
             <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
               ✈ From {traveler.country}
-              {age != null && <span style={{ marginLeft: 8 }}>· {age} y.o.</span>}
+              {age != null && <span style={{ marginLeft: 8 }}>· {age} {t("yo", lang)}</span>}
             </div>
             {(traveler.nationality || traveler.occupation) && (
               <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
@@ -124,15 +130,28 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
               </div>
             )}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
-              {[...interestTags, ...traveler.languages].slice(0, 6).map((t) => (
-                <span key={t} style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "2px 7px", fontSize: 10, color: "#fff", fontWeight: 700 }}>{t}</span>
+              {[...interestTags, ...traveler.languages].slice(0, 6).map((tag) => (
+                <span key={tag} style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, padding: "2px 7px", fontSize: 10, color: "#fff", fontWeight: 700 }}>{tag}</span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Lower content */}
-        <div style={{ padding: "14px 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {!isOwn && translateText.trim().length > 0 && (
+          <div style={{ padding: "10px 20px 0", display: "flex", justifyContent: "flex-end" }}>
+            <a
+              href={translateUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "#fff9f0", border: "1.5px solid #e8c99a", borderRadius: 16, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#1a1008", textDecoration: "none" }}
+              title="Open Google Translate in a new tab"
+            >
+              {translateLabel}
+            </a>
+          </div>
+        )}
+
+        <div style={{ padding: "10px 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontSize: 13, color: "#1a1008", fontWeight: 800 }}>
             <span style={{ fontSize: 18, fontWeight: 900, color: "#2e8b57" }}>✈️</span>
             <span style={{ marginLeft: 6, color: "#8a7560" }}>Visiting Kyoto</span>
@@ -148,7 +167,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
           <div style={{ margin: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             {interestTags.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>🎯 Hobbies / Interests</div>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>{t("hobbies_section", lang)}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {interestTags.map((h) => (
                     <span key={h} style={{ background: "#ffefd5", border: "1.5px solid #ad001c", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>{h}</span>
@@ -158,7 +177,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
             )}
             {traveler.available_slots.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>📅 Free time in Kyoto</div>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>{t("available_section", lang)}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {traveler.available_slots.slice(0, 12).map((s) => (
                     <span key={s} style={{ background: "#e6f5ee", border: "1.5px solid #2e8b57", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{formatSlotShort(s)}</span>
@@ -172,22 +191,30 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
         {isOwn ? (
           <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
             <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-              ✏️ Edit traveler profile
+              {t("edit_traveler_profile", lang)}
             </Link>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>This is your own traveler profile.</div>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>{t("this_is_your_profile", lang)}</div>
           </div>
         ) : (
           <>
             <div style={{ position: "sticky", bottom: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(8px)", borderTop: "2px solid #f0d9b5", padding: "14px 20px", display: "flex", gap: 12, alignItems: "center", marginTop: "auto" }}>
-              {!currentUserId ? (
-                <Link href={`/login?next=/travelers/${traveler.user_id}`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>Login to message</Link>
+              {isDemo ? (
+                <button disabled style={{ flex: 1, background: "#bbb", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, cursor: "not-allowed", fontFamily: "inherit" }}>
+                  {t("demo_guide_no_msg", lang)}
+                </button>
+              ) : !currentUserId ? (
+                <Link href={`/login?next=/travelers/${traveler.user_id}`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  {t("login_to_message", lang)}
+                </Link>
               ) : (
-                <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>📨 Message request</Link>
+                <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                  {t("send_btn", lang)}
+                </Link>
               )}
             </div>
-            {currentUserId && (
+            {currentUserId && !isDemo && (
               <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, padding: "8px 20px 16px" }}>
-                <Link href={`/report/${traveler.user_id}`} style={{ color: "#8a7560", textDecoration: "underline" }}>🚩 Report</Link>
+                <Link href={`/report/${traveler.user_id}`} style={{ color: "#8a7560", textDecoration: "underline" }}>{t("report_link", lang)}</Link>
               </div>
             )}
           </>

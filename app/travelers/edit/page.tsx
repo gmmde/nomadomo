@@ -14,6 +14,7 @@ export default async function EditTravelerPage() {
   const { data: t } = await supabase
     .from("travelers")
     .select("name, country, interests, bio, image_paths, avatar_path, emoji, gender, gender_other, birth_year, nationality, occupation, hobbies, available_slots, trip_period")
+    .eq("user_id", user.id)
     .maybeSingle();
 
   if (!t) notFound();
