@@ -717,8 +717,8 @@ function HomeInner() {
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.05) 100%)", zIndex: 2, pointerEvents: "none" }}/>
               <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Kyoto, Japan</div>
-                <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, textShadow: "0 2px 12px #fff8" }}>
-                  Meet a <span style={{ color: "#ad001c" }}>real local</span>,<br/>not a tour guide
+                <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45)" }}>
+                  Meet a <span style={{ color: "#a8eabf" }}>real local</span>,<br/>not a tour guide
                 </div>
               </div>
             </div>
