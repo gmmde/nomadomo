@@ -5,6 +5,16 @@ import { useActionState } from "react";
 import { useState } from "react";
 import { updateTraveler, deleteTraveler, type TravelerFormState } from "@/app/actions/travelers";
 import ImageUploader from "@/app/lib/image-uploader";
+import AvatarPicker from "@/app/lib/avatar-picker";
+import HobbiesTags from "@/app/lib/hobbies-tags";
+import AvailableSlots from "@/app/lib/available-slots";
+
+const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: "male", label: "男性" },
+  { value: "female", label: "女性" },
+  { value: "non-binary", label: "ノンバイナリー" },
+  { value: "other", label: "その他" },
+];
 
 const INTEREST_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 
@@ -14,6 +24,16 @@ type Initial = {
   interests: string[];
   bio: string;
   image_paths: string[];
+  avatar_path: string | null;
+  emoji: string | null;
+  gender: string | null;
+  gender_other: string | null;
+  birth_year: number | null;
+  nationality: string | null;
+  occupation: string | null;
+  hobbies: string[];
+  available_slots: string[];
+  trip_period: string | null;
 };
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
@@ -42,6 +62,12 @@ export default function EditTravelerForm({ userEmail, initial }: { userEmail: st
   const [name, setName] = useState(initial.name);
   const [country, setCountry] = useState(initial.country);
   const [bio, setBio] = useState(initial.bio);
+  const [gender, setGender] = useState<string>(initial.gender ?? "");
+  const [genderOther, setGenderOther] = useState(initial.gender_other ?? "");
+  const [birthYear, setBirthYear] = useState<string>(initial.birth_year != null ? String(initial.birth_year) : "");
+  const [nationality, setNationality] = useState(initial.nationality ?? "");
+  const [occupation, setOccupation] = useState(initial.occupation ?? "");
+  const [tripPeriod, setTripPeriod] = useState(initial.trip_period ?? "");
   function toggle(v: string) {
     setInterests((s) => s.includes(v) ? s.filter((x) => x !== v) : [...s, v]);
   }
@@ -94,6 +120,54 @@ export default function EditTravelerForm({ userEmail, initial }: { userEmail: st
                 style={{ ...input, resize: "vertical", minHeight: 90 }}
               />
               {state?.errors?.bio && <div style={err}>{state.errors.bio}</div>}
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>アバター (写真または絵文字)</label>
+              <AvatarPicker initialEmoji={initial.emoji ?? "🧑"} initialAvatarPath={initial.avatar_path} />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="gender">性別 (任意)</label>
+              <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
+                <option value="">指定しない</option>
+                {GENDER_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value}>{g.label}</option>
+                ))}
+              </select>
+              {gender === "other" && (
+                <input name="gender_other" type="text" maxLength={40} value={genderOther} onChange={(e) => setGenderOther(e.target.value)} placeholder="自由入力" style={{ ...input, marginTop: 6 }} />
+              )}
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="birth_year">生まれ年 (任意)</label>
+              <input id="birth_year" name="birth_year" type="number" min={1900} max={new Date().getFullYear()} step={1} value={birthYear} onChange={(e) => setBirthYear(e.target.value)} style={input} placeholder="例: 1995" />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="nationality">国籍 (任意)</label>
+              <input id="nationality" name="nationality" type="text" maxLength={80} value={nationality} onChange={(e) => setNationality(e.target.value)} style={input} />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="occupation">職業 (任意)</label>
+              <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={input} />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={label} htmlFor="trip_period">滞在期間 (任意)</label>
+              <input id="trip_period" name="trip_period" type="text" maxLength={100} value={tripPeriod} onChange={(e) => setTripPeriod(e.target.value)} style={input} placeholder="例: 2026/06/01-2026/06/10" />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>趣味 (任意)</label>
+              <HobbiesTags initial={initial.hobbies} />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={label}>会える時間 (任意)</label>
+              <AvailableSlots initial={initial.available_slots} />
             </div>
 
             <div style={{ marginBottom: 24 }}>

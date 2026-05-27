@@ -26,14 +26,17 @@ export async function createChatRequest(
   const place = String(formData.get("preferred_place") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
 
-  if (!dateRaw) return { error: "希望日時を選んで" };
-  const date = new Date(dateRaw);
-  if (isNaN(date.getTime())) return { error: "日時の形式がおかしい" };
-  if (date.getTime() <= Date.now()) return { error: "未来の日時にして" };
+  let dateIso: string | null = null;
+  if (dateRaw) {
+    const date = new Date(dateRaw);
+    if (isNaN(date.getTime())) return { error: "日時の形式がおかしい" };
+    if (date.getTime() <= Date.now()) return { error: "未来の日時にして" };
+    dateIso = date.toISOString();
+  }
 
-  if (!place || place.length < 1) return { error: "行きたい場所を書いて" };
   if (place.length > 200) return { error: "場所は200文字以内で" };
   if (message.length > 1000) return { error: "メッセージは1000文字以内で" };
+  if (!dateIso && !place && !message) return { error: "日時・場所・メッセージのうち最低1つは入れて" };
 
   // 既に pending or accepted のリクエストがあるかチェック
   const { data: existing } = await supabase
@@ -55,8 +58,8 @@ export async function createChatRequest(
   const { error } = await supabase.from("chat_requests").insert({
     traveler_id: user.id,
     guide_user_id: guideUserId,
-    preferred_date: date.toISOString(),
-    preferred_place: place,
+    preferred_date: dateIso,
+    preferred_place: place || null,
     message: message || null,
     status: "pending",
   });

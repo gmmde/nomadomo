@@ -7,7 +7,7 @@ import { createClient } from "@/app/lib/supabase/server";
 const STORAGE_BUCKET = "guide-images"; // 旅行者画像も同じバケットを使う（user_id フォルダで分離）
 
 export type TravelerFormErrors = Partial<
-  Record<"name" | "country" | "interests" | "bio", string>
+  Record<"name" | "country" | "interests" | "bio" | "nationality" | "occupation" | "trip_period", string>
 >;
 
 export type TravelerFormState =
@@ -24,6 +24,21 @@ function parseTravelerFields(formData: FormData) {
     .map(String)
     .filter(Boolean)
     .slice(0, 8);
+  const avatar_path = String(formData.get("avatar_path") ?? "").trim() || null;
+  const emoji = String(formData.get("emoji") ?? "").trim() || null;
+  const genderRaw = String(formData.get("gender") ?? "").trim();
+  const gender = genderRaw && ["male", "female", "non-binary", "other"].includes(genderRaw) ? genderRaw : null;
+  const gender_other = String(formData.get("gender_other") ?? "").trim().slice(0, 40) || null;
+  const birthYearRaw = String(formData.get("birth_year") ?? "").trim();
+  const birthYearN = Number(birthYearRaw);
+  const currentYear = new Date().getFullYear();
+  const birth_year = birthYearRaw && Number.isFinite(birthYearN) && birthYearN >= 1900 && birthYearN <= currentYear ? Math.round(birthYearN) : null;
+  const nationality = String(formData.get("nationality") ?? "").trim().slice(0, 80) || null;
+  const occupation = String(formData.get("occupation") ?? "").trim().slice(0, 80) || null;
+  const hobbies = formData.getAll("hobbies").map(String).map((s) => s.trim()).filter(Boolean).slice(0, 20);
+  const available_slots = formData.getAll("available_slots").map(String).filter(Boolean).slice(0, 30);
+  const languages = formData.getAll("languages").map(String).filter(Boolean);
+  const trip_period = String(formData.get("trip_period") ?? "").trim().slice(0, 100) || null;
 
   const errors: TravelerFormErrors = {};
   if (name.length < 2) errors.name = "名前は2文字以上にして";
@@ -31,7 +46,7 @@ function parseTravelerFields(formData: FormData) {
   if (interests.length === 0) errors.interests = "興味を1つ以上選んで";
   if (bio.length > 2000) errors.bio = "自己紹介は2000文字以内で";
 
-  return { fields: { name, country, interests, bio: bio || null, image_paths }, errors };
+  return { fields: { name, country, interests, bio: bio || null, image_paths, avatar_path, emoji, gender, gender_other, birth_year, nationality, occupation, hobbies, available_slots, languages, trip_period }, errors };
 }
 
 async function removeOwnedStorageObjects(

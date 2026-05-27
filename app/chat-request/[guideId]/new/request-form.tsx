@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createChatRequest, type RequestFormState } from "@/app/actions/chat-requests";
 import BackButton from "@/app/lib/back-button";
 
@@ -30,6 +30,8 @@ type Props = {
 
 export default function RequestForm({ guideUserId, guideName, guideEmoji, guideUniversity, guideMode }: Props) {
   const router = useRouter();
+  const sp = useSearchParams();
+  const simple = sp.get("kind") === "simple";
   const [state, action, pending] = useActionState<RequestFormState, FormData>(createChatRequest, undefined);
   const [place, setPlace] = useState("");
   const [message, setMessage] = useState("");
@@ -67,31 +69,33 @@ export default function RequestForm({ guideUserId, guideName, guideEmoji, guideU
         </div>
 
         <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, marginBottom: 16, lineHeight: 1.6 }}>
-          いきなり DM は送れない仕組みよ。「いつ・どこで・なぜ会いたいか」をリクエストすると、ガイドが承認したらチャットが開けるわ。
+          {simple ? "いきなり DM は送れない仕組みよ。最初の挨拶メッセージを書いて、相手が承認したらチャットが開けるわ。" : "いきなり DM は送れない仕組みよ。「いつ・どこで・なぜ会いたいか」をリクエストすると、ガイドが承認したらチャットが開けるわ。"}
         </div>
 
         <form action={action}>
           <input type="hidden" name="guide_user_id" value={guideUserId} />
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="preferred_date">📅 希望日時</label>
-            <input id="preferred_date" name="preferred_date" type="datetime-local" required defaultValue={defaultDateTime()} style={input} />
-          </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="preferred_place">📍 行きたい場所</label>
-            <input
-              id="preferred_place"
-              name="preferred_place"
-              type="text"
-              required
-              maxLength={200}
-              value={place}
-              onChange={(e) => setPlace(e.target.value)}
-              style={input}
-              placeholder="例: 嵐山の竹林、伏見稲荷、祇園のお茶屋"
-            />
-          </div>
+          {!simple && (
+            <>
+              <div style={{ marginBottom: 16 }}>
+                <label style={label} htmlFor="preferred_date">📅 希望日時</label>
+                <input id="preferred_date" name="preferred_date" type="datetime-local" defaultValue={defaultDateTime()} style={input} />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={label} htmlFor="preferred_place">📍 行きたい場所</label>
+                <input
+                  id="preferred_place"
+                  name="preferred_place"
+                  type="text"
+                  maxLength={200}
+                  value={place}
+                  onChange={(e) => setPlace(e.target.value)}
+                  style={input}
+                  placeholder="例: 嵐山の竹林、伏見稲荷、祇園のお茶屋"
+                />
+              </div>
+            </>
+          )}
 
           <div style={{ marginBottom: 20 }}>
             <label style={label} htmlFor="message">💬 メッセージ (任意)</label>

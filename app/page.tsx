@@ -33,6 +33,19 @@ type Message = {
   created_at: string;
 };
 
+type TravelerRow = {
+  id: number;
+  user_id: string;
+  name: string;
+  country: string;
+  bio: string;
+  avatar_path: string | null;
+  emoji: string | null;
+  nationality: string | null;
+  occupation: string | null;
+  trip_period: string | null;
+};
+
 type TravelerProfile = {
   name: string;
   country: string;
@@ -158,6 +171,7 @@ function HomeInner() {
   const [appMode, setAppMode] = useState<"local" | "traveler" | null>(null);
   const [appModeLoaded, setAppModeLoaded] = useState(false);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
+  const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
   const [heroImgError, setHeroImgError] = useState(false);
   const [heroImgLoaded, setHeroImgLoaded] = useState(false);
 
@@ -277,6 +291,37 @@ function HomeInner() {
     // ホームに飛ばす
     navTab("home");
   }
+
+  // Local モード時: traveler 一覧を取得
+  useEffect(() => {
+    if (appMode !== "local") {
+      setTravelersList([]);
+      return;
+    }
+    supabase
+      .from("travelers")
+      .select("id, user_id, name, country, bio, avatar_path, emoji, nationality, occupation, trip_period")
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        const rows = (data ?? []).map((t) => ({
+          id: t.id as number,
+          user_id: t.user_id as string,
+          name: (t.name as string) ?? "",
+          country: (t.country as string) ?? "",
+          bio: (t.bio as string) ?? "",
+          avatar_path: (t.avatar_path as string | null) ?? null,
+          emoji: (t.emoji as string | null) ?? null,
+          nationality: (t.nationality as string | null) ?? null,
+          occupation: (t.occupation as string | null) ?? null,
+          trip_period: (t.trip_period as string | null) ?? null,
+        }));
+        setTravelersList(rows);
+      });
+  }, [supabase, appMode]);
+
+  // travelers 用 signed URL バッチ取得
+  const travelerAvatarUrls = useSignedUrls(travelersList.map((t) => t.avatar_path).filter((p): p is string => Boolean(p)));
 
   // 自分宛 pending リクエスト数 (Local モード時のみ意味あり)
   useEffect(() => {
@@ -667,9 +712,9 @@ function HomeInner() {
     { icon: "😊", label: "Profile", key: "myprofile" },
   ];
   const NAV_ITEMS_LOCAL: Array<{ icon: string; label: string; key: NavKey }> = [
-    { icon: "📨", label: "Requests", key: "requests" },
+    { icon: "🏠", label: "Home", key: "home" },
     { icon: "💬", label: "Messages", key: "inbox" },
-    { icon: "🏠", label: "Browse", key: "home" },
+    { icon: "🤍", label: "Saved", key: "saved" },
     { icon: "😊", label: "Profile", key: "myprofile" },
   ];
   const NAV_ITEMS = appMode === "local" ? NAV_ITEMS_LOCAL : NAV_ITEMS_TRAVELER;
@@ -679,13 +724,12 @@ function HomeInner() {
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
-          const isReq = item.key === "requests";
-          const showBadge = (item.key === "inbox" && totalUnread > 0) || (isReq && pendingRequestCount > 0);
-          const badgeCount = isReq ? pendingRequestCount : totalUnread;
+          const showBadge = item.key === "inbox" && totalUnread > 0;
+          const badgeCount = totalUnread;
           return (
             <div
               key={item.label}
-              onClick={() => { if (item.key === "requests") router.push("/requests"); else navTab(item.key as Exclude<NavKey, "requests">); }}
+              onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
               <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
@@ -738,8 +782,7 @@ function HomeInner() {
               <div style={{ fontSize: 38, marginBottom: 8 }}>✈️</div>
               <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>Traveler モード</div>
               <div style={{ fontSize: 12, color: "#5a4530", fontWeight: 700, lineHeight: 1.5 }}>
-                旅行者として地元のガイドや mate と出会う。<br/>
-                ガイドを検索 / 保存 / メッセージリクエストできる。
+                旅行者として地元のガイドや mate と出会う。
               </div>
             </button>
 
@@ -750,8 +793,7 @@ function HomeInner() {
               <div style={{ fontSize: 38, marginBottom: 8 }}>🏯</div>
               <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4, color: "#1e6b40" }}>Local モード</div>
               <div style={{ fontSize: 12, color: "#1e6b40", fontWeight: 700, lineHeight: 1.5 }}>
-                ガイド / mate として旅行者を受け入れる。<br/>
-                受信リクエスト管理 / 自分のプロフィール / 予約管理ができる。
+                ガイド / mate として旅行者と出会う。
               </div>
             </button>
 
@@ -771,9 +813,15 @@ function HomeInner() {
                 <span style={{ color: "#fff" }}>Domo</span>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Link href="/guides/new" style={{ background: "#2ecc71", color: "#fff", border: "none", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
-                  + ガイドになる
-                </Link>
+                {currentUserId && appMode && (
+                  <button
+                    onClick={() => saveAppMode(appMode === "local" ? "traveler" : "local")}
+                    style={{ background: appMode === "local" ? "#2ecc71" : "#ffffff28", color: "#fff", border: appMode === "local" ? "none" : "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                    title="タップでモード切替"
+                  >
+                    {appMode === "local" ? "🏯 Local" : "✈️ Traveler"} ⇄
+                  </button>
+                )}
                 {userEmail ? (
                   <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
                 ) : (
@@ -873,8 +921,8 @@ function HomeInner() {
 
             {/* GUIDES */}
             <div style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
-              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>Available now ✨</div>
-              <Link href="/guides/all" style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>See all &rarr;</Link>
+              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? "Travelers in Kyoto ✈️" : "Available now ✨"}</div>
+              <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>See all &rarr;</Link>
             </div>
 
             {loading ? (
@@ -903,6 +951,40 @@ function HomeInner() {
                   </div>
                 ))}
               </div>
+            ) : appMode === "local" ? (
+              travelersList.length === 0 ? (
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>まだ旅行者登録なし</div>
+              ) : (
+                <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  {travelersList.map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/chat-request/u/${t.user_id}/new?kind=simple`}
+                      style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 12, textDecoration: "none", color: "inherit" }}
+                    >
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>
+                        {t.avatar_path && travelerAvatarUrls[t.avatar_path] ? (
+                          <img src={travelerAvatarUrls[t.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <span>{t.emoji ?? "🧑"}</span>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 900 }}>{t.name}</div>
+                        <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>
+                          ✈️ From {t.country}{t.occupation ? ` · ${t.occupation}` : ""}
+                        </div>
+                        {t.bio && (
+                          <div style={{ fontSize: 12, color: "#555", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                            {t.bio}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
+                    </Link>
+                  ))}
+                </div>
+              )
             ) : visibleGuides.length === 0 ? (
               <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>No guides found</div>
             ) : (
@@ -1267,13 +1349,20 @@ function HomeInner() {
                     + ガイドとして登録
                   </Link>
                 )}
-                {travelerProfile ? (
-                  <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    ✏️ 旅行者プロファイルを編集
-                  </Link>
-                ) : (
-                  <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    ✈ 旅行者として登録
+                {appMode !== "local" && (
+                  travelerProfile ? (
+                    <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                      ✏️ 旅行者プロファイルを編集
+                    </Link>
+                  ) : (
+                    <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                      ✈ 旅行者として登録
+                    </Link>
+                  )
+                )}
+                {appMode === "local" && !travelerProfile && (
+                  <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#fff", color: "#8a7560", border: "1.5px dashed #e8c99a", borderRadius: 16, padding: 10, fontSize: 11, fontWeight: 700, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+                    （旅行者プロファイルも作る場合は ✈ 登録）
                   </Link>
                 )}
                 <form action={signout}>
