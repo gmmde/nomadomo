@@ -7,7 +7,11 @@ import { useSignedUrls } from "./lib/use-signed-urls";
 import Splash from "./_components/splash";
 import Lightbox from "./_components/lightbox";
 import ModePicker from "./_components/mode-picker";
-import { signout } from "./actions/auth";
+import ChatScreen from "./_components/chat-screen";
+import MyProfileScreen from "./_components/my-profile-screen";
+import SavedScreen from "./_components/saved-screen";
+import InboxScreen from "./_components/inbox-screen";
+import { useLang, t } from "./lib/i18n";
 
 type Guide = {
   id: string;
@@ -198,6 +202,7 @@ function HomeInner() {
   const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
   const [heroImgLoaded, setHeroImgLoaded] = useState(false);
+  const [lang] = useLang();
 
   const supabase = useMemo(() => createClient(), []);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -749,16 +754,16 @@ function HomeInner() {
 
   type NavKey = "home" | "inbox" | "saved" | "myprofile" | "requests";
   const NAV_ITEMS_TRAVELER: Array<{ icon: string; label: string; key: NavKey }> = [
-    { icon: "🏠", label: "Home", key: "home" },
-    { icon: "💬", label: "Messages", key: "inbox" },
-    { icon: "🤍", label: "Saved", key: "saved" },
-    { icon: "😊", label: "Profile", key: "myprofile" },
+    { icon: "🏠", label: t("nav_home", lang), key: "home" },
+    { icon: "💬", label: t("nav_messages", lang), key: "inbox" },
+    { icon: "🤍", label: t("nav_saved", lang), key: "saved" },
+    { icon: "😊", label: t("nav_profile", lang), key: "myprofile" },
   ];
   const NAV_ITEMS_LOCAL: Array<{ icon: string; label: string; key: NavKey }> = [
-    { icon: "🏠", label: "Home", key: "home" },
-    { icon: "📨", label: "Requests", key: "requests" },
-    { icon: "💬", label: "Messages", key: "inbox" },
-    { icon: "😊", label: "Profile", key: "myprofile" },
+    { icon: "🏠", label: t("nav_home", lang), key: "home" },
+    { icon: "📨", label: t("nav_requests", lang), key: "requests" },
+    { icon: "💬", label: t("nav_messages", lang), key: "inbox" },
+    { icon: "😊", label: t("nav_profile", lang), key: "myprofile" },
   ];
   const NAV_ITEMS = appMode === "local" ? NAV_ITEMS_LOCAL : NAV_ITEMS_TRAVELER;
 
@@ -825,7 +830,7 @@ function HomeInner() {
                   <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
                 ) : (
                   <Link href="/login" style={{ background: "#ffffff28", border: "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
-                    ログイン
+                    {t("login", lang)}
                   </Link>
                 )}
                 <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textDecoration: "none" }}>⚙</Link>
@@ -899,14 +904,14 @@ function HomeInner() {
                 <span style={{ color: "#ad001c", fontSize: 18 }}>🔍</span>
                 <input
                   name="q"
-                  placeholder="Temples, ramen, nightlife..."
+                  placeholder={t("search_placeholder", lang)}
                   style={{ background: "none", border: "none", outline: "none", fontSize: 14, fontWeight: 600, flex: 1, fontFamily: "inherit", color: "#1a1008" }}
                 />
                 <button
                   type="submit"
                   style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
                 >
-                  検索
+                  {t("search_button", lang)}
                 </button>
               </form>
             </div>
@@ -945,8 +950,8 @@ function HomeInner() {
 
             {/* GUIDES (or Travelers in Local mode) */}
             <div style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
-              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? "Travelers in Kyoto ✈️" : "Available now ✨"}</div>
-              <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>See all &rarr;</Link>
+              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? `${t("travelers_in_kyoto", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
+              <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
             </div>
 
             {loading ? (
@@ -977,7 +982,7 @@ function HomeInner() {
               </div>
             ) : appMode === "local" ? (
               travelersList.length === 0 ? (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>まだ旅行者登録なし</div>
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>{t("no_travelers", lang)}</div>
               ) : (
                 <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                   {travelersList.map((t) => (
@@ -1010,7 +1015,7 @@ function HomeInner() {
                 </div>
               )
             ) : visibleGuides.length === 0 ? (
-              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>No guides found</div>
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>{t("no_guides", lang)}</div>
             ) : (
               <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
                 {visibleGuides.map(g => (
@@ -1247,286 +1252,72 @@ function HomeInner() {
 
         {/* CHAT */}
         {screen === "chat" && chatPeer && (
-          <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div
-                onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
-                style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}
-                title={chatPeer.guideId ? "ガイド詳細を見る" : undefined}
-              >{(() => { const pg = chatPeer.guideId ? guides.find((x) => x.id === chatPeer.guideId) : null; return pg?.avatarPath && avatarUrls[pg.avatarPath] ? <img src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : chatPeer.emoji; })()}</div>
-              <div style={{ flex: 1, paddingLeft: 8 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{chatPeer.name}</div>
-                <div style={{ fontSize: 11, color: "#a8ffca", fontWeight: 700 }}>● Online now</div>
-              </div>
-              <Link
-                href={`/report/${chatPeer.id}`}
-                style={{ color: "#fff", fontSize: 16, textDecoration: "none", padding: 4 }}
-                title="このユーザーを通報"
-              >
-                🚩
-              </Link>
-              <Link href="/settings" aria-label="設定" style={{ width: 30, height: 30, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
-            </div>
-            <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-              {!currentUserId ? (
-                <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
-                  ログインするとメッセージできるわよ
-                </div>
-              ) : messages.length === 0 ? (
-                <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
-                  まだメッセージなし。最初の一言を送ってみて 👇
-                </div>
-              ) : (
-                <>
-                  {messages.map((m) => {
-                    const mine = m.sender_id === currentUserId;
-                    return (
-                      <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "78%" }}>
-                        <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none" }}>{m.body}</div>
-                      </div>
-                    );
-                  })}
-                  <div ref={chatEndRef} />
-                </>
-              )}
-            </div>
-            <div style={{ padding: "12px 20px 24px", display: "flex", gap: 10, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
-              <input
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage()}
-                placeholder={`Message ${chatPeer.name}...`}
-                disabled={!currentUserId}
-                style={{ flex: 1, background: "#ffefd5", border: "2px solid #e8c99a", borderRadius: 24, padding: "10px 16px", fontSize: 13, color: "#1a1008", fontFamily: "inherit", fontWeight: 600, outline: "none" }}
-              />
-              <button
-                onClick={sendMessage}
-                disabled={!currentUserId || !input.trim()}
-                style={{ width: 40, height: 40, borderRadius: "50%", background: currentUserId ? "#ad001c" : "#bbb", border: "none", cursor: currentUserId ? "pointer" : "not-allowed", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >↑</button>
-            </div>
-          </div>
+          <ChatScreen
+            chatPeer={chatPeer}
+            goBack={goBack}
+            openGuideProfile={openGuideProfile}
+            currentUserId={currentUserId}
+            messages={messages}
+            chatEndRef={chatEndRef}
+            input={input}
+            setInput={setInput}
+            sendMessage={sendMessage}
+            guides={guides}
+            avatarUrls={avatarUrls}
+            lang={lang}
+          />
         )}
 
         {/* MY PROFILE */}
         {screen === "myprofile" && (
-          <div className="screen-enter" style={{ minHeight: "100vh" }}>
-            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 36 }}/>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>My profile</div>
-              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
-            </div>
-            <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
-              <div
-                onClick={() => ownGuide && openGuideProfile(ownGuide.id)}
-                style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", cursor: ownGuide ? "pointer" : "default", overflow: "hidden" }}
-                title={ownGuide ? "自分のガイドプロファイルを開く" : undefined}
-              >{ownGuide?.avatarPath && avatarUrls[ownGuide.avatarPath] ? <img src={avatarUrls[ownGuide.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (ownGuide?.emoji ?? "😊")}</div>
-              {travelerProfile ? (
-                <>
-                  <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{travelerProfile.name}</div>
-                  <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>
-                    Traveler · From {travelerProfile.country}
-                    {ownGuide && <span style={{ marginLeft: 6, color: "#ad001c" }}>+ ガイド「{ownGuide.name}」</span>}
-                  </div>
-                </>
-              ) : ownGuide ? (
-                <>
-                  <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{ownGuide.name}</div>
-                  <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>ガイド · {ownGuide.uni}</div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4, color: "#8a7560" }}>プロファイル未登録</div>
-                  <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600 }}>下のボタンから旅行者 or ガイドとして登録してね</div>
-                </>
-              )}
-            </div>
-
-            {travelerProfile && travelerProfile.image_paths.length > 0 && (
-              <div style={{ padding: "0 20px 16px" }}>
-                <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", margin: "0 -20px", padding: "0 20px" }}>
-                  {travelerProfile.image_paths.map((p) => (
-                    travelerImageUrls[p] ? (
-                      <img
-                        key={p}
-                        src={travelerImageUrls[p]}
-                        alt=""
-                        onClick={() => travelerImageUrls[p] && setLightboxUrl(travelerImageUrls[p])}
-                        style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, objectFit: "cover", scrollSnapAlign: "center", cursor: "pointer" }}
-                      />
-                    ) : (
-                      <div key={p} style={{ width: 320, height: 320, borderRadius: 16, border: "2px solid #e8c99a", flexShrink: 0, background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite", scrollSnapAlign: "center" }} />
-                    )
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {travelerProfile?.bio && (
-              <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, margin: "0 20px 16px", fontSize: 13, color: "#555", lineHeight: 1.7, fontWeight: 600 }}>
-                &ldquo;{travelerProfile.bio}&rdquo;
-              </div>
-            )}
-
-            {travelerProfile && travelerProfile.interests.length > 0 && (
-              <div style={{ padding: "0 20px", display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20, justifyContent: "center" }}>
-                {travelerProfile.interests.map((t) => (
-                  <span key={t} style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {userEmail && (
-              <div style={{ margin: "0 20px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
-                  ログイン中：{userEmail}
-                </div>
-                <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                  📅 予約一覧
-                </Link>
-                <Link href="/requests" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                  📨 メッセージリクエスト
-                </Link>
-                {userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase()) && (
-                  <Link href="/admin/analytics" style={{ display: "block", width: "100%", background: "#1a1008", color: "#fff", border: "none", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    📊 分析ダッシュボード (admin)
-                  </Link>
-                )}
-                {ownGuide ? (
-                  <Link href={`/guides/${ownGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    ✏️ ガイドプロファイルを編集
-                  </Link>
-                ) : (
-                  <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    + ガイドとして登録
-                  </Link>
-                )}
-                {appMode !== "local" && (
-                  travelerProfile ? (
-                    <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                      ✏️ 旅行者プロファイルを編集
-                    </Link>
-                  ) : (
-                    <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                      ✈ 旅行者として登録
-                    </Link>
-                  )
-                )}
-                {appMode === "local" && !travelerProfile && (
-                  <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#fff", color: "#8a7560", border: "1.5px dashed #e8c99a", borderRadius: 16, padding: 10, fontSize: 11, fontWeight: 700, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                    （旅行者プロファイルも作る場合は ✈ 登録）
-                  </Link>
-                )}
-                <form action={signout}>
-                  <button type="submit" style={{ width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
-                    ログアウト
-                  </button>
-                </form>
-              </div>
-            )}
-            <div style={{ height: 100 }}/>
-            {renderBottomNav("myprofile")}
-          </div>
+          <MyProfileScreen
+            ownGuide={ownGuide}
+            openGuideProfile={openGuideProfile}
+            avatarUrls={avatarUrls}
+            travelerProfile={travelerProfile}
+            travelerImageUrls={travelerImageUrls}
+            setLightboxUrl={setLightboxUrl}
+            userEmail={userEmail}
+            adminEmails={ADMIN_EMAILS}
+            appMode={appMode}
+            bottomNav={renderBottomNav("myprofile")}
+            lang={lang}
+          />
         )}
 
         {/* SAVED */}
         {screen === "saved" && (
-          <div className="screen-enter" style={{ minHeight: "100vh" }}>
-            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 36 }}/>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Saved guides ❤️</div>
-              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
-            </div>
-            <div style={{ padding: "20px" }}>
-              {!currentUserId ? (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-                  ログインするとお気に入り使えるわよ
-                </div>
-              ) : savedIds.size === 0 ? (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-                  まだお気に入りなし。ガイド詳細で 🤍 をタップして追加して
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {guides.filter((g) => savedIds.has(Number(g.id))).map((g) => (
-                    <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={(() => { const s = modeCardStyle(g.mode); return { background: s.bg, border: `2px solid ${s.border}`, borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }; })()}>
-                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
-                        <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600 }}>{g.uni}{g.mode !== "free" ? ` · ${g.rate}` : " · 🤝 Free"}</div>
-                      </div>
-                      <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", padding: 4 }}>❤️</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div style={{ height: 100 }}/>
-            {renderBottomNav("saved")}
-          </div>
+          <SavedScreen
+            currentUserId={currentUserId}
+            savedIds={savedIds}
+            guides={guides}
+            avatarUrls={avatarUrls}
+            onSelect={(g) => { setSelectedGuide(g as Guide); setScreen("profile"); }}
+            toggleSave={toggleSave}
+            modeCardStyle={modeCardStyle}
+            bottomNav={renderBottomNav("saved")}
+            lang={lang}
+          />
         )}
 
         {/* INBOX */}
         {screen === "inbox" && (
-          <div className="screen-enter" style={{ minHeight: "100vh" }}>
-            <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-              <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>Messages 💬</div>
-              <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
-            </div>
-            <div style={{ padding: "20px" }}>
-              {!currentUserId ? (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-                  ログインするとメッセージ使えるわよ
-                </div>
-              ) : inboxPeers.length === 0 ? (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-                  まだ会話なし。ガイドにメッセージリクエスト → 承認されると会話開始
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {inboxPeers.map((p) => {
-                    const unread = unreadByPeer[p.peerId] ?? 0;
-                    return (
-                      <div
-                        key={p.peerId}
-                        onClick={() => {
-                          setChatPeer({ id: p.peerId, name: p.name, emoji: p.emoji, guideId: p.guideId });
-                          setChatOrigin("inbox");
-                          setScreen("chat");
-                        }}
-                        style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
-                      >
-                        <div style={{ position: "relative" }}>
-                          <div
-                            onClick={(e) => { e.stopPropagation(); if (p.guideId) openGuideProfile(p.guideId); }}
-                            style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default", overflow: "hidden" }}
-                            title={p.guideId ? "ガイド詳細" : undefined}
-                          >{(() => { const pg = p.guideId ? guides.find((x) => x.id === p.guideId) : null; return pg?.avatarPath && avatarUrls[pg.avatarPath] ? <img src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : p.emoji; })()}</div>
-                          {unread > 0 && (
-                            <div style={{ position: "absolute", top: -4, right: -4, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 20, height: 20, padding: "0 5px", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff9f0" }}>
-                              {unread > 99 ? "99+" : unread}
-                            </div>
-                          )}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
-                          <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</div>
-                        </div>
-                        <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>{new Date(p.lastAt).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            <div style={{ height: 100 }}/>
-            {renderBottomNav("inbox")}
-          </div>
+          <InboxScreen
+            goBack={goBack}
+            currentUserId={currentUserId}
+            inboxPeers={inboxPeers}
+            unreadByPeer={unreadByPeer}
+            guides={guides}
+            avatarUrls={avatarUrls}
+            openGuideProfile={openGuideProfile}
+            onOpenChat={(p) => {
+              setChatPeer({ id: p.peerId, name: p.name, emoji: p.emoji, guideId: p.guideId });
+              setChatOrigin("inbox");
+              setScreen("chat");
+            }}
+            bottomNav={renderBottomNav("inbox")}
+            lang={lang}
+          />
         )}
 
         {/* LIGHTBOX */}

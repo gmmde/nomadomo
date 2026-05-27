@@ -81,6 +81,42 @@ export const dict: Dict = {
   reset_app_mode: { en: "🔄 Re-show mode picker", ja: "🔄 モード選択画面を再表示する" },
   reset_app_mode_confirm: { en: "Reset mode choice — pick again next time?", ja: "モード選択を初期化して、次回ログイン時にもう一度選び直す？" },
   back_to_home: { en: "Back to home", ja: "ホームに戻る" },
+
+  // my profile
+  my_profile: { en: "My profile", ja: "マイプロフィール" },
+  profile_unregistered: { en: "Profile not set up", ja: "プロファイル未登録" },
+  profile_unregistered_hint: { en: "Tap a button below to register as a traveler or guide.", ja: "下のボタンから旅行者 or ガイドとして登録してね" },
+  my_bookings: { en: "📅 Bookings", ja: "📅 予約一覧" },
+  my_requests: { en: "📨 Message requests", ja: "📨 メッセージリクエスト" },
+  admin_analytics: { en: "📊 Admin analytics", ja: "📊 分析ダッシュボード (admin)" },
+  edit_guide_profile: { en: "✏️ Edit guide profile", ja: "✏️ ガイドプロファイルを編集" },
+  register_as_guide: { en: "+ Register as guide", ja: "+ ガイドとして登録" },
+  edit_traveler_profile: { en: "✏️ Edit traveler profile", ja: "✏️ 旅行者プロファイルを編集" },
+  register_as_traveler: { en: "✈ Register as traveler", ja: "✈ 旅行者として登録" },
+  optional_traveler_hint: { en: "(Optionally create a traveler profile too ✈)", ja: "（旅行者プロファイルも作る場合は ✈ 登録）" },
+  logged_in_as: { en: "Logged in as", ja: "ログイン中" },
+  open_own_guide_profile: { en: "Open your own guide profile", ja: "自分のガイドプロファイルを開く" },
+  traveler_from: { en: "Traveler · From", ja: "Traveler · From" },
+
+  // saved
+  saved_title: { en: "Saved guides ❤️", ja: "保存したガイド ❤️" },
+  saved_login_required: { en: "Log in to use saves", ja: "ログインするとお気に入り使えるわよ" },
+  saved_empty: { en: "No saves yet. Tap 🤍 on a guide profile to add.", ja: "まだお気に入りなし。ガイド詳細で 🤍 をタップして追加して" },
+
+  // inbox / chat
+  inbox_title: { en: "Messages 💬", ja: "メッセージ 💬" },
+  inbox_login_required: { en: "Log in to use messages", ja: "ログインするとメッセージ使えるわよ" },
+  inbox_empty: { en: "No conversations yet. Send a request → once accepted, chat begins.", ja: "まだ会話なし。ガイドにメッセージリクエスト → 承認されると会話開始" },
+  chat_login_required: { en: "Log in to message", ja: "ログインするとメッセージできるわよ" },
+  chat_empty: { en: "No messages yet. Say hi 👇", ja: "まだメッセージなし。最初の一言を送ってみて 👇" },
+  online_now: { en: "● Online now", ja: "● オンライン中" },
+
+  // home extras
+  no_travelers: { en: "No traveler profiles yet", ja: "まだ旅行者登録なし" },
+  local_dashboard_requests: { en: "📨 Requests", ja: "📨 リクエスト" },
+  local_dashboard_bookings: { en: "📅 Bookings", ja: "📅 予約" },
+  own_guide_open: { en: "🏯 View your guide profile", ja: "🏯 自分のガイドプロファイルを見る" },
+  create_guide_profile: { en: "+ Create a guide profile", ja: "+ ガイドプロファイルを作成しよう" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {
