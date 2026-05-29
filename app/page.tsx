@@ -476,7 +476,8 @@ function HomeInner() {
   useEffect(() => {
     setProfileImgIdx(0);
     guideTr.reset();
-  }, [selectedGuide?.id, guideTr]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- guideTr は毎レンダー新オブジェクトなので deps に入れると無限ループする
+  }, [selectedGuide?.id]);
 
   // フォロートグル（楽観的更新）
   async function toggleFollow(followeeUserId: string) {
