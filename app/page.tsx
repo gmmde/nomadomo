@@ -647,8 +647,11 @@ function HomeInner() {
   };
 
   useEffect(() => {
+    // Safety net: Splash overlay は click を奪うので、何があっても 8 秒で剥がす
+    const safety = setTimeout(() => setLoading(false), 8000);
     async function fetchGuides() {
-      const { data, error } = await supabase
+      try {
+        const { data, error } = await supabase
         .from("guides")
         .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year")
         .order("rating", { ascending: false });
@@ -690,9 +693,14 @@ function HomeInner() {
       setGuides(mapped);
       if (mapped.length > 0) setSelectedGuide(mapped[0]);
       setLoading(false);
+      } catch (e) {
+        console.error("fetchGuides threw:", e);
+        setLoading(false);
+      }
     }
 
     fetchGuides();
+    return () => clearTimeout(safety);
   }, [supabase]);
 
   // チャット画面が開いたら、chatPeer とのメッセージ履歴をロード + リアルタイム購読
