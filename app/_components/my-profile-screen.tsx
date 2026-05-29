@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { signout } from "../actions/auth";
 import { t, type Lang } from "../lib/i18n";
+import StripeOnboardButton from "./stripe-onboard-button";
 
 type OwnGuide = {
   id: string;
@@ -11,6 +12,8 @@ type OwnGuide = {
   emoji: string;
   avatarPath: string | null;
   uni: string;
+  mode?: "free" | "paid";
+  stripeOnboarded?: boolean;
 } | null;
 
 type TravelerProfile = {
@@ -136,9 +139,20 @@ export default function MyProfileScreen({
             </Link>
           )}
           {ownGuide ? (
+            <>
             <Link href={`/guides/${ownGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
               {t("edit_guide_profile", lang)}
             </Link>
+            {ownGuide.mode === "paid" && !ownGuide.stripeOnboarded && (
+              <>
+                <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, textAlign: "center", padding: "4px 0" }}>{t("stripe_setup_pending", lang)}</div>
+                <StripeOnboardButton label={t("stripe_setup_btn", lang)} />
+              </>
+            )}
+            {ownGuide.mode === "paid" && ownGuide.stripeOnboarded && (
+              <div style={{ fontSize: 11, color: "#2e8b57", fontWeight: 800, textAlign: "center", padding: "4px 0" }}>{t("stripe_setup_done", lang)}</div>
+            )}
+            </>
           ) : (
             <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
               {t("register_as_guide", lang)}

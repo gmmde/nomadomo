@@ -181,6 +181,15 @@ export const dict: Dict = {
   rate_per_day_label: { en: "Rate per day (¥)", ja: "一日あたりの料金 (¥)" },
   rate_range_hint: { en: "Suggested: ¥3000–10000 / day", ja: "目安: ¥3000〜10000 / day" },
   trusted_local: { en: "✨ Trusted local", ja: "✨ 信頼できる local" },
+  stripe_setup_btn: { en: "💳 Set up payments (Stripe)", ja: "💳 決済を設定 (Stripe)" },
+  stripe_setup_done: { en: "✅ Payments enabled", ja: "✅ 決済設定済み" },
+  stripe_setup_pending: { en: "⚠️ Finish payment setup to accept paid bookings", ja: "⚠️ 有料予約を受けるには決済設定を完了して" },
+  payment_status_unpaid: { en: "Unpaid", ja: "未払い" },
+  payment_status_requires_capture: { en: "🔒 Authorized (awaiting accept)", ja: "🔒 承認待ち (オーソリ済み)" },
+  payment_status_succeeded: { en: "💰 Paid", ja: "💰 支払い済み" },
+  payment_status_canceled: { en: "Canceled", ja: "キャンセル済み" },
+  payment_status_refunded: { en: "Refunded", ja: "返金済み" },
+  payment_status_failed: { en: "❌ Payment failed", ja: "❌ 支払い失敗" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {

@@ -17,6 +17,8 @@ type Booking = {
   status: string;
   message: string | null;
   created_at: string;
+  payment_status?: string;
+  payment_intent_id?: string | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -92,7 +94,14 @@ export default async function BookingsPage() {
                       </div>
                       <div style={{ fontSize: 11, fontWeight: 900 }}>{STATUS_LABEL[b.status] ?? b.status}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}d · ¥{b.total_yen.toLocaleString()}</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}d · ¥{b.total_yen.toLocaleString()}</div>
+                      {b.payment_status && b.payment_status !== "unpaid" && (
+                        <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 10, background: b.payment_status === "succeeded" ? "#e6f5ee" : b.payment_status === "requires_capture" ? "#fff9f0" : b.payment_status === "refunded" || b.payment_status === "canceled" ? "#f0e6e6" : "#ad001c20", color: b.payment_status === "succeeded" ? "#2e8b57" : b.payment_status === "failed" ? "#ad001c" : "#8a7560", border: `1px solid ${b.payment_status === "succeeded" ? "#2e8b57" : "#e8c99a"}` }}>
+                          {b.payment_status === "succeeded" ? "💰 Paid" : b.payment_status === "requires_capture" ? "🔒 Authorized" : b.payment_status === "canceled" ? "Canceled" : b.payment_status === "refunded" ? "Refunded" : b.payment_status === "failed" ? "❌ Failed" : b.payment_status}
+                        </div>
+                      )}
+                    </div>
                     {b.message && <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, marginTop: 6, fontStyle: "italic" }}>“{b.message}”</div>}
                     {b.status === "pending" && (
                       <form action={updateBookingStatus} style={{ marginTop: 10 }}>
@@ -131,7 +140,14 @@ export default async function BookingsPage() {
                       </div>
                       <div style={{ fontSize: 11, fontWeight: 900 }}>{STATUS_LABEL[b.status] ?? b.status}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}d · ¥{b.total_yen.toLocaleString()}</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}d · ¥{b.total_yen.toLocaleString()}</div>
+                      {b.payment_status && b.payment_status !== "unpaid" && (
+                        <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 10, background: b.payment_status === "succeeded" ? "#e6f5ee" : b.payment_status === "requires_capture" ? "#fff9f0" : b.payment_status === "refunded" || b.payment_status === "canceled" ? "#f0e6e6" : "#ad001c20", color: b.payment_status === "succeeded" ? "#2e8b57" : b.payment_status === "failed" ? "#ad001c" : "#8a7560", border: `1px solid ${b.payment_status === "succeeded" ? "#2e8b57" : "#e8c99a"}` }}>
+                          {b.payment_status === "succeeded" ? "💰 Paid" : b.payment_status === "requires_capture" ? "🔒 Authorized" : b.payment_status === "canceled" ? "Canceled" : b.payment_status === "refunded" ? "Refunded" : b.payment_status === "failed" ? "❌ Failed" : b.payment_status}
+                        </div>
+                      )}
+                    </div>
                     {b.message && <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 600, marginTop: 6, fontStyle: "italic" }}>“{b.message}”</div>}
                     {b.status === "pending" && (
                       <div style={{ display: "flex", gap: 6, marginTop: 10 }}>

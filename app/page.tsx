@@ -31,6 +31,7 @@ type Guide = {
   rate: string;       // 表示用フォーマット (free なら "Free")
   ratePerDay: number | null;
   mode: "free" | "paid";
+  stripeOnboarded: boolean;
   stars: string;
   bio: string;
   tour_count: number;
@@ -654,7 +655,7 @@ function HomeInner() {
       try {
         const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year, stripe_onboarded")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -685,6 +686,7 @@ function HomeInner() {
             : "—",
         ratePerDay: g.rate_per_day != null ? Number(g.rate_per_day) : null,
         mode: (((g.mode as string) === "free" ? "free" : "paid") as "free" | "paid"),
+        stripeOnboarded: Boolean((g as { stripe_onboarded?: boolean }).stripe_onboarded),
         stars: Number(g.rating).toFixed(1),
         bio: g.bio ?? "",
         tour_count: g.tour_count ?? 0,
@@ -1448,6 +1450,7 @@ function HomeInner() {
     </div>
   );
 }
+
 export default function Home() {
   return (
     <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>

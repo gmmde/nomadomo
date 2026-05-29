@@ -1,9 +1,12 @@
 "use client";
 import BackButton from "@/app/lib/back-button";
 
-import { useActionState, useMemo, useState } from "react";
-import { createBooking, type BookingFormState } from "@/app/actions/bookings";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLang, t } from "@/app/lib/i18n";
+import { loadStripe, type Stripe as StripeJs } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { createBooking } from "@/app/actions/bookings";
 
 const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 24px" };
@@ -28,11 +31,143 @@ type Props = {
   mode: "free" | "paid";
 };
 
+let stripePromise: Promise<StripeJs | null> | null = null;
+function getStripe(): Promise<StripeJs | null> {
+  if (!stripePromise) {
+    const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    stripePromise = pk ? loadStripe(pk) : Promise.resolve(null);
+  }
+  return stripePromise;
+}
+
+function PayAndSubmit({ guideId, guideName, guideEmoji, guideUniversity, ratePerDay, days, startAt, message }: {
+  guideId: number; guideName: string; guideEmoji: string; guideUniversity: string;
+  ratePerDay: number; days: number; startAt: string; message: string;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const router = useRouter();
+  const [lang] = useLang();
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setSubmitting(true);
+    setErr(null);
+    try {
+      // 1) Stripe Elements で payment method を確定 (capture は guide accept 時)
+      const { error: confirmErr } = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: window.location.origin + "/bookings" },
+        redirect: "if_required",
+      });
+      if (confirmErr) {
+        setErr(confirmErr.message ?? "Payment failed");
+        setSubmitting(false);
+        return;
+      }
+
+      // 2) PaymentIntent ID を取り出して booking を作成
+      // confirmPayment 完了時、URL params に payment_intent が乗ってくる場合もあるが
+      // ここでは payment_intent_id を form 経由で server action に渡す
+      const piId = (elements as unknown as { _commonOptions?: { clientSecret?: string } })._commonOptions?.clientSecret?.split("_secret_")[0];
+      if (!piId) {
+        setErr("Could not resolve payment_intent");
+        setSubmitting(false);
+        return;
+      }
+
+      const fd = new FormData();
+      fd.set("guide_id", String(guideId));
+      fd.set("start_at", startAt);
+      fd.set("hours", String(days));
+      fd.set("message", message);
+      fd.set("payment_intent_id", piId);
+      const res = await createBooking(undefined, fd);
+      if (res?.error) {
+        setErr(res.error);
+        setSubmitting(false);
+        return;
+      }
+      router.push("/bookings");
+    } catch (e2) {
+      const m = e2 instanceof Error ? e2.message : "submit failed";
+      setErr(m);
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <div style={{ marginBottom: 16 }}>
+        <label style={label}>💳 {lang === "ja" ? "お支払い情報" : "Payment details"}</label>
+        <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 14 }}>
+          <PaymentElement />
+        </div>
+        <div style={{ fontSize: 11, color: "#8a7560", marginTop: 6, fontWeight: 600 }}>
+          {lang === "ja" ? "🔒 ガイドが承認するまで請求されません" : "🔒 You won't be charged until the guide accepts"}
+        </div>
+      </div>
+
+      {err && (
+        <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
+          {err}
+        </div>
+      )}
+
+      <button type="submit" disabled={submitting || !stripe || !elements} style={{ ...primary, opacity: submitting ? 0.6 : 1 }}>
+        {submitting ? t("sending", lang) : t("booking_send_btn", lang)}
+      </button>
+
+      {/* Hidden guide info display (already rendered above) */}
+      <input type="hidden" value={guideName} readOnly />
+      <input type="hidden" value={guideEmoji} readOnly />
+      <input type="hidden" value={guideUniversity} readOnly />
+      <input type="hidden" value={ratePerDay} readOnly />
+    </form>
+  );
+}
+
 export default function BookingForm({ guideId, guideName, guideEmoji, guideUniversity, ratePerDay }: Props) {
-  const [state, action, pending] = useActionState<BookingFormState, FormData>(createBooking, undefined);
+  const router = useRouter();
   const [days, setDays] = useState(1);
+  const [startAt, setStartAt] = useState(defaultDateTime());
+  const [message, setMessage] = useState("");
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [piErr, setPiErr] = useState<string | null>(null);
+  const [piLoading, setPiLoading] = useState(false);
   const total = useMemo(() => ratePerDay * days, [ratePerDay, days]);
   const [lang] = useLang();
+
+  useEffect(() => {
+    let cancelled = false;
+    setPiLoading(true);
+    setPiErr(null);
+    fetch("/api/checkout/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ guide_id: guideId, hours: days }),
+    })
+      .then(async (r) => {
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          throw new Error(j.error ?? `HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then((d: { clientSecret: string }) => {
+        if (!cancelled) setClientSecret(d.clientSecret);
+      })
+      .catch((e) => {
+        if (!cancelled) setPiErr(e?.message ?? "payment intent failed");
+      })
+      .finally(() => { if (!cancelled) setPiLoading(false); });
+    return () => { cancelled = true; };
+  }, [guideId, days]);
+
+  const stripeP = useMemo(() => getStripe(), []);
 
   return (
     <div style={wrap}>
@@ -51,61 +186,54 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           </div>
         </div>
 
-        <form action={action}>
-          <input type="hidden" name="guide_id" value={guideId} />
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>{t("booking_start", lang)}</label>
+          <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} style={input} />
+        </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="start_at">{t("booking_start", lang)}</label>
-            <input id="start_at" name="start_at" type="datetime-local" required defaultValue={defaultDateTime()} style={input} />
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>{t("booking_days", lang)}</label>
+          <input type="number" min={1} max={7} step={1} value={days}
+            onChange={(e) => setDays(Math.max(1, Math.min(7, Number(e.target.value) || 1)))}
+            style={input} />
+        </div>
+
+        <div style={{ background: "#ffefd5", border: "2px solid #ad001c", borderRadius: 14, padding: 14, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 800 }}>{t("booking_total", lang)}</span>
+          <span style={{ fontSize: 22, fontWeight: 900, color: "#ad001c" }}>¥{total.toLocaleString()}</span>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={label}>{t("booking_msg_label", lang)}</label>
+          <textarea maxLength={500} rows={3} value={message} onChange={(e) => setMessage(e.target.value)}
+            style={{ ...input, resize: "vertical", minHeight: 80 }}
+            placeholder={t("booking_msg_placeholder", lang)} />
+        </div>
+
+        {piErr && (
+          <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
+            ⚠️ {piErr}
           </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={label} htmlFor="hours">{t("booking_days", lang)}</label>
-            <input
-              id="hours"
-              name="hours"
-              type="number"
-              min={1}
-              max={7}
-              step={1}
-              value={days}
-              onChange={(e) => setDays(Math.max(1, Math.min(7, Number(e.target.value) || 1)))}
-              required
-              style={input}
+        )}
+        {piLoading && (
+          <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, padding: 12 }}>
+            {lang === "ja" ? "決済を準備中…" : "Preparing payment…"}
+          </div>
+        )}
+        {clientSecret && (
+          <Elements stripe={stripeP} options={{ clientSecret, appearance: { theme: "flat" } }}>
+            <PayAndSubmit
+              guideId={guideId}
+              guideName={guideName}
+              guideEmoji={guideEmoji}
+              guideUniversity={guideUniversity}
+              ratePerDay={ratePerDay}
+              days={days}
+              startAt={startAt}
+              message={message}
             />
-          </div>
-
-          <div style={{ background: "#ffefd5", border: "2px solid #ad001c", borderRadius: 14, padding: 14, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, color: "#8a7560", fontWeight: 800 }}>{t("booking_total", lang)}</span>
-            <span style={{ fontSize: 22, fontWeight: 900, color: "#ad001c" }}>¥{total.toLocaleString()}</span>
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <label style={label} htmlFor="message">{t("booking_msg_label", lang)}</label>
-            <textarea
-              id="message"
-              name="message"
-              maxLength={500}
-              rows={4}
-              style={{ ...input, resize: "vertical", minHeight: 90 }}
-              placeholder={t("booking_msg_placeholder", lang)}
-            />
-          </div>
-
-          {state?.error && (
-            <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
-              {state.error}
-            </div>
-          )}
-
-          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600, marginBottom: 14, lineHeight: 1.6 }}>
-            {t("booking_payment_note", lang)}
-          </div>
-
-          <button type="submit" disabled={pending} style={{ ...primary, opacity: pending ? 0.6 : 1 }}>
-            {pending ? t("sending", lang) : t("booking_send_btn", lang)}
-          </button>
-        </form>
+          </Elements>
+        )}
       </div>
     </div>
   );
