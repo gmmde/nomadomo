@@ -66,8 +66,13 @@ export default function InboxScreen({
         {currentUserId && (
           <Link
             href="/requests"
-            style={{ display: "block", background: pendingRequests.length > 0 ? "#ad001c" : "#fff", color: pendingRequests.length > 0 ? "#fff" : "#1a1008", border: pendingRequests.length > 0 ? "none" : "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 16, textDecoration: "none" }}
+            style={{ position: "relative", display: "block", background: pendingRequests.length > 0 ? "#ad001c" : "#fff", color: pendingRequests.length > 0 ? "#fff" : "#1a1008", border: pendingRequests.length > 0 ? "none" : "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 16, textDecoration: "none" }}
           >
+            {pendingRequests.length > 0 && (
+              <div style={{ position: "absolute", top: -8, right: -8, background: "#ad001c", color: "#fff", borderRadius: 12, minWidth: 24, height: 24, padding: "0 7px", fontSize: 12, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid #f5ead0", boxShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>
+                {pendingRequests.length > 99 ? "99+" : pendingRequests.length}
+              </div>
+            )}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ fontSize: 28 }}>📨</div>
               <div style={{ flex: 1, minWidth: 0 }}>

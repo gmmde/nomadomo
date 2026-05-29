@@ -91,22 +91,38 @@ const btnPrimary: React.CSSProperties = {
   fontFamily: "inherit",
 };
 
-export default function GuideForm({ userEmail }: { userEmail: string }) {
+type Prefill = {
+  name: string;
+  bio: string;
+  emoji: string | null;
+  avatar_path: string | null;
+  gender: string | null;
+  gender_other: string | null;
+  birth_year: number | null;
+  nationality: string | null;
+  occupation: string | null;
+  hobbies: string[];
+  available_slots: string[];
+  languages: string[];
+  image_paths: string[];
+};
+
+export default function GuideForm({ userEmail, prefill }: { userEmail: string; prefill?: Prefill | null }) {
   const [state, action, pending] = useActionState<GuideFormState, FormData>(
     createGuide,
     undefined,
   );
   const [tags, setTags] = useState<string[]>([]);
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [name, setName] = useState("");
+  const [languages, setLanguages] = useState<string[]>(prefill?.languages ?? []);
+  const [name, setName] = useState(prefill?.name ?? "");
   const [university, setUniversity] = useState("");
-  const [bio, setBio] = useState("");
-  const [birthYear, setBirthYear] = useState("");
-  const [gender, setGender] = useState("");
+  const [bio, setBio] = useState(prefill?.bio ?? "");
+  const [birthYear, setBirthYear] = useState(prefill?.birth_year != null ? String(prefill.birth_year) : "");
+  const [gender, setGender] = useState(prefill?.gender ?? "");
   const [areas, setAreas] = useState<string[]>(["Kyoto"]);
-  const [genderOther, setGenderOther] = useState("");
-  const [nationality, setNationality] = useState("");
-  const [occupation, setOccupation] = useState("");
+  const [genderOther, setGenderOther] = useState(prefill?.gender_other ?? "");
+  const [nationality, setNationality] = useState(prefill?.nationality ?? "");
+  const [occupation, setOccupation] = useState(prefill?.occupation ?? "");
   const [lang] = useLang();
 
   function toggle(list: string[], value: string): string[] {
@@ -133,13 +149,13 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>
-              <ImageUploader />
+              <ImageUploader initial={prefill?.image_paths ?? []} />
             </div>
 
             {/* Avatar */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_avatar", lang)}</label>
-              <AvatarPicker />
+              <AvatarPicker initialEmoji={prefill?.emoji ?? undefined} initialAvatarPath={prefill?.avatar_path ?? null} />
             </div>
 
             {/* Name */}
@@ -250,13 +266,13 @@ export default function GuideForm({ userEmail }: { userEmail: string }) {
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_hobbies", lang)}</label>
-              <HobbiesTags />
+              <HobbiesTags initial={prefill?.hobbies ?? []} />
             </div>
 
             {/* Available slots */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_available_slots", lang)}</label>
-              <AvailableSlots />
+              <AvailableSlots initial={prefill?.available_slots ?? []} />
             </div>
 
             {/* Areas */}

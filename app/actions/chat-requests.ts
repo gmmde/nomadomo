@@ -92,5 +92,36 @@ export async function respondChatRequest(formData: FormData): Promise<void> {
 
   const next = action === "accept" ? "accepted" : "declined";
   await supabase.from("chat_requests").update({ status: next }).eq("id", id);
+
+  // accept 時: チャットスレッドを即作成するため初期メッセージを挿入
+  if (next === "accepted") {
+    // request 詳細を取得
+    const { data: full } = await supabase
+      .from("chat_requests")
+      .select("traveler_id, guide_user_id, message")
+      .eq("id", id)
+      .maybeSingle();
+    if (full) {
+      // 既に messages がペアで存在しないなら seed する
+      const { data: existingMsg } = await supabase
+        .from("messages")
+        .select("id")
+        .or(`and(sender_id.eq.${full.traveler_id},recipient_id.eq.${full.guide_user_id}),and(sender_id.eq.${full.guide_user_id},recipient_id.eq.${full.traveler_id})`)
+        .limit(1);
+      if (!existingMsg || existingMsg.length === 0) {
+        // (1) traveler の元メッセージを traveler→guide で挿入（あれば）
+        const origMsg = (full.message as string | null) ?? "";
+        const seeds: Array<{ sender_id: string; recipient_id: string; body: string }> = [];
+        if (origMsg.trim()) {
+          seeds.push({ sender_id: full.traveler_id as string, recipient_id: full.guide_user_id as string, body: origMsg.trim() });
+        }
+        // (2) guide からの受諾メッセージ
+        seeds.push({ sender_id: full.guide_user_id as string, recipient_id: full.traveler_id as string, body: "👋 Request accepted! Let's chat." });
+        await supabase.from("messages").insert(seeds);
+      }
+    }
+  }
+
   revalidatePath("/requests");
+  revalidatePath("/");
 }

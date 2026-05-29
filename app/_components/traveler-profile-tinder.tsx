@@ -64,8 +64,8 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
   const interestTags = [...new Set([...(traveler.hobbies ?? []), ...(traveler.interests ?? [])])];
   const isDemo = !traveler.user_id;
 
-  // Translation target = opposite of current UI lang
-  const translateTarget: "en" | "ja" = lang === "ja" ? "en" : "ja";
+  // Translation target = SAME as current UI lang (EN user → translate INTO English)
+  const translateTarget: "en" | "ja" = lang;
 
   // Use translated versions when toggle is on
   const showTranslated = tr.showing === "translated";

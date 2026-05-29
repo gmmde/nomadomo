@@ -44,17 +44,33 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
 });
 const btnPrimary: React.CSSProperties = { width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
-export default function TravelerForm({ userEmail }: { userEmail: string }) {
+type Prefill = {
+  name: string;
+  bio: string;
+  emoji: string | null;
+  avatar_path: string | null;
+  gender: string | null;
+  gender_other: string | null;
+  birth_year: number | null;
+  nationality: string | null;
+  occupation: string | null;
+  hobbies: string[];
+  available_slots: string[];
+  languages: string[];
+  image_paths: string[];
+};
+
+export default function TravelerForm({ userEmail, prefill }: { userEmail: string; prefill?: Prefill | null }) {
   const [state, action, pending] = useActionState<TravelerFormState, FormData>(createTraveler, undefined);
   const [interests, setInterests] = useState<string[]>([]);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(prefill?.name ?? "");
   const [country, setCountry] = useState("");
-  const [bio, setBio] = useState("");
-  const [gender, setGender] = useState("");
-  const [genderOther, setGenderOther] = useState("");
-  const [birthYear, setBirthYear] = useState("");
-  const [nationality, setNationality] = useState("");
-  const [occupation, setOccupation] = useState("");
+  const [bio, setBio] = useState(prefill?.bio ?? "");
+  const [gender, setGender] = useState(prefill?.gender ?? "");
+  const [genderOther, setGenderOther] = useState(prefill?.gender_other ?? "");
+  const [birthYear, setBirthYear] = useState(prefill?.birth_year != null ? String(prefill.birth_year) : "");
+  const [nationality, setNationality] = useState(prefill?.nationality ?? "");
+  const [occupation, setOccupation] = useState(prefill?.occupation ?? "");
   const [tripPeriod, setTripPeriod] = useState("");
   const [lang] = useLang();
   function toggle(value: string) {
@@ -79,7 +95,7 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>
-              <ImageUploader />
+              <ImageUploader initial={prefill?.image_paths ?? []} />
             </div>
 
             <div style={{ marginBottom: 16 }}>
@@ -115,7 +131,7 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
             {/* Avatar */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_avatar", lang)}</label>
-              <AvatarPicker />
+              <AvatarPicker initialEmoji={prefill?.emoji ?? undefined} initialAvatarPath={prefill?.avatar_path ?? null} />
             </div>
 
             {/* Gender */}
@@ -159,13 +175,13 @@ export default function TravelerForm({ userEmail }: { userEmail: string }) {
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_hobbies", lang)}</label>
-              <HobbiesTags />
+              <HobbiesTags initial={prefill?.hobbies ?? []} />
             </div>
 
             {/* Available slots */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_available_slots", lang)}</label>
-              <AvailableSlots />
+              <AvailableSlots initial={prefill?.available_slots ?? []} />
             </div>
 
             <div style={{ marginBottom: 24 }}>

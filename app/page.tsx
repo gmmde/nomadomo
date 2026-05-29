@@ -1278,7 +1278,8 @@ function HomeInner() {
               </div>
             )}
             {!isOwn && (selectedGuide.bio || selectedGuide.occupation || selectedGuide.nationality) && (() => {
-              const target: "en" | "ja" = lang === "ja" ? "en" : "ja";
+              // UI 言語と同じ方向に翻訳 (EN ユーザー → translate INTO English)
+              const target: "en" | "ja" = lang;
               const showingTr = guideTr.showing === "translated";
               const hasCache = Object.keys(guideTr.translations).length > 0;
               async function onClick() {
