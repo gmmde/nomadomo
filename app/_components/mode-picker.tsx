@@ -7,9 +7,25 @@ type Props = {
 };
 
 export default function ModePicker({ onPick }: Props) {
-  const [lang] = useLang();
+  const [lang, setLang] = useLang();
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "#f5ead0", display: "flex", flexDirection: "column", padding: "32px 20px 80px", overflowY: "auto" }}>
+      {/* Language toggle — top right */}
+      <div style={{ position: "absolute", top: 16, right: 16, display: "flex", gap: 6, background: "#fff9f0", border: "1.5px solid #e8c99a", borderRadius: 18, padding: 3 }}>
+        <button
+          onClick={() => setLang("en")}
+          style={{ background: lang === "en" ? "#ad001c" : "transparent", color: lang === "en" ? "#fff" : "#8a7560", border: "none", borderRadius: 14, padding: "5px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          EN
+        </button>
+        <button
+          onClick={() => setLang("ja")}
+          style={{ background: lang === "ja" ? "#ad001c" : "transparent", color: lang === "ja" ? "#fff" : "#8a7560", border: "none", borderRadius: 14, padding: "5px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          JP
+        </button>
+      </div>
+
       <div style={{ fontSize: 32, fontWeight: 900, textAlign: "center", marginTop: 40, marginBottom: 4 }}>
         <span style={{ color: "#2ecc71" }}>Noma</span>
         <span style={{ color: "#ad001c" }}>Domo</span>
