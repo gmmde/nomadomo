@@ -1113,7 +1113,8 @@ function HomeInner() {
           for (const p of selectedGuide.image_paths) carouselImages.push({ src: galleryUrls[p] ?? null, path: p });
           const cur = carouselImages[profileImgIdx] ?? null;
           const total = carouselImages.length;
-          const isOwn = currentUserId === selectedGuide.user_id;
+          // ログアウト時 (currentUserId=null) かつ demo guide (user_id=null) で誤判定しないよう両方 non-null を要求
+          const isOwn = !!currentUserId && !!selectedGuide.user_id && currentUserId === selectedGuide.user_id;
           const isDemo = !selectedGuide.user_id;
           const age = selectedGuide.tour_count; // placeholder, real age would need birth_year
           return (
