@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useSignedUrls } from "../lib/use-signed-urls";
 import { useLang, t } from "../lib/i18n";
 import { useTranslate } from "../lib/use-translate";
+import ReviewsSection from "./reviews-section";
 
 export type TravelerProfileData = {
   user_id: string;
@@ -222,6 +223,13 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {traveler.user_id && (
+          <div style={{ margin: "0 20px 16px" }}>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 8, textTransform: "uppercase" }}>⭐ {t("reviews_tab", lang)}</div>
+            <ReviewsSection reviewedUserId={traveler.user_id} lang={lang} />
           </div>
         )}
 

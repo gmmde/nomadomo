@@ -11,6 +11,7 @@ import ChatScreen from "./_components/chat-screen";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
+import ReviewsSection from "./_components/reviews-section";
 import { useLang, t } from "./lib/i18n";
 import { useTranslate } from "./lib/use-translate";
 
@@ -208,6 +209,14 @@ function HomeInner() {
   const [appModeLoaded, setAppModeLoaded] = useState(false);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const [pendingRequests, setPendingRequests] = useState<Array<{ id: number; senderId: string; senderName: string; senderEmoji: string; message: string; createdAt: string }>>([]);
+  const [chatMeeting, setChatMeeting] = useState<
+    | { kind: "none" }
+    | { kind: "pending_proposed_by_me"; id: number }
+    | { kind: "pending_awaiting_my_accept"; id: number }
+    | { kind: "active"; id: number }
+    | { kind: "completed"; id: number }
+  >({ kind: "none" });
+  const [meetingRefreshTick, setMeetingRefreshTick] = useState(0);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
   const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
@@ -705,6 +714,52 @@ function HomeInner() {
     fetchGuides();
     return () => clearTimeout(safety);
   }, [supabase]);
+
+  // chatPeer との meeting 状態を取得 + Realtime 監視
+  useEffect(() => {
+    if (!currentUserId || !chatPeer?.id) {
+      setChatMeeting({ kind: "none" });
+      return;
+    }
+    const peerId = chatPeer.id;
+    let cancelled = false;
+    async function refresh() {
+      const { data } = await supabase
+        .from("meetings")
+        .select("id, user_a_id, user_b_id, status")
+        .or(`and(user_a_id.eq.${currentUserId},user_b_id.eq.${peerId}),and(user_a_id.eq.${peerId},user_b_id.eq.${currentUserId})`)
+        .in("status", ["pending_a", "pending_b", "active", "completed"])
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (!data) { setChatMeeting({ kind: "none" }); return; }
+      const m = data as { id: number; user_a_id: string; user_b_id: string; status: string };
+      if (m.status === "active") setChatMeeting({ kind: "active", id: m.id });
+      else if (m.status === "completed") setChatMeeting({ kind: "completed", id: m.id });
+      else if (m.status === "pending_b") {
+        if (m.user_a_id === currentUserId) setChatMeeting({ kind: "pending_proposed_by_me", id: m.id });
+        else setChatMeeting({ kind: "pending_awaiting_my_accept", id: m.id });
+      }
+      else setChatMeeting({ kind: "none" });
+    }
+    refresh();
+    const ch = supabase
+      .channel(`meeting-${currentUserId}-${peerId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "meetings" },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as { user_a_id?: string; user_b_id?: string } | null;
+          if (!row) return;
+          const involves = (row.user_a_id === currentUserId && row.user_b_id === peerId)
+            || (row.user_a_id === peerId && row.user_b_id === currentUserId);
+          if (involves) refresh();
+        },
+      )
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, [supabase, currentUserId, chatPeer?.id, meetingRefreshTick]);
 
   // チャット画面が開いたら、chatPeer とのメッセージ履歴をロード + リアルタイム購読
   useEffect(() => {
@@ -1317,6 +1372,12 @@ function HomeInner() {
                 </>
               );
             })()}
+            {selectedGuide.user_id && (
+              <div style={{ margin: "0 20px 16px" }}>
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 8, textTransform: "uppercase" }}>⭐ {t("reviews_tab", lang)}</div>
+                <ReviewsSection reviewedUserId={selectedGuide.user_id} lang={lang} />
+              </div>
+            )}
             {isOwn ? (
               <div style={{ margin: "0 20px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <Link href={`/guides/${selectedGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
@@ -1389,6 +1450,8 @@ function HomeInner() {
             guides={guides}
             avatarUrls={avatarUrls}
             lang={lang}
+            meeting={chatMeeting}
+            onMeetingChanged={() => setMeetingRefreshTick((n) => n + 1)}
           />
         )}
 
