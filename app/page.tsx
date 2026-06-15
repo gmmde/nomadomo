@@ -213,10 +213,12 @@ function HomeInner() {
     | { kind: "none" }
     | { kind: "pending_proposed_by_me"; id: number }
     | { kind: "pending_awaiting_my_accept"; id: number }
-    | { kind: "active"; id: number }
+    | { kind: "active"; id: number; startedAt: string | null; iReviewed: boolean }
     | { kind: "completed"; id: number }
   >({ kind: "none" });
   const [meetingRefreshTick, setMeetingRefreshTick] = useState(0);
+  // 4日以上経過した未レビュー active meeting 数 (bottom-nav badge 用)
+  const [staleUnreviewedMeetings, setStaleUnreviewedMeetings] = useState(0);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
   const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
@@ -715,6 +717,33 @@ function HomeInner() {
     return () => clearTimeout(safety);
   }, [supabase]);
 
+  // 4日以上経過した自分の未レビュー active meeting 数 (in-app reminder)
+  useEffect(() => {
+    if (!currentUserId) { setStaleUnreviewedMeetings(0); return; }
+    let cancelled = false;
+    async function refresh() {
+      const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: ms } = await supabase
+        .from("meetings")
+        .select("id, started_at")
+        .eq("status", "active")
+        .or(`user_a_id.eq.${currentUserId},user_b_id.eq.${currentUserId}`)
+        .lt("started_at", fourDaysAgo);
+      if (cancelled || !ms || ms.length === 0) { setStaleUnreviewedMeetings(0); return; }
+      const ids = ms.map((r) => (r as { id: number }).id);
+      const { data: rev } = await supabase
+        .from("reviews")
+        .select("meeting_id")
+        .in("meeting_id", ids)
+        .eq("reviewer_id", currentUserId);
+      if (cancelled) return;
+      const reviewed = new Set((rev ?? []).map((r) => (r as { meeting_id: number }).meeting_id));
+      setStaleUnreviewedMeetings(ms.filter((r) => !reviewed.has((r as { id: number }).id)).length);
+    }
+    refresh();
+    return () => { cancelled = true; };
+  }, [supabase, currentUserId, meetingRefreshTick]);
+
   // chatPeer との meeting 状態を取得 + Realtime 監視
   useEffect(() => {
     if (!currentUserId || !chatPeer?.id) {
@@ -726,7 +755,7 @@ function HomeInner() {
     async function refresh() {
       const { data } = await supabase
         .from("meetings")
-        .select("id, user_a_id, user_b_id, status")
+        .select("id, user_a_id, user_b_id, status, started_at")
         .or(`and(user_a_id.eq.${currentUserId},user_b_id.eq.${peerId}),and(user_a_id.eq.${peerId},user_b_id.eq.${currentUserId})`)
         .in("status", ["pending_a", "pending_b", "active", "completed"])
         .order("id", { ascending: false })
@@ -734,8 +763,18 @@ function HomeInner() {
         .maybeSingle();
       if (cancelled) return;
       if (!data) { setChatMeeting({ kind: "none" }); return; }
-      const m = data as { id: number; user_a_id: string; user_b_id: string; status: string };
-      if (m.status === "active") setChatMeeting({ kind: "active", id: m.id });
+      const m = data as { id: number; user_a_id: string; user_b_id: string; status: string; started_at: string | null };
+      if (m.status === "active") {
+        // active のとき、自分のレビュー済みかどうかも取得 (urgency 表示用)
+        const { data: myRev } = await supabase
+          .from("reviews")
+          .select("id")
+          .eq("meeting_id", m.id)
+          .eq("reviewer_id", currentUserId)
+          .limit(1);
+        if (cancelled) return;
+        setChatMeeting({ kind: "active", id: m.id, startedAt: m.started_at, iReviewed: !!(myRev && myRev.length > 0) });
+      }
       else if (m.status === "completed") setChatMeeting({ kind: "completed", id: m.id });
       else if (m.status === "pending_b") {
         if (m.user_a_id === currentUserId) setChatMeeting({ kind: "pending_proposed_by_me", id: m.id });
@@ -895,7 +934,7 @@ function HomeInner() {
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
-          const inboxCombined = totalUnread + pendingRequestCount;
+          const inboxCombined = totalUnread + pendingRequestCount + staleUnreviewedMeetings;
           const showBadge = item.key === "inbox" && inboxCombined > 0;
           const badgeCount = inboxCombined;
           return (

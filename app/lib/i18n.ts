@@ -207,6 +207,7 @@ export const dict: Dict = {
   review_submit_btn: { en: "Post review", ja: "評価を投稿する" },
   review_submit_done: { en: "✅ Review posted", ja: "✅ 評価投稿済み" },
   waiting_for_peer_review: { en: "Waiting for {name} to review you…", ja: "{name} の評価待ち…" },
+  review_overdue_banner: { en: "Please review your meeting with {name}", ja: "{name} とのお出かけを評価して" },
   finish_btn: { en: "Finish!", ja: "完了！" },
   reviews_tab: { en: "Reviews", ja: "評価" },
   reviews_empty: { en: "No reviews yet", ja: "まだ評価なし" },

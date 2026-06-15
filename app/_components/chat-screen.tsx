@@ -31,8 +31,17 @@ export type MeetingState =
   | { kind: "none" }
   | { kind: "pending_proposed_by_me"; id: number } // 自分が押した、相手待ち
   | { kind: "pending_awaiting_my_accept"; id: number } // 相手が押した、自分が承認すれば active
-  | { kind: "active"; id: number }
+  | { kind: "active"; id: number; startedAt: string | null; iReviewed: boolean }
   | { kind: "completed"; id: number };
+
+// 4 日以上経過した未レビュー active meeting は urgent
+const URGENT_AFTER_MS = 4 * 24 * 60 * 60 * 1000;
+function isMeetingUrgent(m: MeetingState): boolean {
+  if (m.kind !== "active") return false;
+  if (m.iReviewed) return false;
+  if (!m.startedAt) return false;
+  return Date.now() - new Date(m.startedAt).getTime() >= URGENT_AFTER_MS;
+}
 
 type Props = {
   chatPeer: ChatPeer;
@@ -82,6 +91,7 @@ export default function ChatScreen({
   // Banner / meet button content per state
   const showActive = meeting.kind === "active";
   const showCompleteBtn = meeting.kind === "active";
+  const urgent = isMeetingUrgent(meeting);
   const meetBtnLabel =
     meeting.kind === "pending_proposed_by_me"
       ? t("meet_proposed", lang)
@@ -114,10 +124,16 @@ export default function ChatScreen({
         <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 30, height: 30, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
       </div>
 
-      {/* 🚶 お出かけ中バナー */}
-      {showActive && (
+      {/* 🚶 お出かけ中バナー (urgent 中は隠す) */}
+      {showActive && !urgent && (
         <div style={{ background: "linear-gradient(90deg, #2e8b57, #4caf50)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 900, textAlign: "center", letterSpacing: 0.3 }}>
           {t("going_out_banner", lang)}
+        </div>
+      )}
+      {/* ⏰ 4 日以上経過 + 自分未レビュー → 評価催促 */}
+      {urgent && (
+        <div style={{ background: "linear-gradient(90deg, #ad001c, #d63333)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 900, textAlign: "center", letterSpacing: 0.3 }}>
+          ⏰ {t("review_overdue_banner", lang).replace("{name}", chatPeer.name)}
         </div>
       )}
 
@@ -151,9 +167,9 @@ export default function ChatScreen({
           {showCompleteBtn ? (
             <Link
               href={`/meetings/${meeting.id}/complete`}
-              style={{ flex: 1, background: "#2e8b57", color: "#fff", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, textAlign: "center", textDecoration: "none" }}
+              style={{ flex: 1, background: urgent ? "#ad001c" : "#2e8b57", color: "#fff", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, textAlign: "center", textDecoration: "none", boxShadow: urgent ? "0 0 0 3px #ad001c44" : "none" }}
             >
-              ✨ {t("go_to_complete_btn", lang)}
+              {urgent ? "⏰" : "✨"} {t("go_to_complete_btn", lang)}
             </Link>
           ) : (
             <button
