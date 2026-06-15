@@ -5,6 +5,9 @@
   --foreground: #1a1008;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 html, body {
   margin: 0;
   padding: 0;
@@ -51,26 +54,14 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
   min-height: 100vh;       /* fallback */
   min-height: 100svh;      /* iOS Safari (URL バー込みではなく現在の表示領域) */
   width: 100%;
-  /* 背景は body の map-bg.png をそのまま見せる (タブレット以上で 480px 中央配置時に
-     左右にちゃんと地図が出る) */
+  /* 背景は body の map-bg.png をそのまま見せる (左右に地図が透ける) */
 }
 .app-frame-inner {
   min-height: 100vh;
   min-height: 100svh;
   width: 100%;
-  background: #f5ead0;     /* インナーカードは cream 色で内容に統一感 */
-}
-/* 768px 未満 (= 全ての電話、小型タブレット) は max-width 制約を完全に外す */
-@media (max-width: 767px) {
-  .app-frame-inner {
-    max-width: 100% !important;
-  }
-}
-/* 768px 以上 (タブレット縦・PC) は 480px の中央配置カード */
-@media (min-width: 768px) {
-  .app-frame-inner {
-    max-width: 480px !important;
-  }
+  /* 最大 390px の中央配置カード。左右に body の地図背景が見える */
+  background: #f5ead0;
 }
 
 /* ボトムナビ: iPhone のホームインジケータ高さを safe-area から取って加算 */
