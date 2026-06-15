@@ -12,15 +12,21 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #cfe2c4;
-  background-image:
-    linear-gradient(rgba(255, 249, 240, 0.30), rgba(255, 249, 240, 0.30)),
-    url("/map-bg.png");
-  background-repeat: no-repeat, no-repeat;
-  background-size: cover, cover;
-  background-position: center center, 0% center;
-  background-attachment: fixed, fixed;
-  transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--foreground);
+}
+/* 地図 bg を body 自体ではなく .app-frame に貼り直す
+   (iOS Safari は body の background-attachment: fixed が効かないことがあり、
+   かつ body bg だと一部の screen で他の bg と取り合いになる) */
+.app-frame {
+  background-image: url("/map-bg.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  /* attachment: scroll の方が iOS で安定 */
+  transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  min-height: 100vh;
+  min-height: 100svh;
+  width: 100%;
 }
 
 /* タブ index に応じて地図を右にずらす (パララックス) */
@@ -50,11 +56,10 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
 }
 
 /* アプリ全体の縦サイズ: iOS Safari URL バーの伸縮を吸収するため dvh を使う */
-.app-frame {
-  min-height: 100vh;       /* fallback */
-  min-height: 100svh;      /* iOS Safari (URL バー込みではなく現在の表示領域) */
+.app-frame-base {
+  min-height: 100vh;
+  min-height: 100svh;
   width: 100%;
-  /* 背景は body の map-bg.png をそのまま見せる (左右に地図が透ける) */
 }
 .app-frame-inner {
   min-height: 100vh;
