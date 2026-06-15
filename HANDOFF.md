@@ -1,10 +1,49 @@
 # NomaDomo - AI 引き継ぎレポート
 
-> 最終更新: 2026-05-26
+> 最終更新: 2026-06-15
 > オーナー: gmmde (tonoikenta@icloud.com / tonoikenta@gmail.com)
 > リポジトリ: https://github.com/gmmde/nomadomo
 > 本番 URL: https://nomadomo.vercel.app
 > Supabase project: `xsifihdujxitwocgoffp` (region: ap-northeast-1)
+
+---
+
+
+## 2026-06-15: 大物 — Blind review / 7d auto-complete / 4d in-app reminder / 初回チュートリアル
+
+### Meet → Review フローの全面再設計
+
+- **Blind review**: `reviews.released_at` を追加。両者が投稿するまでお互いのレビューは公開されない。両方投稿した瞬間に `released_at = now()` で同時 release し、`meetings.status = 'completed'` に自動遷移。`ReviewsSection` は `.not("released_at", "is", null)` でフィルタ。
+- **7日 auto-complete**: pg_cron 日次ジョブ `auto_complete_stale_meetings` が `started_at < now-7d` の active meeting を強制 complete。未投稿側のレビューは作らない（システムが代理投稿はしない）。残ったレビューは release される。
+- **4日 in-app reminder**: 自分のレビュー未投稿 active meeting が 4日経過したら ① Messages タブの赤バッジに加算、② ChatScreen の「お出かけ中」緑バナーを赤い「⏰ Please review {name}」に差し替え、③ Complete & Review CTA を赤ハロー付きに。
+- `/meetings/[id]/complete` から dummy 決済セクション削除、Finish ボタン廃止（auto-complete に統一）。
+- Realtime peer-review 監視を `setInterval` 廃止して Realtime のみ + 切断時 exponential backoff 再接続。
+
+### 初回ログイン チュートリアル
+
+- 5 ステップのオーバーレイ。`user_settings.tutorial_completed boolean default false` で管理。既存ユーザはマイグレーション時に true を入れて backfill 済み（既存テスト用ユーザに突然出ない）。
+- Step 1: Welcome（フルスクリーン中央 + Noma**Domo** ロゴ）
+- Step 2: ホーム一覧 spotlight（`[data-tutorial="home-list"]`）
+- Step 3: モード切替 spotlight（`[data-tutorial="mode-switch"]` トップバーのチップ。スペックの「設定アイコン」より説明文と合致するため）
+- Step 4: Messages タブ spotlight（`[data-tutorial="nav-messages"]`）
+- Step 5: 完了画面 + プロトタイプ免責
+- 表示条件: `currentUserId` あり / `appModeLoaded` / `appMode != null` / `screen === "home"` で、`tutorial_completed = false` のとき
+- スキップでも `completeTutorial()` を叩いて true 化（再表示しない）
+- 実装: `app/_components/tutorial-overlay.tsx` + `app/actions/user-settings.ts`
+
+### DB スキーマ追加（一気に）
+
+- `chat_requests`: `payment_intent_id / payment_status / authorized_at / captured_at / canceled_at / expires_at`（次回 Stripe authorize→capture 統合用の受け皿、現状未配線）
+- `reviews`: `released_at`
+- `meetings`: `traveler_user_id / guide_user_id` + insert trigger で chat_requests から自動引き当て + 既存データ backfill
+- `user_settings`: `tutorial_completed boolean default false`
+
+### 次回への積み残し（タスク #89, #90, #91）
+
+Stripe 決済をチャットリクエスト送信時に authorize → ガイド accept で capture / decline で cancel。決まってない設計判断:
+
+1. 課金単位（rate_per_day × 1日 / 固定マッチング fee / hours フィールド追加）
+2. 既存 `/bookings` Stripe フローと統合 or 並走
 
 ---
 

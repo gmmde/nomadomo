@@ -8,6 +8,7 @@ import Splash from "./_components/splash";
 import Lightbox from "./_components/lightbox";
 import ModePicker from "./_components/mode-picker";
 import ChatScreen from "./_components/chat-screen";
+import TutorialOverlay from "./_components/tutorial-overlay";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
@@ -219,6 +220,9 @@ function HomeInner() {
   const [meetingRefreshTick, setMeetingRefreshTick] = useState(0);
   // 4日以上経過した未レビュー active meeting 数 (bottom-nav badge 用)
   const [staleUnreviewedMeetings, setStaleUnreviewedMeetings] = useState(0);
+  // 初回ログイン時のチュートリアル表示制御 (user_settings.tutorial_completed)
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialChecked, setTutorialChecked] = useState(false);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
   const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [heroImgError, setHeroImgError] = useState(false);
@@ -324,13 +328,17 @@ function HomeInner() {
     }
     supabase
       .from("user_settings")
-      .select("app_mode")
+      .select("app_mode, tutorial_completed")
       .eq("user_id", currentUserId)
       .maybeSingle()
       .then(({ data }) => {
         const m = data?.app_mode as "local" | "traveler" | null | undefined;
         setAppMode(m === "local" || m === "traveler" ? m : null);
         setAppModeLoaded(true);
+        // user_settings 行が無い (新規) or tutorial_completed=false → チュートリアル開く候補
+        const completed = data?.tutorial_completed === true;
+        setTutorialOpen(!completed);
+        setTutorialChecked(true);
       });
   }, [supabase, currentUserId]);
 
@@ -940,6 +948,7 @@ function HomeInner() {
           return (
             <div
               key={item.label}
+              data-tutorial={item.key === "inbox" ? "nav-messages" : undefined}
               onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
@@ -981,6 +990,7 @@ function HomeInner() {
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {currentUserId && appMode && (
                   <button
+                    data-tutorial="mode-switch"
                     onClick={() => saveAppMode(appMode === "local" ? "traveler" : "local")}
                     style={{ background: appMode === "local" ? "#2ecc71" : "#ffffff28", color: "#fff", border: appMode === "local" ? "none" : "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
                     title={t("switch_mode_tooltip", lang)}
@@ -1111,7 +1121,7 @@ function HomeInner() {
             )}
 
             {/* GUIDES (or Travelers in Local mode) */}
-            <div style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
+            <div data-tutorial="home-list" style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
               <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? `${t("travelers_in_kyoto", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
               <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
             </div>
@@ -1550,6 +1560,11 @@ function HomeInner() {
         <Lightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
 
       </div>
+
+      {/* 初回ログイン: チュートリアル (home + traveler モードに到達してから開く) */}
+      {tutorialChecked && tutorialOpen && currentUserId && appModeLoaded && appMode && screen === "home" && (
+        <TutorialOverlay onClose={() => setTutorialOpen(false)} />
+      )}
     </div>
   );
 }
