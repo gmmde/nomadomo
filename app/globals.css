@@ -48,10 +48,17 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
 .app-frame {
   min-height: 100vh;       /* fallback */
   min-height: 100svh;      /* iOS Safari (URL バー込みではなく現在の表示領域) */
+  background: #f5ead0;     /* 390px より広い画面 (Android Pixel/Galaxy 等) で body bg が左右に漏れるのを防ぐ */
 }
 .app-frame-inner {
   min-height: 100vh;
   min-height: 100svh;
+}
+/* 600px 未満の電話画面では中央 390px 制約を外して全幅にする */
+@media (max-width: 600px) {
+  .app-frame-inner {
+    max-width: 100% !important;
+  }
 }
 
 /* ボトムナビ: iPhone のホームインジケータ高さを safe-area から取って加算 */

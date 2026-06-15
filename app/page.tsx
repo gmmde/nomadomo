@@ -1021,8 +1021,9 @@ function HomeInner() {
     <div className="app-frame" style={{ display: "flex", justifyContent: "center" }}>
       <div className="app-frame-inner" style={{ width: "100%", maxWidth: 390, position: "relative" }}>
 
-        {/* SPLASH (initial mount) */}
-        {loading && <Splash />}
+        {/* SPLASH (initial mount): user の app_mode 判定が終わるまでも leave して
+            「一瞬ホームが見えてから ModePicker が乗る」 flash を防ぐ */}
+        {(loading || (currentUserId && !appModeLoaded)) && <Splash />}
 
         {/* MODE PICKER — guides loading に gate しない（新規ユーザは即座に出すべき） */}
         {currentUserId && appModeLoaded && !appMode && (
