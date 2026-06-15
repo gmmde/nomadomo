@@ -9,6 +9,76 @@
 ---
 
 
+
+## 2026-06-15 (later): Meet ボタン押下時に Stripe 課金 + 48h timeout
+
+前回「決済はチャットリクエスト送信時 authorize → ガイド accept で capture」って実装方針で進めたけど、ユーザーの本意は **チャット画面の「🤝 Meet {ガイド}」ボタン押下時に課金**だった。再設計。
+
+### 設計判断 (確定)
+
+- **① 課金単位**: 案 A (`rate_per_day × 1日` 固定)
+- **② 既存 /bookings**: 当面並走、後で deprecate (D 案)
+- **③ Timeout**: 48時間で自動 cancel。Meet 押下画面に「48時間反応が無かった場合返金されます」表記
+- **④ 役割**: ガイドには Meet ボタン出さない (=旅行者のみ提案可)
+
+### フロー
+
+```
+1. 旅行者がチャットで「🤝 Meet {ガイド} 💳」押す
+   → MeetPaymentModal 開く: 「¥X/日 + 48h 内無反応なら返金」表示
+   → Stripe Elements でカード入力 → authorize (manual_capture)
+   → proposeMeet({peer_id, payment_intent_id}) 呼ばれて meeting 作成
+     (status=pending_b, expires_at=now+48h)
+
+2. ガイドのチャット画面で「✅ Accept Meet with {旅行者}」が出現
+   → acceptMeet({meeting_id}) → Stripe で capture → status=active
+
+3. 48h 内に accept されなかった場合
+   → pg_cron (30 分毎) cancel_expired_pending_meetings()
+   → meeting.status=canceled, payment_status=canceled
+   → ⚠ 注意: Stripe 側 PaymentIntent.cancel() は cron からは呼んでない
+     (Postgres から HTTP 呼ぶには pg_net 必要)。worst case 7 日で Stripe 側
+     hold が自動失効するので最終的にはユーザーには返金される
+```
+
+### DB 変更
+
+- `chat_requests` から payment 列削除 (前回の誤実装の撤去)
+- `meetings` に追加:
+  - `payment_intent_id`, `payment_status`, `payment_authorized_at`,
+    `payment_captured_at`, `payment_canceled_at`, `amount_yen`, `expires_at`
+- `cancel_expired_pending_meetings()` 関数 + `*/30 * * * *` cron
+- `meetings_pending_expires_idx` index
+
+### Server actions
+
+- `createMeetPaymentIntent(peerId)` — Stripe で authorize (manual capture)、clientSecret 返す
+- `proposeMeet(formData)` — payment_intent_id 必須 (paid のとき)、旅行者のみ propose 可。chat_requests から traveler_id 確認
+- `acceptMeet(formData)` — ガイドのみ accept 可、Stripe capture + status=active
+- `cancelMeet(formData)` — 当事者の手動 cancel + Stripe authorize 解放
+- 旧 `completeMeet` は残存 (cancel 系互換)
+
+### UI
+
+- `app/_components/meet-payment-modal.tsx` — Stripe Elements (PaymentElement) + 料金カード + 「48時間返金」黄色注意ボックス
+- `app/_components/chat-screen.tsx`:
+  - 新 props `myRole` (`traveler` / `guide` / `unknown`) + `peerGuideMode` (`free` / `paid` / `null`)
+  - 旅行者: meeting=none で「Meet {name} 💳」ボタン → paid なら modal、free なら直接 propose
+  - ガイド: meeting=pending_awaiting_my_accept で「Accept Meet」緑ボタン → acceptMeet
+- page.tsx で chat_requests から myRole 解決、guides テーブルから peerGuideMode 解決
+
+### i18n
+
+- `meet_accept_btn`, `meet_refund_notice_48h` (en/ja)
+
+### 残課題 (この設計で次に必要なこと)
+
+1. **Stripe 側 PaymentIntent の自動 cancel 同期**: 現状 pg_cron は DB だけ canceled に flip し、Stripe 側 hold は別途解放されるまでカードロックが残る (最悪 7 日)。Supabase Edge Function + pg_net で Stripe API を叩く reconciliation job が必要
+2. **`/bookings` フローの deprecate**: 当面並走でメンテ地獄。bookings ページ削除 + /requests のリンク書き換え
+3. **iPhone モーダル位置**: MeetPaymentModal は中央寄せだが、Stripe Elements のキーボード表示時に画面外に出る可能性。要実機確認
+
+---
+
 ## 2026-06-15: 大物 — Blind review / 7d auto-complete / 4d in-app reminder / 初回チュートリアル
 
 ### Meet → Review フローの全面再設計

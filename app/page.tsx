@@ -220,6 +220,9 @@ function HomeInner() {
   const [meetingRefreshTick, setMeetingRefreshTick] = useState(0);
   // 4日以上経過した未レビュー active meeting 数 (bottom-nav badge 用)
   const [staleUnreviewedMeetings, setStaleUnreviewedMeetings] = useState(0);
+  // chatPeer に対する自分のロール (traveler/guide) と相手のガイドモード
+  const [chatMyRole, setChatMyRole] = useState<"traveler" | "guide" | "unknown">("unknown");
+  const [chatPeerGuideMode, setChatPeerGuideMode] = useState<"free" | "paid" | null>(null);
   // 初回ログイン時のチュートリアル表示制御 (user_settings.tutorial_completed)
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChecked, setTutorialChecked] = useState(false);
@@ -751,6 +754,54 @@ function HomeInner() {
     refresh();
     return () => { cancelled = true; };
   }, [supabase, currentUserId, meetingRefreshTick]);
+
+  // chatPeer に対する自分のロール (traveler/guide) と peer guide mode 判定
+  useEffect(() => {
+    if (!currentUserId || !chatPeer?.id) {
+      setChatMyRole("unknown");
+      setChatPeerGuideMode(null);
+      return;
+    }
+    const peerId = chatPeer.id;
+    let cancelled = false;
+    (async () => {
+      // 自分が traveler としてリクエスト送った accepted 行があれば自分が traveler
+      const { data: cr } = await supabase
+        .from("chat_requests")
+        .select("id")
+        .eq("traveler_id", currentUserId)
+        .eq("guide_user_id", peerId)
+        .eq("status", "accepted")
+        .limit(1);
+      if (cancelled) return;
+      if (cr && cr.length > 0) {
+        setChatMyRole("traveler");
+      } else {
+        // 逆向きに peer が traveler だった accepted があるか
+        const { data: cr2 } = await supabase
+          .from("chat_requests")
+          .select("id")
+          .eq("traveler_id", peerId)
+          .eq("guide_user_id", currentUserId)
+          .eq("status", "accepted")
+          .limit(1);
+        if (cancelled) return;
+        if (cr2 && cr2.length > 0) setChatMyRole("guide");
+        else setChatMyRole("unknown");
+      }
+
+      // peer の guide.mode (paid 側だけ Stripe フローに乗せる)
+      const { data: g } = await supabase
+        .from("guides")
+        .select("mode")
+        .eq("user_id", peerId)
+        .maybeSingle();
+      if (cancelled) return;
+      const mode = (g?.mode as string | undefined);
+      setChatPeerGuideMode(mode === "paid" ? "paid" : mode === "free" ? "free" : null);
+    })();
+    return () => { cancelled = true; };
+  }, [supabase, currentUserId, chatPeer?.id]);
 
   // chatPeer との meeting 状態を取得 + Realtime 監視
   useEffect(() => {
@@ -1492,6 +1543,8 @@ function HomeInner() {
             lang={lang}
             meeting={chatMeeting}
             onMeetingChanged={() => setMeetingRefreshTick((n) => n + 1)}
+            myRole={chatMyRole}
+            peerGuideMode={chatPeerGuideMode}
           />
         )}
 

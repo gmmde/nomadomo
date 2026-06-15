@@ -208,6 +208,8 @@ export const dict: Dict = {
   review_submit_done: { en: "✅ Review posted", ja: "✅ 評価投稿済み" },
   waiting_for_peer_review: { en: "Waiting for {name} to review you…", ja: "{name} の評価待ち…" },
   review_overdue_banner: { en: "Please review your meeting with {name}", ja: "{name} とのお出かけを評価して" },
+  meet_accept_btn: { en: "Accept Meet with {name}", ja: "{name} の Meet を承認" },
+  meet_refund_notice_48h: { en: "If {name} doesn\'t respond within 48 hours, your card hold will be released (no charge).", ja: "48時間以内にガイドから反応が無かった場合は与信解放されて課金されないわよ（=実質返金）。" },
   // ===== Tutorial overlay (5 steps) =====
   tut_skip: { en: "Skip", ja: "スキップ" },
   tut_start_btn: { en: "Get started →", ja: "はじめる →" },

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import type { RefObject } from "react";
 import { t, type Lang } from "../lib/i18n";
-import { proposeMeet } from "../actions/meetings";
+import { proposeMeet, acceptMeet } from "../actions/meetings";
+import MeetPaymentModal from "./meet-payment-modal";
 
 type Message = {
   id: number;
@@ -58,6 +59,9 @@ type Props = {
   lang: Lang;
   meeting: MeetingState;
   onMeetingChanged: () => void;
+  // 新フロー (旅行者のみ Meet 押せる + paid モードは Stripe モーダル)
+  myRole: "traveler" | "guide" | "unknown";
+  peerGuideMode: "free" | "paid" | null; // 相手 (peer) が guide.mode=何か
 };
 
 export default function ChatScreen({
@@ -75,15 +79,47 @@ export default function ChatScreen({
   lang,
   meeting,
   onMeetingChanged,
+  myRole,
+  peerGuideMode,
 }: Props) {
   const [pendingTr, startTr] = useTransition();
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [meetErr, setMeetErr] = useState<string | null>(null);
 
   async function handleMeetClick() {
     if (!chatPeer.id) return;
+    if (myRole !== "traveler") return; // ガイドは押せない
+    setMeetErr(null);
+    if (peerGuideMode === "paid") {
+      // 有料ガイドは Stripe Elements モーダル
+      setShowPayModal(true);
+      return;
+    }
+    // free モードはそのまま propose
     startTr(async () => {
       const fd = new FormData();
       fd.set("peer_id", chatPeer.id);
-      await proposeMeet(fd);
+      const r = await proposeMeet(fd);
+      if (r?.error) {
+        setMeetErr(r.error);
+        return;
+      }
+      onMeetingChanged();
+    });
+  }
+
+  async function handleAcceptMeetClick() {
+    if (meeting.kind !== "pending_awaiting_my_accept") return;
+    if (myRole !== "guide") return;
+    setMeetErr(null);
+    startTr(async () => {
+      const fd = new FormData();
+      fd.set("meeting_id", String(meeting.id));
+      const r = await acceptMeet(fd);
+      if (r?.error) {
+        setMeetErr(r.error);
+        return;
+      }
       onMeetingChanged();
     });
   }
@@ -161,26 +197,54 @@ export default function ChatScreen({
         )}
       </div>
 
-      {/* Meet / Complete buttons (above input) */}
+      {/* Meet / Accept Meet / Complete buttons (above input) */}
       {currentUserId && meeting.kind !== "completed" && (
-        <div style={{ padding: "8px 20px 0", display: "flex", gap: 8 }}>
+        <div style={{ padding: "8px 20px 0", display: "flex", flexDirection: "column", gap: 6 }}>
           {showCompleteBtn ? (
             <Link
               href={`/meetings/${meeting.id}/complete`}
-              style={{ flex: 1, background: urgent ? "#ad001c" : "#2e8b57", color: "#fff", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, textAlign: "center", textDecoration: "none", boxShadow: urgent ? "0 0 0 3px #ad001c44" : "none" }}
+              style={{ background: urgent ? "#ad001c" : "#2e8b57", color: "#fff", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, textAlign: "center", textDecoration: "none", boxShadow: urgent ? "0 0 0 3px #ad001c44" : "none" }}
             >
               {urgent ? "⏰" : "✨"} {t("go_to_complete_btn", lang)}
             </Link>
-          ) : (
+          ) : myRole === "traveler" && meeting.kind === "none" ? (
+            // 旅行者: 「Meet を提案」ボタン (paid なら Stripe モーダル経由)
             <button
               onClick={handleMeetClick}
-              disabled={meetBtnDisabled}
-              style={{ flex: 1, background: meetBtnBg, color: "#fff", border: "none", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, cursor: meetBtnDisabled ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: meetBtnDisabled ? 0.7 : 1 }}
+              disabled={pendingTr}
+              style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, cursor: pendingTr ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: pendingTr ? 0.7 : 1 }}
             >
-              🤝 {meetBtnLabel}
+              🤝 {t("meet_btn", lang).replace("{name}", chatPeer.name)}{peerGuideMode === "paid" ? " 💳" : ""}
             </button>
+          ) : myRole === "traveler" && meeting.kind === "pending_proposed_by_me" ? (
+            <div style={{ background: "#fff9f0", border: "2px dashed #e8c99a", color: "#8a7560", borderRadius: 24, padding: "10px 14px", fontSize: 12, fontWeight: 800, textAlign: "center" }}>
+              ⏳ {t("meet_proposed", lang)}
+            </div>
+          ) : myRole === "guide" && meeting.kind === "pending_awaiting_my_accept" ? (
+            // ガイド: 「accept」ボタン (押すと Stripe capture)
+            <button
+              onClick={handleAcceptMeetClick}
+              disabled={pendingTr}
+              style={{ background: "#2e8b57", color: "#fff", border: "none", borderRadius: 24, padding: "10px 14px", fontSize: 13, fontWeight: 800, cursor: pendingTr ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: pendingTr ? 0.7 : 1 }}
+            >
+              ✅ {t("meet_accept_btn", lang).replace("{name}", chatPeer.name)}
+            </button>
+          ) : null}
+          {meetErr && (
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, textAlign: "center" }}>{meetErr}</div>
           )}
         </div>
+      )}
+
+      {/* Stripe 支払いモーダル (旅行者かつ paid 相手のみ) */}
+      {showPayModal && chatPeer.id && (
+        <MeetPaymentModal
+          peerId={chatPeer.id}
+          peerName={chatPeer.name}
+          peerEmoji={chatPeer.emoji}
+          onClose={() => setShowPayModal(false)}
+          onSuccess={() => { setShowPayModal(false); onMeetingChanged(); }}
+        />
       )}
 
       <div style={{ padding: "12px 20px 24px", display: "flex", gap: 10, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
