@@ -939,7 +939,7 @@ function HomeInner() {
 
   function renderBottomNav(active: NavKey | "profile" | "chat") {
     return (
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
+      <div className="bottom-nav-safe" style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
           const inboxCombined = totalUnread + pendingRequestCount + staleUnreviewedMeetings;
@@ -967,8 +967,8 @@ function HomeInner() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center" }}>
-      <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", position: "relative" }}>
+    <div className="app-frame" style={{ display: "flex", justifyContent: "center" }}>
+      <div className="app-frame-inner" style={{ width: "100%", maxWidth: 390, position: "relative" }}>
 
         {/* SPLASH (initial mount) */}
         {loading && <Splash />}
@@ -1207,9 +1207,10 @@ function HomeInner() {
             )}
 
             <div style={{ height: 100 }}/>
-            {renderBottomNav("home")}
           </div>
         )}
+        {/* bottom nav は screen-enter の外側で描画 (transform で position:fixed が壊れるのを回避) */}
+        {screen === "home" && renderBottomNav("home")}
 
         {/* GUIDE PROFILE (Tinder 風) */}
         {screen === "profile" && selectedGuide && (() => {
@@ -1553,7 +1554,7 @@ function HomeInner() {
 
       {/* 初回ログイン: チュートリアル (home + traveler モードに到達してから開く) */}
       {tutorialChecked && tutorialOpen && currentUserId && appModeLoaded && appMode && screen === "home" && (
-        <TutorialOverlay onClose={() => setTutorialOpen(false)} />
+        <TutorialOverlay appMode={appMode} onClose={() => setTutorialOpen(false)} />
       )}
     </div>
   );

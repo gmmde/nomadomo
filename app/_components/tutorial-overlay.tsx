@@ -6,6 +6,7 @@ import { useLang, t } from "../lib/i18n";
 
 type Props = {
   onClose: () => void;
+  appMode: "local" | "traveler" | null;
 };
 
 // 5 ステップの定義: targetSelector が無ければ中央モーダル表示
@@ -17,18 +18,21 @@ type Step = {
   showLogo?: boolean;      // Step 1 (Welcome) で logo を大きく表示
 };
 
-const STEPS: Step[] = [
+function buildSteps(appMode: "local" | "traveler" | null): Step[] {
+  const isLocal = appMode === "local";
+  return [
   // Step 1: Welcome
   { titleKey: "tut_welcome_title", bodyKey: "tut_welcome_body", nextKey: "tut_start_btn", showLogo: true },
-  // Step 2: Home 一覧
-  { selector: '[data-tutorial="home-list"]', titleKey: "tut_home_title", bodyKey: "tut_home_body", nextKey: "tut_next_btn" },
+  // Step 2: Home 一覧 (Local/Traveler で文言を出し分け)
+  { selector: '[data-tutorial="home-list"]', titleKey: isLocal ? "tut_home_title_local" : "tut_home_title", bodyKey: isLocal ? "tut_home_body_local" : "tut_home_body", nextKey: "tut_next_btn" },
   // Step 3: モード切替 (歯車アイコン spotlight、本文で「ここから設定→モード切替」を案内)
   { selector: '[data-tutorial="settings-gear"]', titleKey: "tut_mode_title", bodyKey: "tut_mode_body", nextKey: "tut_next_btn" },
   // Step 4: Messages タブ
   { selector: '[data-tutorial="nav-messages"]', titleKey: "tut_msg_title", bodyKey: "tut_msg_body", nextKey: "tut_next_btn" },
   // Step 5: 完了
   { titleKey: "tut_done_title", bodyKey: "tut_done_body", nextKey: "tut_finish_btn" },
-];
+  ];
+}
 
 // ハイライト枠の余白
 const PAD = 8;
@@ -36,7 +40,7 @@ const PAD = 8;
 const CARD_W = 300;
 const CARD_GAP = 16;
 
-export default function TutorialOverlay({ onClose }: Props) {
+export default function TutorialOverlay({ onClose, appMode }: Props) {
   const [idx, setIdx] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [vw, setVw] = useState(0);
@@ -44,6 +48,7 @@ export default function TutorialOverlay({ onClose }: Props) {
   const [pending, startTransition] = useTransition();
   const [lang] = useLang();
 
+  const STEPS = buildSteps(appMode);
   const step = STEPS[idx];
   const total = STEPS.length;
   const isFinal = idx === total - 1;

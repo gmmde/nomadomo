@@ -40,7 +40,23 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
 }
 .screen-enter {
   animation: screenIn 0.34s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+  /* will-change: transform は position:fixed 子孫の親になってしまうため外した
+     (= iOS Safari でボトムナビが画面端ではなく screen-enter 端に張り付く) */
+}
+
+/* アプリ全体の縦サイズ: iOS Safari URL バーの伸縮を吸収するため dvh を使う */
+.app-frame {
+  min-height: 100vh;       /* fallback */
+  min-height: 100svh;      /* iOS Safari (URL バー込みではなく現在の表示領域) */
+}
+.app-frame-inner {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* ボトムナビ: iPhone のホームインジケータ高さを safe-area から取って加算 */
+.bottom-nav-safe {
+  padding-bottom: calc(22px + env(safe-area-inset-bottom)) !important;
 }
 
 @keyframes fadeIn {
