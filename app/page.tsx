@@ -988,16 +988,6 @@ function HomeInner() {
                 <span style={{ color: "#fff" }}>Domo</span>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                {currentUserId && appMode && (
-                  <button
-                    data-tutorial="mode-switch"
-                    onClick={() => saveAppMode(appMode === "local" ? "traveler" : "local")}
-                    style={{ background: appMode === "local" ? "#2ecc71" : "#ffffff28", color: "#fff", border: appMode === "local" ? "none" : "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
-                    title={t("switch_mode_tooltip", lang)}
-                  >
-                    {appMode === "local" ? "🏯 Local" : "✈️ Traveler"}
-                  </button>
-                )}
                 {userEmail ? (
                   <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
                 ) : (
@@ -1005,7 +995,7 @@ function HomeInner() {
                     {t("login", lang)}
                   </Link>
                 )}
-                <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textDecoration: "none" }}>⚙</Link>
+                <Link href="/settings" aria-label="設定" data-tutorial="settings-gear" style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textDecoration: "none" }}>⚙</Link>
               </div>
             </div>
 

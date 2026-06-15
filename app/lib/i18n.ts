@@ -218,7 +218,7 @@ export const dict: Dict = {
   tut_home_title: { en: "Discover locals & travelers", ja: "ローカル&旅行者を見つけよう" },
   tut_home_body: { en: "This is where the list of local guides shows up. Tap anyone you're curious about to see their profile.", ja: "ここにローカルガイドが一覧表示されます。気になる人をタップしてプロフィールを見てみましょう！" },
   tut_mode_title: { en: "Switch between modes", ja: "モードを切り替えよう" },
-  tut_mode_body: { en: "Toggle between Traveler and Local modes here. Switch to Local if you want to register as a guide!", ja: "旅行者モードとローカルモードを切り替えられます。ガイドとして登録したい場合はローカルモードへ！" },
+  tut_mode_body: { en: "Tap the gear to open Settings — you can switch between Traveler and Local modes there. Pick Local if you want to register as a guide!", ja: "ここから設定を開くと、旅行者モードとローカルモードを切り替えられるわよ。ガイドとして登録したい場合はローカルモードへ！" },
   tut_msg_title: { en: "Chat with your matches", ja: "マッチした人とチャット" },
   tut_msg_body: { en: "Once a request is accepted, you can chat from here!", ja: "マッチングが成立したらここからチャットできます！" },
   tut_done_title: { en: "You're all set!", ja: "準備完了！" },

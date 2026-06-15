@@ -22,8 +22,8 @@ const STEPS: Step[] = [
   { titleKey: "tut_welcome_title", bodyKey: "tut_welcome_body", nextKey: "tut_start_btn", showLogo: true },
   // Step 2: Home 一覧
   { selector: '[data-tutorial="home-list"]', titleKey: "tut_home_title", bodyKey: "tut_home_body", nextKey: "tut_next_btn" },
-  // Step 3: モード切替 (スペックは「設定」と書いてあるけど説明はモード切替なのでモードチップを指す)
-  { selector: '[data-tutorial="mode-switch"]', titleKey: "tut_mode_title", bodyKey: "tut_mode_body", nextKey: "tut_next_btn" },
+  // Step 3: モード切替 (歯車アイコン spotlight、本文で「ここから設定→モード切替」を案内)
+  { selector: '[data-tutorial="settings-gear"]', titleKey: "tut_mode_title", bodyKey: "tut_mode_body", nextKey: "tut_next_btn" },
   // Step 4: Messages タブ
   { selector: '[data-tutorial="nav-messages"]', titleKey: "tut_msg_title", bodyKey: "tut_msg_body", nextKey: "tut_next_btn" },
   // Step 5: 完了
