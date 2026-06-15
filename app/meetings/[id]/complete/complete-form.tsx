@@ -40,11 +40,16 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
   const [finished, setFinished] = useState(meetingStatus === "completed");
   const [peerReviewed, setPeerReviewed] = useState(initialPeerReviewed);
 
+  // 相手レビュー監視: Realtime のみ + 切断時 exponential backoff 再接続
   useEffect(() => {
     if (peerReviewed) return;
     const supabase = createClient();
     let cancelled = false;
-    async function check() {
+    let ch: ReturnType<typeof supabase.channel> | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let retryDelayMs = 2000;
+
+    async function catchup() {
       const { data } = await supabase
         .from("reviews")
         .select("id")
@@ -53,16 +58,41 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
         .limit(1);
       if (!cancelled && data && data.length > 0) setPeerReviewed(true);
     }
-    check();
-    const ch = supabase
-      .channel(`peer-review-${meetingId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reviews", filter: `meeting_id=eq.${meetingId}` }, (payload) => {
-        const row = payload.new as { reviewer_id?: string } | null;
-        if (row?.reviewer_id === peerId) setPeerReviewed(true);
-      })
-      .subscribe();
-    const poll = setInterval(check, 10000);
-    return () => { cancelled = true; clearInterval(poll); supabase.removeChannel(ch); };
+
+    function connect() {
+      if (cancelled) return;
+      ch = supabase
+        .channel(`peer-review-${meetingId}-${Date.now()}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "reviews", filter: `meeting_id=eq.${meetingId}` },
+          (payload) => {
+            const row = payload.new as { reviewer_id?: string } | null;
+            if (row?.reviewer_id === peerId) setPeerReviewed(true);
+          },
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            retryDelayMs = 2000;
+            catchup();
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            if (ch) supabase.removeChannel(ch);
+            ch = null;
+            retryTimer = setTimeout(() => {
+              retryDelayMs = Math.min(retryDelayMs * 2, 30000);
+              connect();
+            }, retryDelayMs);
+          }
+        });
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      if (ch) supabase.removeChannel(ch);
+    };
   }, [meetingId, peerId, peerReviewed]);
 
   const bothDone = paid && reviewDone && peerReviewed;
