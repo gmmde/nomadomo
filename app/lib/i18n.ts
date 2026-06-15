@@ -190,6 +190,27 @@ export const dict: Dict = {
   payment_status_canceled: { en: "Canceled", ja: "キャンセル済み" },
   payment_status_refunded: { en: "Refunded", ja: "返金済み" },
   payment_status_failed: { en: "❌ Payment failed", ja: "❌ 支払い失敗" },
+
+  // meet / review flow
+  meet_btn: { en: "Meet {name}", ja: "{name} に会う" },
+  meet_proposed: { en: "Waiting for them to confirm…", ja: "相手の承認待ち中…" },
+  meet_pending_you: { en: "{name} wants to meet — tap to confirm", ja: "{name} が会いたがってる — タップして承認" },
+  going_out_banner: { en: "🚶 Going out!", ja: "🚶 お出かけ中！" },
+  go_to_complete_btn: { en: "Complete & Review", ja: "決済＆評価する" },
+  complete_title: { en: "Complete your meeting", ja: "お出かけを完了する" },
+  payment_section_title: { en: "Payment", ja: "決済" },
+  payment_dummy_btn: { en: "Mark as paid", ja: "決済を完了する" },
+  payment_dummy_done: { en: "✅ Payment completed", ja: "✅ 決済済み" },
+  review_section_title_template_en: { en: "Please introduce {name} to others!", ja: "{name} はどんな人だった？" },
+  review_rating_required: { en: "Rate {name} (1–5)", ja: "{name} を評価 (1〜5)" },
+  review_comment_placeholder: { en: "Leave a comment (optional)", ja: "コメントを残す（任意）" },
+  review_submit_btn: { en: "Post review", ja: "評価を投稿する" },
+  review_submit_done: { en: "✅ Review posted", ja: "✅ 評価投稿済み" },
+  waiting_for_peer_review: { en: "Waiting for {name} to review you…", ja: "{name} の評価待ち…" },
+  finish_btn: { en: "Finish!", ja: "完了！" },
+  reviews_tab: { en: "Reviews", ja: "評価" },
+  reviews_empty: { en: "No reviews yet", ja: "まだ評価なし" },
+  reviews_avg_star: { en: "Avg ★", ja: "平均 ★" },
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {

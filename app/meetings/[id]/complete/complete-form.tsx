@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import BackButton from "@/app/lib/back-button";
 import { useLang, t } from "@/app/lib/i18n";
 import { postReview } from "@/app/actions/reviews";
 import { completeMeet } from "@/app/actions/meetings";
+import { createClient } from "@/app/lib/supabase/client";
 
 const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "20px 20px 100px" };
@@ -20,23 +21,51 @@ type Props = {
   meetingId: number;
   peerName: string;
   peerEmoji: string;
+  peerId: string;
   meetingStatus: string;
   initialRating: number | null;
   initialComment: string;
+  initialPeerReviewed: boolean;
 };
 
-export default function CompleteForm({ meetingId, peerName, peerEmoji, meetingStatus, initialRating, initialComment }: Props) {
+export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, meetingStatus, initialRating, initialComment, initialPeerReviewed }: Props) {
   const router = useRouter();
   const [lang] = useLang();
-  const [paid, setPaid] = useState(false); // TODO: Stripe integration — currently dummy
+  const [paid, setPaid] = useState(false);
   const [rating, setRating] = useState<number | null>(initialRating);
   const [comment, setComment] = useState(initialComment);
   const [reviewDone, setReviewDone] = useState(initialRating != null);
   const [reviewErr, setReviewErr] = useState<string | null>(null);
   const [finishing, startFinish] = useTransition();
   const [finished, setFinished] = useState(meetingStatus === "completed");
+  const [peerReviewed, setPeerReviewed] = useState(initialPeerReviewed);
 
-  const bothDone = paid && reviewDone;
+  useEffect(() => {
+    if (peerReviewed) return;
+    const supabase = createClient();
+    let cancelled = false;
+    async function check() {
+      const { data } = await supabase
+        .from("reviews")
+        .select("id")
+        .eq("meeting_id", meetingId)
+        .eq("reviewer_id", peerId)
+        .limit(1);
+      if (!cancelled && data && data.length > 0) setPeerReviewed(true);
+    }
+    check();
+    const ch = supabase
+      .channel(`peer-review-${meetingId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reviews", filter: `meeting_id=eq.${meetingId}` }, (payload) => {
+        const row = payload.new as { reviewer_id?: string } | null;
+        if (row?.reviewer_id === peerId) setPeerReviewed(true);
+      })
+      .subscribe();
+    const poll = setInterval(check, 10000);
+    return () => { cancelled = true; clearInterval(poll); supabase.removeChannel(ch); };
+  }, [meetingId, peerId, peerReviewed]);
+
+  const bothDone = paid && reviewDone && peerReviewed;
   const reviewTitle = lang === "ja"
     ? `${peerName} はどんな人だった？`
     : `Please introduce ${peerName} to others!`;
@@ -96,7 +125,6 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, meetingSt
           <div style={{ fontSize: 18, fontWeight: 900, flex: 1 }}>{t("complete_title", lang)}</div>
         </div>
 
-        {/* peer header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 16 }}>
           <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", border: "2px solid #e8c99a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{peerEmoji}</div>
           <div style={{ flex: 1 }}>
@@ -105,7 +133,6 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, meetingSt
           </div>
         </div>
 
-        {/* Payment section */}
         <div style={section}>
           <div style={sectionTitle}>1. {t("payment_section_title", lang)}</div>
           {paid ? (
@@ -115,10 +142,8 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, meetingSt
               💳 {t("payment_dummy_btn", lang)}
             </button>
           )}
-          {/* TODO: Stripe integration — capture PaymentIntent here */}
         </div>
 
-        {/* Review section */}
         <div style={section}>
           <div style={sectionTitle}>2. {t("reviews_tab", lang)}</div>
           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 10 }}>{reviewTitle}</div>
@@ -126,7 +151,6 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, meetingSt
             <button style={btnDone} type="button">{t("review_submit_done", lang)}</button>
           ) : (
             <>
-              {/* Star rating */}
               <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 12 }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -156,7 +180,15 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, meetingSt
           )}
         </div>
 
-        {/* Finish button — only shown when both sections done */}
+        {paid && reviewDone && !peerReviewed && (
+          <div style={{ background: "#fff9f0", border: "2px dashed #e8c99a", borderRadius: 14, padding: 14, marginBottom: 14, textAlign: "center" }}>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>⏳</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#8a7560" }}>
+              {t("waiting_for_peer_review", lang).replace("{name}", peerName)}
+            </div>
+          </div>
+        )}
+
         {bothDone && (
           <button onClick={onFinish} disabled={finishing} style={{ ...btnFinish, opacity: finishing ? 0.6 : 1 }} type="button">
             🎉 {t("finish_btn", lang)}
