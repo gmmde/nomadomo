@@ -13,7 +13,7 @@ html, body {
   padding: 0;
   background-color: #cfe2c4;
   background-image:
-    linear-gradient(rgba(255, 249, 240, 0.45), rgba(255, 249, 240, 0.45)),
+    linear-gradient(rgba(255, 249, 240, 0.30), rgba(255, 249, 240, 0.30)),
     url("/map-bg.png");
   background-repeat: no-repeat, no-repeat;
   background-size: cover, cover;
@@ -60,8 +60,9 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
   min-height: 100vh;
   min-height: 100svh;
   width: 100%;
-  /* 最大 390px の中央配置カード。左右に body の地図背景が見える */
-  background: #f5ead0;
+  /* 内側カードは透明にして body の map-bg.png が透けて見えるようにする
+     (各 screen 内のコンテンツ要素 = topbar, ナビ, カード等は自前の bg を持つので問題なし) */
+  background: transparent;
 }
 
 /* ボトムナビ: iPhone のホームインジケータ高さを safe-area から取って加算 */
