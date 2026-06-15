@@ -1,11 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import BackButton from "@/app/lib/back-button";
 import { useLang, t } from "@/app/lib/i18n";
 import { postReview } from "@/app/actions/reviews";
-import { completeMeet } from "@/app/actions/meetings";
 import { createClient } from "@/app/lib/supabase/client";
 
 const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
@@ -14,7 +13,6 @@ const section: React.CSSProperties = { background: "#fff9f0", border: "2px solid
 const sectionTitle: React.CSSProperties = { fontSize: 13, fontWeight: 900, color: "#1a1008", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.5 };
 const btnPrimary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 const btnDone: React.CSSProperties = { width: "100%", background: "#e6f5ee", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 14, padding: 14, fontSize: 14, fontWeight: 900, cursor: "default", fontFamily: "inherit" };
-const btnFinish: React.CSSProperties = { width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", marginTop: 4 };
 const inputStyle: React.CSSProperties = { width: "100%", background: "#fff", border: "2px solid #e8c99a", borderRadius: 12, padding: 12, fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", resize: "vertical" };
 
 type Props = {
@@ -31,14 +29,22 @@ type Props = {
 export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, meetingStatus, initialRating, initialComment, initialPeerReviewed }: Props) {
   const router = useRouter();
   const [lang] = useLang();
-  const [paid, setPaid] = useState(false);
   const [rating, setRating] = useState<number | null>(initialRating);
   const [comment, setComment] = useState(initialComment);
   const [reviewDone, setReviewDone] = useState(initialRating != null);
   const [reviewErr, setReviewErr] = useState<string | null>(null);
-  const [finishing, startFinish] = useTransition();
   const [finished, setFinished] = useState(meetingStatus === "completed");
   const [peerReviewed, setPeerReviewed] = useState(initialPeerReviewed);
+
+  // 自分も相手も投稿済 → 自動完了 (server side で済んでいるはず) → 画面遷移
+  useEffect(() => {
+    if (finished) return;
+    if (reviewDone && peerReviewed) {
+      setFinished(true);
+      const tId = setTimeout(() => router.push("/"), 1200);
+      return () => clearTimeout(tId);
+    }
+  }, [reviewDone, peerReviewed, finished, router]);
 
   // 相手レビュー監視: Realtime のみ + 切断時 exponential backoff 再接続
   useEffect(() => {
@@ -95,7 +101,6 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
     };
   }, [meetingId, peerId, peerReviewed]);
 
-  const bothDone = paid && reviewDone && peerReviewed;
   const reviewTitle = lang === "ja"
     ? `${peerName} はどんな人だった？`
     : `Please introduce ${peerName} to others!`;
@@ -116,21 +121,6 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
       return;
     }
     setReviewDone(true);
-  }
-
-  async function onFinish() {
-    if (!bothDone) return;
-    startFinish(async () => {
-      const fd = new FormData();
-      fd.set("meeting_id", String(meetingId));
-      const r = await completeMeet(fd);
-      if (r?.error) {
-        alert(r.error);
-        return;
-      }
-      setFinished(true);
-      setTimeout(() => router.push("/"), 800);
-    });
   }
 
   if (finished) {
@@ -164,18 +154,7 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
         </div>
 
         <div style={section}>
-          <div style={sectionTitle}>1. {t("payment_section_title", lang)}</div>
-          {paid ? (
-            <button style={btnDone} type="button">{t("payment_dummy_done", lang)}</button>
-          ) : (
-            <button onClick={() => setPaid(true)} style={btnPrimary} type="button">
-              💳 {t("payment_dummy_btn", lang)}
-            </button>
-          )}
-        </div>
-
-        <div style={section}>
-          <div style={sectionTitle}>2. {t("reviews_tab", lang)}</div>
+          <div style={sectionTitle}>{t("reviews_tab", lang)}</div>
           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 10 }}>{reviewTitle}</div>
           {reviewDone ? (
             <button style={btnDone} type="button">{t("review_submit_done", lang)}</button>
@@ -210,19 +189,16 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
           )}
         </div>
 
-        {paid && reviewDone && !peerReviewed && (
+        {reviewDone && !peerReviewed && (
           <div style={{ background: "#fff9f0", border: "2px dashed #e8c99a", borderRadius: 14, padding: 14, marginBottom: 14, textAlign: "center" }}>
             <div style={{ fontSize: 24, marginBottom: 6 }}>⏳</div>
             <div style={{ fontSize: 13, fontWeight: 800, color: "#8a7560" }}>
               {t("waiting_for_peer_review", lang).replace("{name}", peerName)}
             </div>
+            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600, marginTop: 4 }}>
+              {lang === "ja" ? "両者投稿で自動的に公開＆完了するわよ" : "Both reviews will be released and the meeting will finish automatically."}
+            </div>
           </div>
-        )}
-
-        {bothDone && (
-          <button onClick={onFinish} disabled={finishing} style={{ ...btnFinish, opacity: finishing ? 0.6 : 1 }} type="button">
-            🎉 {t("finish_btn", lang)}
-          </button>
         )}
       </div>
     </div>

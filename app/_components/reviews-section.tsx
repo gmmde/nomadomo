@@ -17,12 +17,12 @@ type ReviewerInfo = { name: string; nationality: string | null };
 
 type Meta = {
   reviewer: ReviewerInfo;
-  metAt: string | null; // meeting.started_at
+  metAt: string | null;
 };
 
 type Props = {
   reviewedUserId: string;
-  lang?: Lang; // optional override
+  lang?: Lang;
 };
 
 export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props) {
@@ -41,10 +41,12 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
     let cancelled = false;
     (async () => {
       setLoading(true);
+      // Blind review: released_at IS NOT NULL のみ公開対象
       const { data } = await supabase
         .from("reviews")
         .select("id, rating, comment, reviewed_at, reviewer_id, meeting_id")
         .eq("reviewed_user_id", reviewedUserId)
+        .not("released_at", "is", null)
         .order("reviewed_at", { ascending: false });
       if (cancelled) return;
       const rows = (data ?? []) as ReviewRow[];
@@ -52,7 +54,6 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
       setCount(rows.length);
       setAvgRating(rows.length === 0 ? 0 : rows.reduce((s, r) => s + r.rating, 0) / rows.length);
 
-      // Resolve reviewer name (guides → travelers) + meeting started_at
       if (rows.length > 0) {
         const reviewerIds = [...new Set(rows.map((r) => r.reviewer_id))];
         const meetingIds = [...new Set(rows.map((r) => r.meeting_id))];
@@ -63,8 +64,8 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
         ]);
         if (cancelled) return;
         const nameMap = new Map<string, ReviewerInfo>();
-        for (const t of ((tRes.data ?? []) as Array<{ user_id: string; name: string; nationality: string | null }>)) {
-          nameMap.set(t.user_id, { name: t.name, nationality: t.nationality });
+        for (const tv of ((tRes.data ?? []) as Array<{ user_id: string; name: string; nationality: string | null }>)) {
+          nameMap.set(tv.user_id, { name: tv.name, nationality: tv.nationality });
         }
         for (const g of ((gRes.data ?? []) as Array<{ user_id: string; name: string; nationality: string | null }>)) {
           if (!nameMap.has(g.user_id)) nameMap.set(g.user_id, { name: g.name, nationality: g.nationality });
@@ -94,7 +95,6 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
     return <div style={{ padding: 12, fontSize: 12, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>{t("reviews_empty", lang)}</div>;
   }
 
-  // Only show reviews with comments per spec
   const visible = reviews.filter((r) => r.comment && r.comment.trim().length > 0);
 
   return (

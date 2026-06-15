@@ -9,10 +9,13 @@ export type ReviewActionResult =
   | undefined;
 
 /**
- * meeting に対するレビュー投稿。
+ * meeting に対するレビュー投稿 (blind review)
  * - reviewer = 自分
- * - reviewed_user_id = peer (自分の対戦相手)
- * - 1 meeting × 1 reviewer は UNIQUE で 1 件
+ * - reviewed_user_id = peer
+ * - 1 meeting × 1 reviewer は UNIQUE で 1 件 (upsert で再編集可)
+ * - 投稿時点では released_at = NULL → 公開はされない
+ * - 両者が投稿した瞬間に両方の released_at を now() で揃えて release
+ * - 両者 release されたら meeting も completed に自動遷移
  */
 export async function postReview(formData: FormData): Promise<ReviewActionResult> {
   const supabase = await createClient();
@@ -27,7 +30,6 @@ export async function postReview(formData: FormData): Promise<ReviewActionResult
   if (!Number.isFinite(rating) || rating < 1 || rating > 5) return { error: "rating must be 1-5" };
   if (comment.length > 1000) return { error: "comment too long (max 1000 chars)" };
 
-  // 当事者チェック + 相手 user_id 取得 (RLS で SELECT は当事者のみ)
   const { data: m } = await supabase
     .from("meetings")
     .select("user_a_id, user_b_id, status")
@@ -41,8 +43,8 @@ export async function postReview(formData: FormData): Promise<ReviewActionResult
   const peerId = m.user_a_id === user.id ? m.user_b_id : m.user_a_id;
   if (!peerId) return { error: "peer not resolved" };
 
-  // upsert: 同じ meeting に同じ reviewer なら更新 (★やコメント編集対応)
-  const { error } = await supabase.from("reviews").upsert({
+  // upsert (blind: released_at は未設定で挿入)
+  const { error: upsertErr } = await supabase.from("reviews").upsert({
     meeting_id: meetingId,
     reviewer_id: user.id,
     reviewed_user_id: peerId,
@@ -50,7 +52,35 @@ export async function postReview(formData: FormData): Promise<ReviewActionResult
     comment: comment || null,
     reviewed_at: new Date().toISOString(),
   }, { onConflict: "meeting_id,reviewer_id" });
-  if (error) return { error: error.message };
+  if (upsertErr) return { error: upsertErr.message };
+
+  // 相手側のレビュー存在チェック → 両者揃ったら両方 release
+  const { data: peerReview } = await supabase
+    .from("reviews")
+    .select("id, released_at")
+    .eq("meeting_id", meetingId)
+    .eq("reviewer_id", peerId)
+    .maybeSingle();
+
+  if (peerReview) {
+    const now = new Date().toISOString();
+    const { error: relErr } = await supabase
+      .from("reviews")
+      .update({ released_at: now })
+      .eq("meeting_id", meetingId)
+      .is("released_at", null);
+    if (relErr) {
+      console.error("[postReview] release update failed:", relErr.message);
+    }
+    // meeting も自動 completed に
+    if (m.status === "active") {
+      const { error: mErr } = await supabase
+        .from("meetings")
+        .update({ status: "completed", completed_at: now })
+        .eq("id", meetingId);
+      if (mErr) console.error("[postReview] auto-complete failed:", mErr.message);
+    }
+  }
 
   revalidatePath(`/meetings/${meetingId}/complete`);
   revalidatePath("/");
