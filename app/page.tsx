@@ -1507,10 +1507,11 @@ function HomeInner() {
             userEmail={userEmail}
             adminEmails={ADMIN_EMAILS}
             appMode={appMode}
-            bottomNav={renderBottomNav("myprofile")}
             lang={lang}
           />
         )}
+        {/* bottom nav を screen-enter の外側で描画 (アニメ中の position:fixed 不安定を回避) */}
+        {screen === "myprofile" && renderBottomNav("myprofile")}
 
         {/* SAVED */}
         {screen === "saved" && (
@@ -1522,10 +1523,10 @@ function HomeInner() {
             onSelect={(g) => { setSelectedGuide(g as Guide); setScreen("profile"); }}
             toggleSave={toggleSave}
             modeCardStyle={modeCardStyle}
-            bottomNav={renderBottomNav("saved")}
             lang={lang}
           />
         )}
+        {screen === "saved" && renderBottomNav("saved")}
 
         {/* INBOX */}
         {screen === "inbox" && (
@@ -1542,10 +1543,10 @@ function HomeInner() {
               setChatOrigin("inbox");
               setScreen("chat");
             }}
-            bottomNav={renderBottomNav("inbox")}
             lang={lang}
           />
         )}
+        {screen === "inbox" && renderBottomNav("inbox")}
 
         {/* LIGHTBOX */}
         <Lightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />

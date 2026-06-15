@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { signout } from "../actions/auth";
 import { t, type Lang } from "../lib/i18n";
 import StripeOnboardButton from "./stripe-onboard-button";
@@ -34,7 +33,6 @@ type Props = {
   userEmail: string | null;
   adminEmails: string[];
   appMode: "local" | "traveler" | null;
-  bottomNav: ReactNode;
   lang: Lang;
 };
 
@@ -48,7 +46,6 @@ export default function MyProfileScreen({
   userEmail,
   adminEmails,
   appMode,
-  bottomNav,
   lang,
 }: Props) {
   return (
@@ -182,7 +179,6 @@ export default function MyProfileScreen({
         </div>
       )}
       <div style={{ height: 100 }} />
-      {bottomNav}
     </div>
   );
 }

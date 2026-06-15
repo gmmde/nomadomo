@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { t, type Lang } from "../lib/i18n";
 
 type InboxPeer = {
@@ -37,7 +36,6 @@ type Props = {
   openGuideProfile: (guideId: string | undefined) => void;
   onOpenChat: (p: InboxPeer) => void;
   pendingRequests?: PendingRequest[];
-  bottomNav: ReactNode;
   lang: Lang;
 };
 
@@ -51,7 +49,6 @@ export default function InboxScreen({
   openGuideProfile,
   onOpenChat,
   pendingRequests = [],
-  bottomNav,
   lang,
 }: Props) {
   const dateLocale = lang === "ja" ? "ja-JP" : "en-US";
@@ -142,7 +139,6 @@ export default function InboxScreen({
         )}
       </div>
       <div style={{ height: 100 }} />
-      {bottomNav}
     </div>
   );
 }

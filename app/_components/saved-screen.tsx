@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { t, type Lang } from "../lib/i18n";
 
 type GuideCard = {
@@ -22,7 +21,6 @@ type Props = {
   onSelect: (g: GuideCard) => void;
   toggleSave: (id: number) => void | Promise<void>;
   modeCardStyle: (mode: "free" | "paid") => { bg: string; border: string };
-  bottomNav: ReactNode;
   lang: Lang;
 };
 
@@ -34,7 +32,6 @@ export default function SavedScreen({
   onSelect,
   toggleSave,
   modeCardStyle,
-  bottomNav,
   lang,
 }: Props) {
   return (
@@ -85,7 +82,6 @@ export default function SavedScreen({
         )}
       </div>
       <div style={{ height: 100 }} />
-      {bottomNav}
     </div>
   );
 }
