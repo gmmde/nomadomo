@@ -6,6 +6,8 @@
 }
 
 html, body {
+  margin: 0;
+  padding: 0;
   background-color: #cfe2c4;
   background-image:
     linear-gradient(rgba(255, 249, 240, 0.45), rgba(255, 249, 240, 0.45)),
@@ -48,16 +50,25 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
 .app-frame {
   min-height: 100vh;       /* fallback */
   min-height: 100svh;      /* iOS Safari (URL バー込みではなく現在の表示領域) */
-  background: #f5ead0;     /* 390px より広い画面 (Android Pixel/Galaxy 等) で body bg が左右に漏れるのを防ぐ */
+  background: #f5ead0;
+  width: 100%;
 }
 .app-frame-inner {
   min-height: 100vh;
   min-height: 100svh;
+  width: 100%;
+  background: #f5ead0;     /* inner にも bg を付けて取りこぼし防止 */
 }
-/* 600px 未満の電話画面では中央 390px 制約を外して全幅にする */
-@media (max-width: 600px) {
+/* 768px 未満 (= 全ての電話、小型タブレット) は max-width 制約を完全に外す */
+@media (max-width: 767px) {
   .app-frame-inner {
     max-width: 100% !important;
+  }
+}
+/* 768px 以上 (タブレット縦・PC) は 480px の中央配置カード */
+@media (min-width: 768px) {
+  .app-frame-inner {
+    max-width: 480px !important;
   }
 }
 

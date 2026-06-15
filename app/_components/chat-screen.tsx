@@ -138,7 +138,7 @@ export default function ChatScreen({
   const meetBtnBg = meeting.kind === "pending_awaiting_my_accept" ? "#2e8b57" : "#ad001c";
 
   return (
-    <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="screen-enter" style={{ height: "100dvh", minHeight: "100svh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
         <div
@@ -173,7 +173,7 @@ export default function ChatScreen({
         </div>
       )}
 
-      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0, overflowY: "auto" }}>
         {!currentUserId ? (
           <div style={{ padding: "20px", textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
             {t("chat_login_required", lang)}
