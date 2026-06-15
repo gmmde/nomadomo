@@ -29,13 +29,14 @@ html, body {
   width: 100%;
 }
 
-/* タブ index に応じて地図を右にずらす (パララックス) */
-body[data-screen="home"]      { background-position: center center, 0%   center; }
-body[data-screen="inbox"]     { background-position: center center, 25%  center; }
-body[data-screen="saved"]     { background-position: center center, 60%  center; }
-body[data-screen="myprofile"] { background-position: center center, 100% center; }
-body[data-screen="profile"]   { background-position: center center, 15%  center; }
-body[data-screen="chat"]      { background-position: center center, 40%  center; }
+/* タブ index に応じて地図を右にずらす (パララックス)
+   data-screen は body に付与、bg は .app-frame にあるので descendant selector */
+body[data-screen="home"]      .app-frame { background-position: 0%   center; }
+body[data-screen="inbox"]     .app-frame { background-position: 25%  center; }
+body[data-screen="saved"]     .app-frame { background-position: 60%  center; }
+body[data-screen="myprofile"] .app-frame { background-position: 100% center; }
+body[data-screen="profile"]   .app-frame { background-position: 15%  center; }
+body[data-screen="chat"]      .app-frame { background-position: 40%  center; }
 
 /* スクロールバーを完全に隠す */
 *::-webkit-scrollbar { display: none; }
@@ -55,12 +56,6 @@ body[data-screen="chat"]      { background-position: center center, 40%  center;
      (= iOS Safari でボトムナビが画面端ではなく screen-enter 端に張り付く) */
 }
 
-/* アプリ全体の縦サイズ: iOS Safari URL バーの伸縮を吸収するため dvh を使う */
-.app-frame-base {
-  min-height: 100vh;
-  min-height: 100svh;
-  width: 100%;
-}
 .app-frame-inner {
   min-height: 100vh;
   min-height: 100svh;
