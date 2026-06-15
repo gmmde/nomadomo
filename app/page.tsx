@@ -582,10 +582,32 @@ function HomeInner() {
   }, [supabase, currentUserId]);
 
   // Inbox: 過去メッセージから会話相手一覧 + guides/travelers から名前解決
+  // 現 app_mode に合致するチャットのみ表示 (= 役割逆転で過去チャットが混ざるのを防ぐ)
   useEffect(() => {
     if (screen !== "inbox" || !currentUserId) return;
     let cancelled = false;
     (async () => {
+      // 現 mode で許可される peer id 集合を chat_requests から作る
+      let allowedPeers: Set<string> | null = null;
+      if (appMode === "traveler") {
+        // 自分が traveler だった accepted リクエスト → 相手は guide_user_id
+        const { data: cr } = await supabase
+          .from("chat_requests")
+          .select("guide_user_id")
+          .eq("traveler_id", currentUserId)
+          .eq("status", "accepted");
+        allowedPeers = new Set((cr ?? []).map((r) => (r as { guide_user_id: string }).guide_user_id));
+      } else if (appMode === "local") {
+        // 自分が guide だった accepted リクエスト → 相手は traveler_id
+        const { data: cr } = await supabase
+          .from("chat_requests")
+          .select("traveler_id")
+          .eq("guide_user_id", currentUserId)
+          .eq("status", "accepted");
+        allowedPeers = new Set((cr ?? []).map((r) => (r as { traveler_id: string }).traveler_id));
+      }
+      if (cancelled) return;
+
       const { data } = await supabase
         .from("messages")
         .select("sender_id, recipient_id, body, created_at")
@@ -594,6 +616,8 @@ function HomeInner() {
       const seen = new Map<string, { peerId: string; lastBody: string; lastAt: string }>();
       for (const m of (data ?? []) as Array<{ sender_id: string; recipient_id: string; body: string; created_at: string }>) {
         const peerId = m.sender_id === currentUserId ? m.recipient_id : m.sender_id;
+        // 現 mode の role に合致しない peer は除外
+        if (allowedPeers && !allowedPeers.has(peerId)) continue;
         if (!seen.has(peerId)) {
           seen.set(peerId, { peerId, lastBody: m.body, lastAt: m.created_at });
         }
@@ -634,7 +658,7 @@ function HomeInner() {
     return () => {
       cancelled = true;
     };
-  }, [supabase, currentUserId, screen, guides]);
+  }, [supabase, currentUserId, screen, guides, appMode]);
 
   // お気に入りトグル
   const toggleSave = async (guideId: number) => {

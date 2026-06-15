@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BackButton from "@/app/lib/back-button";
 import { useLang, t } from "@/app/lib/i18n";
 import { postReview } from "@/app/actions/reviews";
@@ -37,14 +37,18 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
   const [peerReviewed, setPeerReviewed] = useState(initialPeerReviewed);
 
   // 自分も相手も投稿済 → 自動完了 (server side で済んでいるはず) → 画面遷移
+  // finished を deps に入れると setFinished(true) で cleanup が走り setTimeout が消える
+  // ので deps からは外す。代わりに ref で「もう scheduled」フラグ管理
+  const navScheduledRef = useRef(false);
   useEffect(() => {
-    if (finished) return;
+    if (navScheduledRef.current) return;
     if (reviewDone && peerReviewed) {
+      navScheduledRef.current = true;
       setFinished(true);
-      const tId = setTimeout(() => router.push("/"), 1200);
-      return () => clearTimeout(tId);
+      setTimeout(() => router.push("/"), 1500);
     }
-  }, [reviewDone, peerReviewed, finished, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewDone, peerReviewed]);
 
   // 相手レビュー監視: Realtime のみ + 切断時 exponential backoff 再接続
   useEffect(() => {
@@ -130,7 +134,14 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
           <div style={{ textAlign: "center", paddingTop: 80 }}>
             <div style={{ fontSize: 60, marginBottom: 16 }}>🎉</div>
             <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>{lang === "ja" ? "ありがとう！" : "Thanks!"}</div>
-            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>{lang === "ja" ? "ホームに戻るわよ…" : "Redirecting to home…"}</div>
+            <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700, marginBottom: 24 }}>{lang === "ja" ? "ホームに戻ってね" : "Tap below to go home"}</div>
+            <button
+              onClick={() => router.push("/")}
+              type="button"
+              style={{ background: "#2e8b57", color: "#fff", border: "none", borderRadius: 14, padding: "14px 32px", fontSize: 15, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              🏠 {lang === "ja" ? "ホームに戻る" : "Back to Home"}
+            </button>
           </div>
         </div>
       </div>
