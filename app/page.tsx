@@ -1710,7 +1710,7 @@ function HomeInner() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
+    <Suspense fallback={<Splash />}>
       <HomeInner />
     </Suspense>
   );

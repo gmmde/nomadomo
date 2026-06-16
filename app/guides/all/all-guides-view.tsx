@@ -294,8 +294,18 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
 
 export default function AllGuidesView(props: { guides: GuideRow[] }) {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
+    <Suspense fallback={<SuspenseFallback />}>
       <AllGuidesViewInner {...props} />
     </Suspense>
+  );
+}
+
+import BrandLogoFallback from "@/app/_components/brand-logo";
+function SuspenseFallback() {
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, zIndex: 1000 }}>
+      <BrandLogoFallback variant="full" size={32} camelHeight={90} />
+      <div style={{ width: 26, height: 26, borderRadius: "50%", border: "3px solid #e8c99a", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite" }} />
+    </div>
   );
 }

@@ -1,3 +1,5 @@
+import BrandLogo from "./_components/brand-logo";
+
 export default function Loading() {
   return (
     <div
@@ -9,14 +11,11 @@ export default function Loading() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 16,
+        gap: 20,
         zIndex: 1000,
       }}
     >
-      <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1 }}>
-        <span style={{ color: "#2ecc71" }}>Noma</span>
-        <span style={{ color: "#ad001c" }}>Domo</span>
-      </div>
+      <BrandLogo variant="full" size={36} camelHeight={110} />
       <div
         style={{
           width: 28,
