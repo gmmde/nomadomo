@@ -182,6 +182,10 @@ export default function MyProfileScreen({
         </div>
       )}
       <div style={{ height: 100 }} />
+    {/* NomaDomo フッターロゴ */}
+    <div style={{ display: "flex", justifyContent: "center", padding: "40px 20px 30px", opacity: 0.75 }}>
+      <img src="/logo-camel.png" alt="" style={{ height: 70, width: "auto", display: "block" }} />
+    </div>
     </div>
   );
 }

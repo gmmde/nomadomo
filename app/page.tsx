@@ -1110,7 +1110,7 @@ function HomeInner() {
           <div className="screen-enter">
             {/* TOPBAR */}
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <BrandLogo variant="row" size={22} nomaColor="#2ecc71" domoColor="#ffefd5" camelHeight={36} />
+              <img src="/logo.png" alt="NomaDomo" style={{ height: 40, width: "auto", display: "block" }} />
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {userEmail ? (
                   <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
