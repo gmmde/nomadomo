@@ -208,6 +208,22 @@ export const dict: Dict = {
   review_submit_done: { en: "✅ Review posted", ja: "✅ 評価投稿済み" },
   waiting_for_peer_review: { en: "Waiting for {name} to review you…", ja: "{name} の評価待ち…" },
   review_overdue_banner: { en: "Please review your meeting with {name}", ja: "{name} とのお出かけを評価して" },
+  // ===== Auth error codes =====
+  auth_err_email: { en: "Please enter a valid email address", ja: "メールアドレスが正しくないわよ" },
+  auth_err_password_short: { en: "Password must be at least 8 characters", ja: "パスワードは8文字以上にしてちょうだい" },
+  auth_err_already_registered: { en: "This email is already registered. Try signing in (use \"forgot password\" if needed).", ja: "このメアドは既に登録済みよ。ログイン画面から入って (パスワード忘れたならリセットして)" },
+  signup_check_email_title: { en: "Check your email", ja: "メールを確認してね" },
+  signup_check_email_body: { en: "We sent a confirmation link to {email}. Click it to activate your account, then come back to log in.", ja: "{email} に確認メール送ったわよ。リンクをタップしてアカウント有効化したら、ログインしに戻ってきて。" },
+  signup_resend_email: { en: "Resend the email", ja: "メールを再送する" },
+  signup_resent: { en: "Sent! Check your inbox.", ja: "再送したわよ、受信箱チェックして" },
+  settings_app_mode_title: { en: "App mode", ja: "利用モード" },
+  settings_app_mode_hint: { en: "Traveler = use as a traveler · Local = use as a guide", ja: "Traveler = 旅行者として使う / Local = ガイドとして使う" },
+  settings_reset_mode_confirm: { en: "Reset mode selection so the picker shows again next time?", ja: "モード選択を初期化して、次回ログイン時にもう一度選び直す？" },
+  settings_reset_mode_done: { en: "Reset! You'll see the picker next time.", ja: "モード選択をリセットしたわ。ホームに戻って画面選択してね" },
+  settings_reset_mode_btn: { en: "Show the mode picker again", ja: "モード選択画面を再表示する" },
+  settings_save_failed: { en: "Save failed", ja: "保存失敗" },
+
+
   // ===== Block / Report menu =====
   profile_actions_menu: { en: "Profile actions", ja: "メニュー" },
   report_user_btn: { en: "Report this user", ja: "このユーザーを報告" },

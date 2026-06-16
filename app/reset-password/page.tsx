@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import { useLang, t } from "@/app/lib/i18n";
+import BrandLogo from "@/app/_components/brand-logo";
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "32px 24px" };
@@ -104,10 +105,7 @@ export default function ResetPasswordPage() {
   return (
     <div style={wrap}>
       <div style={card} className="screen-enter">
-        <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
-          <span style={{ color: "#2ecc71" }}>Noma</span>
-          <span style={{ color: "#ad001c" }}>Domo</span>
-        </div>
+<div style={{ marginBottom: 4 }}><BrandLogo variant="text" size={28} /></div>
         <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
           {t("reset_title", lang)}
         </div>

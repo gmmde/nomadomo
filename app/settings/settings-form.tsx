@@ -102,7 +102,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
       }, { onConflict: "user_id" });
     if (error) {
       setStatus("idle");
-      alert("保存失敗: " + error.message);
+      alert(t("settings_save_failed", lang) + ": " + error.message);
       return;
     }
     setStatus("saved");
@@ -151,7 +151,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
 
         {/* App mode (Local/Traveler) */}
         <div style={sectionBox}>
-          <div style={sectionTitle}>🎭 利用モード</div>
+          <div style={sectionTitle}>🎭 {t("settings_app_mode_title", lang)}</div>
           <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={() => setAppMode("traveler")}
@@ -167,23 +167,23 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
             </button>
           </div>
           <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginTop: 8, lineHeight: 1.5 }}>
-            Traveler = 旅行者として使う / Local = ガイドとして使う
+            {t("settings_app_mode_hint", lang)}
           </div>
           <button
             type="button"
             onClick={async () => {
-              if (!confirm("モード選択を初期化して、次回ログイン時にもう一度選び直す？")) return;
+              if (!confirm(t("settings_reset_mode_confirm", lang))) return;
               const supabase = createClient();
               const { data: { user } } = await supabase.auth.getUser();
               if (!user) return;
               await supabase.from("user_settings").upsert({ user_id: user.id, app_mode: null }, { onConflict: "user_id" });
               setAppMode(null);
-              alert("モード選択をリセットしたわ。ホームに戻って画面選択してね");
+              alert(t("settings_reset_mode_done", lang));
               window.location.href = "/";
             }}
             style={{ width: "100%", marginTop: 10, background: "#fff", color: "#8a7560", border: "1.5px dashed #e8c99a", borderRadius: 12, padding: 8, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
           >
-            🔄 モード選択画面を再表示する
+            🔄 {t("settings_reset_mode_btn", lang)}
           </button>
         </div>
 

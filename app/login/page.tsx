@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signin, type AuthState } from "@/app/actions/auth";
+import BrandLogo from "@/app/_components/brand-logo";
 import { useLang, t } from "@/app/lib/i18n";
 
 const wrapStyle: React.CSSProperties = {
@@ -58,10 +59,7 @@ export default function LoginPage() {
   return (
     <div style={wrapStyle}>
       <div style={cardStyle}>
-        <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
-          <span style={{ color: "#2ecc71" }}>Noma</span>
-          <span style={{ color: "#ad001c" }}>Domo</span>
-        </div>
+<div style={{ marginBottom: 4 }}><BrandLogo variant="text" size={28} /></div>
         <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
           {t("login_subtitle", lang)}
         </div>
@@ -76,9 +74,9 @@ export default function LoginPage() {
             <input id="password" name="password" type="password" required minLength={8} style={inputStyle} placeholder={t("password_placeholder", lang)} />
           </div>
 
-          {state?.error && (
+          {(state?.errorCode || state?.error) && (
             <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
-              {state.error}
+              {state.errorCode ? t(state.errorCode as Parameters<typeof t>[0], lang) : state.error}
             </div>
           )}
 
