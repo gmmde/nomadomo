@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import { useLang, t, type Lang } from "@/app/lib/i18n";
 import { signout } from "@/app/actions/auth";
+import { unblockUser } from "@/app/actions/blocks";
 
 type Initial = {
   language: Lang;
@@ -13,6 +14,7 @@ type Initial = {
   show_to_anon: boolean;
   app_mode: 'local' | 'traveler' | null;
 };
+type BlockedUser = { user_id: string; name: string; emoji: string };
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" };
@@ -23,8 +25,22 @@ const label: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "#1a1
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 14, fontSize: 15, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 const danger: React.CSSProperties = { width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: 12, fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
-export default function SettingsForm({ userEmail, initial }: { userEmail: string; initial: Initial }) {
+export default function SettingsForm({ userEmail, initial, blockedList }: { userEmail: string; initial: Initial; blockedList: BlockedUser[] }) {
   const router = useRouter();
+  const [blocked, setBlocked] = useState<BlockedUser[]>(blockedList);
+  const [unblockingId, setUnblockingId] = useState<string | null>(null);
+
+  async function onUnblock(targetId: string) {
+    setUnblockingId(targetId);
+    const r = await unblockUser(targetId);
+    setUnblockingId(null);
+    if (r?.success) {
+      setBlocked((prev) => prev.filter((b) => b.user_id !== targetId));
+    } else if (r?.error) {
+      alert(r.error);
+    }
+  }
+
   const [lang, setLang] = useLang();
   const [language, setLanguage] = useState<Lang>(initial.language);
   const [emailMsg, setEmailMsg] = useState(initial.email_on_new_message);
@@ -167,6 +183,33 @@ export default function SettingsForm({ userEmail, initial }: { userEmail: string
         <button onClick={onSave} disabled={status === "saving"} style={{ ...primary, opacity: status === "saving" ? 0.6 : 1, marginBottom: 14 }}>
           {status === "saving" ? "..." : status === "saved" ? t("settings_saved", lang) : t("settings_save", lang)}
         </button>
+
+        {/* Blocked users */}
+        <div style={sectionBox}>
+          <div style={sectionTitle}>🚫 {t("blocked_users_section", lang)}</div>
+          {blocked.length === 0 ? (
+            <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, padding: "8px 0" }}>
+              {t("blocked_users_empty", lang)}
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {blocked.map((b) => (
+                <div key={b.user_id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 4px", borderBottom: "1px solid #f0d9b5" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffefd5", border: "2px solid #e8c99a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{b.emoji}</div>
+                  <div style={{ flex: 1, fontSize: 13, fontWeight: 800, color: "#1a1008" }}>{b.name}</div>
+                  <button
+                    onClick={() => onUnblock(b.user_id)}
+                    disabled={unblockingId === b.user_id}
+                    style={{ background: "transparent", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 800, cursor: unblockingId === b.user_id ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: unblockingId === b.user_id ? 0.6 : 1 }}
+                    type="button"
+                  >
+                    {unblockingId === b.user_id ? "..." : t("unblock_btn", lang)}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Account */}
         <div style={sectionBox}>

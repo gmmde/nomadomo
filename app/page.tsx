@@ -9,6 +9,7 @@ import Lightbox from "./_components/lightbox";
 import ModePicker from "./_components/mode-picker";
 import ChatScreen from "./_components/chat-screen";
 import TutorialOverlay from "./_components/tutorial-overlay";
+import ProfileActionsMenu from "./_components/profile-actions-menu";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
@@ -220,6 +221,7 @@ function HomeInner() {
   const [meetingRefreshTick, setMeetingRefreshTick] = useState(0);
   // 4日以上経過した未レビュー active meeting 数 (bottom-nav badge 用)
   const [staleUnreviewedMeetings, setStaleUnreviewedMeetings] = useState(0);
+  const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
   // chatPeer に対する自分のロール (traveler/guide) と相手のガイドモード
   const [chatMyRole, setChatMyRole] = useState<"traveler" | "guide" | "unknown">("unknown");
   const [chatPeerGuideMode, setChatPeerGuideMode] = useState<"free" | "paid" | null>(null);
@@ -616,6 +618,8 @@ function HomeInner() {
       const seen = new Map<string, { peerId: string; lastBody: string; lastAt: string }>();
       for (const m of (data ?? []) as Array<{ sender_id: string; recipient_id: string; body: string; created_at: string }>) {
         const peerId = m.sender_id === currentUserId ? m.recipient_id : m.sender_id;
+        // ブロック関係にある相手は除外
+        if (blockedUserIds.has(peerId)) continue;
         // 現 mode の role に合致しない peer は除外
         if (allowedPeers && !allowedPeers.has(peerId)) continue;
         if (!seen.has(peerId)) {
@@ -658,7 +662,7 @@ function HomeInner() {
     return () => {
       cancelled = true;
     };
-  }, [supabase, currentUserId, screen, guides, appMode]);
+  }, [supabase, currentUserId, screen, guides, appMode, blockedUserIds]);
 
   // お気に入りトグル
   const toggleSave = async (guideId: number) => {
@@ -751,6 +755,25 @@ function HomeInner() {
     fetchGuides();
     return () => clearTimeout(safety);
   }, [supabase]);
+
+  // 自分が blocker / blocked のどちらかである相手 user_id を全部集める
+  useEffect(() => {
+    if (!currentUserId) { setBlockedUserIds(new Set()); return; }
+    let cancelled = false;
+    async function refresh() {
+      const [a, b] = await Promise.all([
+        supabase.from("user_blocks").select("blocked_id").eq("blocker_id", currentUserId),
+        supabase.from("user_blocks").select("blocker_id").eq("blocked_id", currentUserId),
+      ]);
+      if (cancelled) return;
+      const set = new Set<string>();
+      for (const r of ((a.data ?? []) as Array<{ blocked_id: string }>)) set.add(r.blocked_id);
+      for (const r of ((b.data ?? []) as Array<{ blocker_id: string }>)) set.add(r.blocker_id);
+      setBlockedUserIds(set);
+    }
+    refresh();
+    return () => { cancelled = true; };
+  }, [supabase, currentUserId]);
 
   // 4日以上経過した自分の未レビュー active meeting 数 (in-app reminder)
   useEffect(() => {
@@ -937,11 +960,12 @@ function HomeInner() {
   }, [screen, currentUserId, chatPeer?.id, supabase]);
 
   const visibleGuides = (() => {
-    if (activeFilter === "All") return guides;
-    if (activeFilter === "🤝 mate") return guides.filter((g) => g.mode === "free");
-    if (activeFilter === "💼 guide") return guides.filter((g) => g.mode === "paid");
+    const notBlocked = guides.filter((g) => !g.user_id || !blockedUserIds.has(g.user_id));
+    if (activeFilter === "All") return notBlocked;
+    if (activeFilter === "🤝 mate") return notBlocked.filter((g) => g.mode === "free");
+    if (activeFilter === "💼 guide") return notBlocked.filter((g) => g.mode === "paid");
     const kw = filterKeyword[activeFilter] ?? "";
-    return guides.filter((g) => g.tags.includes(kw));
+    return notBlocked.filter((g) => g.tags.includes(kw));
   })();
 
   const sendMessage = async () => {
@@ -1223,7 +1247,7 @@ function HomeInner() {
                 <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>{t("no_travelers", lang)}</div>
               ) : (
                 <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                  {travelersList.map((t) => (
+                  {travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id)).map((t) => (
                     <Link
                       key={t.id}
                       href={`/travelers/${t.id}`}
@@ -1330,10 +1354,17 @@ function HomeInner() {
                 </>
               )}
 
-              {/* トップバー: 戻る + 歯車 */}
+              {/* トップバー: 戻る + … メニュー + 歯車 */}
               <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 14px", zIndex: 4 }}>
                 <button onClick={goBack} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", border: "none", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>←</button>
-                <Link href="/settings" aria-label="設定" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  {!isOwn && !isDemo && selectedGuide.user_id && (
+                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <ProfileActionsMenu targetUserId={selectedGuide.user_id} targetName={selectedGuide.name} />
+                    </div>
+                  )}
+                  <Link href="/settings" aria-label="設定" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+                </div>
               </div>
 
               {/* 下部オーバーレイ (グラデ + テキスト) */}
@@ -1536,12 +1567,9 @@ function HomeInner() {
                     </button>
                   )}
                 </div>
-                {currentUserId && selectedGuide.user_id && (
+                {currentUserId && selectedGuide.user_id && selectedGuide.mode !== "free" && (
                   <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, padding: "8px 20px 16px" }}>
-                    <Link href={`/report/${selectedGuide.user_id}`} style={{ color: "#8a7560", textDecoration: "underline", marginRight: 12 }}>{t("report_link", lang)}</Link>
-                    {selectedGuide.mode !== "free" && (
-                      <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ color: "#2e8b57", textDecoration: "underline", fontWeight: 800 }}>{t("booking_form_paid", lang)}</Link>
-                    )}
+                    <Link href={`/bookings/new?guide=${selectedGuide.id}`} style={{ color: "#2e8b57", textDecoration: "underline", fontWeight: 800 }}>{t("booking_form_paid", lang)}</Link>
                   </div>
                 )}
               </>

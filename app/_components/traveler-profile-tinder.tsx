@@ -6,6 +6,7 @@ import { useSignedUrls } from "../lib/use-signed-urls";
 import { useLang, t } from "../lib/i18n";
 import { useTranslate } from "../lib/use-translate";
 import ReviewsSection from "./reviews-section";
+import ProfileActionsMenu from "./profile-actions-menu";
 
 export type TravelerProfileData = {
   user_id: string;
@@ -136,7 +137,14 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
 
           <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 14px", zIndex: 4 }}>
             <Link href="/" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", textDecoration: "none", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>←</Link>
-            <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              {!isDemo && currentUserId && traveler.user_id !== currentUserId && (
+                <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <ProfileActionsMenu targetUserId={traveler.user_id} targetName={traveler.name} />
+                </div>
+              )}
+              <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+            </div>
           </div>
 
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "60px 18px 20px", background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.85))", color: "#fff", zIndex: 3 }}>
@@ -257,11 +265,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
                 </Link>
               )}
             </div>
-            {currentUserId && !isDemo && (
-              <div style={{ textAlign: "center", fontSize: 10, color: "#8a7560", fontWeight: 700, padding: "8px 20px 16px" }}>
-                <Link href={`/report/${traveler.user_id}`} style={{ color: "#8a7560", textDecoration: "underline" }}>{t("report_link", lang)}</Link>
-              </div>
-            )}
+
           </>
         )}
       </div>

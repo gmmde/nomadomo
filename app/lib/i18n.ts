@@ -208,6 +208,17 @@ export const dict: Dict = {
   review_submit_done: { en: "✅ Review posted", ja: "✅ 評価投稿済み" },
   waiting_for_peer_review: { en: "Waiting for {name} to review you…", ja: "{name} の評価待ち…" },
   review_overdue_banner: { en: "Please review your meeting with {name}", ja: "{name} とのお出かけを評価して" },
+  // ===== Block / Report menu =====
+  profile_actions_menu: { en: "Profile actions", ja: "メニュー" },
+  report_user_btn: { en: "Report this user", ja: "このユーザーを報告" },
+  block_user_btn: { en: "Block this user", ja: "このユーザーをブロック" },
+  block_confirm_title: { en: "Block {name}?", ja: "{name} をブロック?" },
+  block_confirm_body: { en: "You both won't be able to message each other, any pending requests will be declined, and ongoing meetings will be canceled.", ja: "互いにメッセージ送信できなくなるわよ。保留中のリクエストは declined に、進行中の Meet は canceled になるから注意してね。" },
+  block_confirm_yes: { en: "Block", ja: "ブロックする" },
+  cancel_generic: { en: "Cancel", ja: "キャンセル" },
+  blocked_users_section: { en: "Blocked users", ja: "ブロック中のユーザー" },
+  blocked_users_empty: { en: "No blocked users", ja: "ブロックしてる人はいないわよ" },
+  unblock_btn: { en: "Unblock", ja: "ブロック解除" },
   meet_accept_btn: { en: "Accept Meet with {name}", ja: "{name} の Meet を承認" },
   meet_refund_notice_48h: { en: "If {name} doesn\'t respond within 48 hours, your card hold will be released (no charge).", ja: "48時間以内にガイドから反応が無かった場合は与信解放されて課金されないわよ（=実質返金）。" },
   // ===== Tutorial overlay (5 steps) =====
