@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/client";
 import { useLang, t, type Lang } from "@/app/lib/i18n";
@@ -32,6 +32,18 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
   const [unblockingId, setUnblockingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
+
+  // 初回マウントで DB の language を localStorage に同期 (Settings 開いて差分があったら即適用)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const current = localStorage.getItem("noma_lang");
+    if (current !== initial.language) {
+      localStorage.setItem("noma_lang", initial.language);
+      setLang(initial.language);
+      window.dispatchEvent(new StorageEvent("storage", { key: "noma_lang", newValue: initial.language }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function onConfirmDelete() {
     setDeletePending(true);

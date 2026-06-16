@@ -245,15 +245,23 @@ export const dict: Dict = {
 };
 
 export function useLang(): [Lang, (l: Lang) => void] {
-  const [lang, setLang] = useState<Lang>("en");
+  // lazy initializer: localStorage の値があれば最初からそれを使う
+  // (SSR では window 無いので "en" にフォールバック → クライアント初回 render で同期される)
+  const [lang, setLang] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "en";
+    const saved = localStorage.getItem("noma_lang");
+    return saved === "en" || saved === "ja" ? saved : "en";
+  });
   useEffect(() => {
+    // hydration 後に localStorage 値を再同期 (lazy initializer が SSR で en だった場合の補正)
     const saved = (typeof window !== "undefined" && localStorage.getItem("noma_lang")) as Lang | null;
-    if (saved === "en" || saved === "ja") setLang(saved);
+    if ((saved === "en" || saved === "ja") && saved !== lang) setLang(saved);
     const onStorage = (e: StorageEvent) => {
       if (e.key === "noma_lang" && (e.newValue === "en" || e.newValue === "ja")) setLang(e.newValue);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return [lang, (l) => {
     if (typeof window !== "undefined") {

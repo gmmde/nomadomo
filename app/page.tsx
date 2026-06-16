@@ -338,17 +338,25 @@ function HomeInner() {
     }
     supabase
       .from("user_settings")
-      .select("app_mode, tutorial_completed")
+      .select("app_mode, tutorial_completed, language")
       .eq("user_id", currentUserId)
       .maybeSingle()
       .then(({ data }) => {
         const m = data?.app_mode as "local" | "traveler" | null | undefined;
         setAppMode(m === "local" || m === "traveler" ? m : null);
         setAppModeLoaded(true);
-        // user_settings 行が無い (新規) or tutorial_completed=false → チュートリアル開く候補
         const completed = data?.tutorial_completed === true;
         setTutorialOpen(!completed);
         setTutorialChecked(true);
+        // DB の language と localStorage を同期 (新デバイスでログインしたとき EN フラッシュ防止)
+        const dbLang = data?.language as string | undefined;
+        if ((dbLang === "ja" || dbLang === "en") && typeof window !== "undefined") {
+          const current = localStorage.getItem("noma_lang");
+          if (current !== dbLang) {
+            localStorage.setItem("noma_lang", dbLang);
+            window.dispatchEvent(new StorageEvent("storage", { key: "noma_lang", newValue: dbLang }));
+          }
+        }
       });
   }, [supabase, currentUserId]);
 
