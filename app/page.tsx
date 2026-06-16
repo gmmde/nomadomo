@@ -10,6 +10,7 @@ import ModePicker from "./_components/mode-picker";
 import ChatScreen from "./_components/chat-screen";
 import TutorialOverlay from "./_components/tutorial-overlay";
 import ProfileActionsMenu from "./_components/profile-actions-menu";
+import AccountDeletionPrompt from "./_components/account-deletion-prompt";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
@@ -223,6 +224,7 @@ function HomeInner() {
   // 4日以上経過した未レビュー active meeting 数 (bottom-nav badge 用)
   const [staleUnreviewedMeetings, setStaleUnreviewedMeetings] = useState(0);
   const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
+  const [pendingDeletion, setPendingDeletion] = useState<{ scheduledAt: string } | null>(null);
   // chatPeer に対する自分のロール (traveler/guide) と相手のガイドモード
   const [chatMyRole, setChatMyRole] = useState<"traveler" | "guide" | "unknown">("unknown");
   const [chatPeerGuideMode, setChatPeerGuideMode] = useState<"free" | "paid" | null>(null);
@@ -757,6 +759,25 @@ function HomeInner() {
     fetchGuides();
     return () => clearTimeout(safety);
   }, [supabase]);
+
+  // 自分が削除リクエスト出してて、まだ canceled でも scheduled でもないかチェック
+  useEffect(() => {
+    if (!currentUserId) { setPendingDeletion(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("account_deletions")
+        .select("scheduled_at")
+        .eq("user_id", currentUserId)
+        .is("canceled_at", null)
+        .gt("scheduled_at", new Date().toISOString())
+        .maybeSingle();
+      if (cancelled) return;
+      const scheduled = (data as { scheduled_at?: string } | null)?.scheduled_at;
+      setPendingDeletion(scheduled ? { scheduledAt: scheduled } : null);
+    })();
+    return () => { cancelled = true; };
+  }, [supabase, currentUserId]);
 
   // 自分が blocker / blocked のどちらかである相手 user_id を全部集める
   useEffect(() => {
@@ -1668,8 +1689,12 @@ function HomeInner() {
       </div>
 
       {/* 初回ログイン: チュートリアル (home + traveler モードに到達してから開く) */}
-      {tutorialChecked && tutorialOpen && currentUserId && appModeLoaded && appMode && screen === "home" && (
+      {tutorialChecked && tutorialOpen && currentUserId && appModeLoaded && appMode && screen === "home" && !pendingDeletion && (
         <TutorialOverlay appMode={appMode} onClose={() => setTutorialOpen(false)} />
+      )}
+      {/* アカウント削除予定 (チュートリアルより優先) */}
+      {pendingDeletion && currentUserId && (
+        <AccountDeletionPrompt scheduledAt={pendingDeletion.scheduledAt} />
       )}
     </div>
   );

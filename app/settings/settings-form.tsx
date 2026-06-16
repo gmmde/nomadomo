@@ -6,6 +6,7 @@ import { createClient } from "@/app/lib/supabase/client";
 import { useLang, t, type Lang } from "@/app/lib/i18n";
 import { signout } from "@/app/actions/auth";
 import { unblockUser } from "@/app/actions/blocks";
+import { requestAccountDeletion } from "@/app/actions/account";
 
 type Initial = {
   language: Lang;
@@ -29,6 +30,22 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
   const router = useRouter();
   const [blocked, setBlocked] = useState<BlockedUser[]>(blockedList);
   const [unblockingId, setUnblockingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
+
+  async function onConfirmDelete() {
+    setDeletePending(true);
+    const r = await requestAccountDeletion();
+    setDeletePending(false);
+    if (r?.error) {
+      alert(r.error);
+      return;
+    }
+    setShowDeleteConfirm(false);
+    // ホームに戻すと AccountDeletionPrompt が出る (30 日 grace 表示)
+    router.push("/");
+  }
+
 
   async function onUnblock(targetId: string) {
     setUnblockingId(targetId);
@@ -229,6 +246,54 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
             v0.5 · 2026
           </div>
         </div>
+
+        {/* Danger zone: アカウント削除 */}
+        <div style={{ ...sectionBox, border: "2px solid #ad001c", marginTop: 8 }}>
+          <div style={{ ...sectionTitle, color: "#ad001c" }}>⚠️ {lang === "ja" ? "危険ゾーン" : "Danger zone"}</div>
+          <div style={{ fontSize: 12, color: "#5a4a18", fontWeight: 600, lineHeight: 1.6, marginBottom: 12 }}>
+            {lang === "ja"
+              ? "アカウント削除をリクエストすると、30日後にデータが完全削除されるわよ。途中で取り消すこともできるから安心して。"
+              : "Requesting deletion schedules full removal in 30 days. You can cancel anytime before that."}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            style={{ width: "100%", background: "transparent", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: 12, fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            🗑 {lang === "ja" ? "アカウントを削除する" : "Delete my account"}
+          </button>
+        </div>
+      {showDeleteConfirm && (
+        <div onClick={() => !deletePending && setShowDeleteConfirm(false)} style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(20,8,4,0.7)", backdropFilter: "blur(2px)", display: "flex", justifyContent: "center", alignItems: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "#fff9f0", border: "3px solid #ad001c", borderRadius: 18, padding: 22, fontFamily: "inherit" }}>
+            <div style={{ fontSize: 32, textAlign: "center", marginBottom: 6 }}>🗑</div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: "#1a1008", textAlign: "center", marginBottom: 10 }}>
+              {lang === "ja" ? "本当に削除する?" : "Really delete?"}
+            </div>
+            <div style={{ fontSize: 12, color: "#5a4a18", fontWeight: 600, lineHeight: 1.6, background: "#fff3cd", border: "2px solid #f5c649", borderRadius: 10, padding: 10, marginBottom: 14 }}>
+              {lang === "ja"
+                ? "30日間は復活可能。期限を過ぎるとプロフィール・チャット・レビュー含め全部消えるわよ"
+                : "Reversible within 30 days. After that everything including profile, chats, and reviews is gone."}
+            </div>
+            <button
+              type="button"
+              onClick={onConfirmDelete}
+              disabled={deletePending}
+              style={{ width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 14, fontSize: 14, fontWeight: 900, cursor: deletePending ? "not-allowed" : "pointer", fontFamily: "inherit", marginBottom: 8, opacity: deletePending ? 0.6 : 1 }}
+            >
+              {deletePending ? "..." : (lang === "ja" ? "30日後に削除予約する" : "Schedule deletion (30 days)")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={deletePending}
+              style={{ width: "100%", background: "transparent", color: "#8a7560", border: "2px solid #e8c99a", borderRadius: 14, padding: 10, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              {lang === "ja" ? "キャンセル" : "Cancel"}
+            </button>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
