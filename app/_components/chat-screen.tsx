@@ -6,12 +6,15 @@ import type { RefObject } from "react";
 import { t, type Lang } from "../lib/i18n";
 import { proposeMeet, acceptMeet } from "../actions/meetings";
 import MeetPaymentModal from "./meet-payment-modal";
+import { createClient } from "../lib/supabase/client";
+import { useEffect, useRef } from "react";
 
 type Message = {
   id: number;
   sender_id: string;
   recipient_id: string;
   body: string;
+  attachment_path: string | null;
   created_at: string;
 };
 
@@ -85,6 +88,100 @@ export default function ChatScreen({
   const [pendingTr, startTr] = useTransition();
   const [showPayModal, setShowPayModal] = useState(false);
   const [meetErr, setMeetErr] = useState<string | null>(null);
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>({});
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // signed URL を必要な attachment_path 全部について取得
+  useEffect(() => {
+    const paths = messages.map((m) => m.attachment_path).filter((p): p is string => Boolean(p));
+    const missing = paths.filter((p) => !attachmentUrls[p]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.storage.from("chat-images").createSignedUrls(missing, 3600);
+      if (cancelled || !data) return;
+      const map: Record<string, string> = {};
+      for (const r of data) {
+        if (r.signedUrl && r.path) map[r.path] = r.signedUrl;
+      }
+      setAttachmentUrls((prev) => ({ ...prev, ...map }));
+    })();
+    return () => { cancelled = true; };
+  }, [messages, attachmentUrls]);
+
+  async function compressImage(file: File): Promise<Blob> {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error("image load failed"));
+        i.src = url;
+      });
+      const maxDim = 1280;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("canvas ctx");
+      ctx.drawImage(img, 0, 0, width, height);
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("canvas toBlob failed"))),
+          "image/jpeg",
+          0.85,
+        );
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function handlePickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !currentUserId || !chatPeer.id) return;
+    if (!file.type.startsWith("image/")) { setUploadErr("画像ファイルだけ選んでね"); return; }
+    setUploadErr(null);
+    setUploading(true);
+    try {
+      const blob = await compressImage(file);
+      const key = `${currentUserId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const supabase = createClient();
+      const { error: upErr } = await supabase.storage
+        .from("chat-images")
+        .upload(key, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
+      if (upErr) {
+        setUploadErr(upErr.message);
+        setUploading(false);
+        return;
+      }
+      const { error: msgErr } = await supabase
+        .from("messages")
+        .insert({ sender_id: currentUserId, recipient_id: chatPeer.id, body: "📷", attachment_path: key });
+      if (msgErr) {
+        // 失敗時は upload 取り消し (best-effort)
+        await supabase.storage.from("chat-images").remove([key]);
+        setUploadErr(msgErr.message);
+        setUploading(false);
+        return;
+      }
+    } catch (err) {
+      const m = err instanceof Error ? err.message : "image upload failed";
+      setUploadErr(m);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleMeetClick() {
     if (!chatPeer.id) return;
@@ -188,7 +285,20 @@ export default function ChatScreen({
               const mine = m.sender_id === currentUserId;
               return (
                 <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "78%" }}>
-                  <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none", whiteSpace: "pre-wrap" }}>{m.body}</div>
+                  {m.attachment_path ? (
+                    attachmentUrls[m.attachment_path] ? (
+                      <img
+                        src={attachmentUrls[m.attachment_path]}
+                        alt="attachment"
+                        onClick={() => attachmentUrls[m.attachment_path!] && window.open(attachmentUrls[m.attachment_path!], "_blank")}
+                        style={{ maxWidth: "100%", borderRadius: 14, border: !mine ? "2px solid #e8c99a" : "2px solid #ad001c", cursor: "pointer", display: "block" }}
+                      />
+                    ) : (
+                      <div style={{ width: 180, height: 180, borderRadius: 14, background: "#f0d9b5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#8a7560", fontWeight: 700 }}>...読み込み中</div>
+                    )
+                  ) : (
+                    <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none", whiteSpace: "pre-wrap" }}>{m.body}</div>
+                  )}
                 </div>
               );
             })}
@@ -247,7 +357,26 @@ export default function ChatScreen({
         />
       )}
 
-      <div style={{ padding: "12px 20px 24px", display: "flex", gap: 10, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
+      {uploadErr && (
+        <div style={{ padding: "6px 20px", background: "#fff3cd", borderTop: "1px solid #f5c649", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>📷 {uploadErr}</div>
+      )}
+      <div style={{ padding: "12px 20px 24px", display: "flex", gap: 8, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handlePickImage}
+          style={{ display: "none" }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={!currentUserId || uploading}
+          aria-label="画像を送る"
+          style={{ width: 40, height: 40, borderRadius: "50%", background: uploading ? "#bbb" : "#ffefd5", border: "2px solid #e8c99a", cursor: uploading ? "wait" : "pointer", fontSize: 18, fontFamily: "inherit", color: "#1a1008" }}
+        >
+          {uploading ? "..." : "📷"}
+        </button>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}

@@ -49,6 +49,7 @@ type Message = {
   sender_id: string;
   recipient_id: string;
   body: string;
+  attachment_path: string | null;
   created_at: string;
 };
 
@@ -940,7 +941,7 @@ function HomeInner() {
     (async () => {
       const { data } = await supabase
         .from("messages")
-        .select("id, sender_id, recipient_id, body, created_at")
+        .select("id, sender_id, recipient_id, body, attachment_path, created_at")
         .or(
           `and(sender_id.eq.${currentUserId},recipient_id.eq.${peerId}),and(sender_id.eq.${peerId},recipient_id.eq.${currentUserId})`,
         )
@@ -1005,6 +1006,7 @@ function HomeInner() {
       sender_id: currentUserId,
       recipient_id: peerId,
       body,
+      attachment_path: null,
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, optimistic]);
