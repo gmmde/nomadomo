@@ -9,6 +9,7 @@ export default async function AllGuidesPage() {
   const { data } = await supabase
     .from("guides")
     .select("id, name, emoji, university, bio, tags, languages, rate_per_day, mode, rating, tour_count, user_id, image_paths, gender, birth_year, avatar_path, areas, created_at")
+    .or("paused.is.null,paused.eq.false")
     .order("rating", { ascending: false });
 
   const rows: GuideRow[] = (data ?? []).map((g) => ({

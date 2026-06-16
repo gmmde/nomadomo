@@ -40,6 +40,7 @@ type Guide = {
   tour_count: number;
   user_id: string | null;
   image_paths: string[];
+  paused: boolean;
 };
 
 type Message = {
@@ -705,7 +706,7 @@ function HomeInner() {
       try {
         const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year, stripe_onboarded")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year, stripe_onboarded, paused")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -737,6 +738,7 @@ function HomeInner() {
         ratePerDay: g.rate_per_day != null ? Number(g.rate_per_day) : null,
         mode: (((g.mode as string) === "free" ? "free" : "paid") as "free" | "paid"),
         stripeOnboarded: Boolean((g as { stripe_onboarded?: boolean }).stripe_onboarded),
+        paused: Boolean((g as { paused?: boolean }).paused),
         stars: Number(g.rating).toFixed(1),
         bio: g.bio ?? "",
         tour_count: g.tour_count ?? 0,
@@ -961,11 +963,12 @@ function HomeInner() {
 
   const visibleGuides = (() => {
     const notBlocked = guides.filter((g) => !g.user_id || !blockedUserIds.has(g.user_id));
-    if (activeFilter === "All") return notBlocked;
-    if (activeFilter === "🤝 mate") return notBlocked.filter((g) => g.mode === "free");
-    if (activeFilter === "💼 guide") return notBlocked.filter((g) => g.mode === "paid");
+    const active = notBlocked.filter((g) => !g.paused || g.user_id === currentUserId);
+    if (activeFilter === "All") return active;
+    if (activeFilter === "🤝 mate") return active.filter((g) => g.mode === "free");
+    if (activeFilter === "💼 guide") return active.filter((g) => g.mode === "paid");
     const kw = filterKeyword[activeFilter] ?? "";
-    return notBlocked.filter((g) => g.tags.includes(kw));
+    return active.filter((g) => g.tags.includes(kw));
   })();
 
   const sendMessage = async () => {
@@ -1375,6 +1378,11 @@ function HomeInner() {
                   <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: selectedGuide.mode === "paid" ? "rgba(173,0,28,0.85)" : "rgba(46,139,87,0.85)" }}>
                     {selectedGuide.mode === "paid" ? "GUIDE" : "MATE"}
                   </span>
+                  {selectedGuide.paused && (
+                    <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: "rgba(245,198,73,0.95)", color: "#1a1008" }}>
+                      🛌 {lang === "ja" ? "お休み中" : "On break"}
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: 13, opacity: 0.92, marginBottom: 4, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
                   🎓 {guideTr.showing === "translated" ? (guideTr.translations.university ?? selectedGuide.uni) : selectedGuide.uni}

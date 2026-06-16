@@ -226,3 +226,31 @@ export async function deleteGuide(formData: FormData): Promise<void> {
   revalidatePath("/");
   redirect("/");
 }
+
+/**
+ * 自分のガイドプロファイルを一時休業 (paused) toggle する。
+ * paused=true: ホーム/検索一覧から非表示、プロフィールに「お休み中」banner
+ * paused=false: 通常表示
+ */
+export async function setGuidePaused(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "not authenticated" };
+
+  const guideIdRaw = String(formData.get("guide_id") ?? "");
+  const guideId = Number(guideIdRaw);
+  const paused = String(formData.get("paused") ?? "") === "true";
+  if (!Number.isFinite(guideId) || guideId <= 0) return { error: "bad guide_id" };
+
+  const { error } = await supabase
+    .from("guides")
+    .update({ paused })
+    .eq("id", guideId)
+    .eq("user_id", user.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/");
+  revalidatePath(`/guides/${guideId}/edit`);
+  return { success: true };
+}
+

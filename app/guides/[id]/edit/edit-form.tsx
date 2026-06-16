@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import {
-  updateGuide,
+  updateGuide, setGuidePaused,
   deleteGuide,
   type GuideFormState,
 } from "@/app/actions/guides";
@@ -42,6 +42,7 @@ type Initial = {
   emoji: string;
   rate_per_day: number | null;
   mode: "free" | "paid";
+  paused: boolean;
   tags: string[];
   languages: string[];
   image_paths: string[];
@@ -151,10 +152,27 @@ export default function EditGuideForm({
   const [genderOther, setGenderOther] = useState(initial.gender_other ?? "");
   const [nationality, setNationality] = useState(initial.nationality ?? "");
   const [occupation, setOccupation] = useState(initial.occupation ?? "");
+  const [paused, setPaused] = useState<boolean>(initial.paused);
+  const [pausedSaving, setPausedSaving] = useState(false);
   const [lang] = useLang();
 
   function toggle(list: string[], v: string): string[] {
     return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
+  }
+
+  async function togglePaused() {
+    const next = !paused;
+    setPausedSaving(true);
+    const fd = new FormData();
+    fd.set("guide_id", String(initial.id));
+    fd.set("paused", String(next));
+    const r = await setGuidePaused(fd);
+    setPausedSaving(false);
+    if (r?.success) {
+      setPaused(next);
+    } else if (r?.error) {
+      alert(r.error);
+    }
   }
 
   function onDelete(e: React.FormEvent<HTMLFormElement>) {
@@ -179,7 +197,30 @@ export default function EditGuideForm({
             {t("logged_in_as", lang)}：{userEmail}
           </div>
 
-          <form action={action}>
+          <div style={{ padding: "16px 16px 0" }}>
+          <div style={{ background: paused ? "#fff3cd" : "#fff9f0", border: `2px solid ${paused ? "#f5c649" : "#e8c99a"}`, borderRadius: 14, padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 26 }}>{paused ? "🛌" : "✨"}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: "#1a1008" }}>
+                {paused ? (lang === "ja" ? "現在お休み中" : "Currently on break") : (lang === "ja" ? "受付中" : "Available")}
+              </div>
+              <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, lineHeight: 1.5 }}>
+                {paused
+                  ? (lang === "ja" ? "ホーム検索一覧から非表示。既存チャットは続けられるわよ" : "Hidden from home/search. Existing chats keep working.")
+                  : (lang === "ja" ? "休業モードにすると一覧から消えるわよ" : "Switching to break will hide you from listings.")}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={togglePaused}
+              disabled={pausedSaving}
+              style={{ background: paused ? "#2e8b57" : "#ad001c", color: "#fff", border: "none", borderRadius: 18, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: pausedSaving ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: pausedSaving ? 0.6 : 1 }}
+            >
+              {pausedSaving ? "..." : paused ? (lang === "ja" ? "復帰" : "Reopen") : (lang === "ja" ? "休む" : "Pause")}
+            </button>
+          </div>
+        </div>
+        <form action={action}>
             <input type="hidden" name="id" value={initial.id} />
 
             {/* Photos */}

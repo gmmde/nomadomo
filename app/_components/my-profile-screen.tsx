@@ -127,6 +127,9 @@ export default function MyProfileScreen({
           <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
             {t("logged_in_as", lang)}：{userEmail}
           </div>
+          <Link href="/history" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+            {lang === "ja" ? "マッチ履歴" : "Match history"}
+          </Link>
           <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
             {t("my_bookings", lang)}
           </Link>
