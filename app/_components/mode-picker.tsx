@@ -1,6 +1,7 @@
 "use client";
 
 import { useLang, t } from "../lib/i18n";
+import BrandLogo from "./brand-logo";
 
 type Props = {
   onPick: (mode: "local" | "traveler") => void;
@@ -26,9 +27,8 @@ export default function ModePicker({ onPick }: Props) {
         </button>
       </div>
 
-      <div style={{ fontSize: 32, fontWeight: 900, textAlign: "center", marginTop: 40, marginBottom: 4 }}>
-        <span style={{ color: "#2ecc71" }}>Noma</span>
-        <span style={{ color: "#ad001c" }}>Domo</span>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 40, marginBottom: 4 }}>
+        <BrandLogo variant="full" size={32} camelHeight={100} />
       </div>
       <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, textAlign: "center", marginBottom: 36 }}>
         {t("mode_picker_title", lang)}

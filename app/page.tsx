@@ -11,6 +11,7 @@ import ChatScreen from "./_components/chat-screen";
 import TutorialOverlay from "./_components/tutorial-overlay";
 import ProfileActionsMenu from "./_components/profile-actions-menu";
 import AccountDeletionPrompt from "./_components/account-deletion-prompt";
+import BrandLogo from "./_components/brand-logo";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
@@ -1109,10 +1110,7 @@ function HomeInner() {
           <div className="screen-enter">
             {/* TOPBAR */}
             <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 900 }}>
-                <span style={{ color: "#2ecc71" }}>Noma</span>
-                <span style={{ color: "#fff" }}>Domo</span>
-              </div>
+              <BrandLogo variant="row" size={22} nomaColor="#2ecc71" domoColor="#ffefd5" camelHeight={36} />
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {userEmail ? (
                   <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>

@@ -1,12 +1,11 @@
 "use client";
 
+import BrandLogo from "./brand-logo";
+
 export default function Splash() {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: -1 }}>
-        <span style={{ color: "#2ecc71" }}>Noma</span>
-        <span style={{ color: "#ad001c" }}>Domo</span>
-      </div>
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}>
+      <BrandLogo variant="full" size={42} nomaColor="#2ecc71" domoColor="#ad001c" camelHeight={140} />
       <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>
         Meet a real local in Kyoto
       </div>

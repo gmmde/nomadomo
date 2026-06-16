@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { completeTutorial } from "../actions/user-settings";
 import { useLang, t } from "../lib/i18n";
+import BrandLogo from "./brand-logo";
 
 type Props = {
   onClose: () => void;
@@ -223,17 +224,8 @@ export default function TutorialOverlay({ onClose, appMode }: Props) {
 
         {/* Welcome step: logo を大きく */}
         {step.showLogo && (
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: 16,
-              fontSize: 36,
-              fontWeight: 900,
-              letterSpacing: -0.5,
-            }}
-          >
-            <span style={{ color: "#2ecc71" }}>Noma</span>
-            <span style={{ color: "#ad001c" }}>Domo</span>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+            <BrandLogo variant="full" size={28} camelHeight={70} />
           </div>
         )}
 
