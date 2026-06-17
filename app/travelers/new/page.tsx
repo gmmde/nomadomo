@@ -12,6 +12,13 @@ export default async function NewTravelerPage() {
 
   if (!user) redirect("/login?next=/travelers/new");
 
+
+  const { data: usSettings } = await supabase
+    .from("user_settings")
+    .select("display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const lockedDisplayName = (usSettings?.display_name as string | null) ?? null;
   // 既に旅行者プロファイルがあれば編集画面へ
   const { data: existing } = await supabase
     .from("travelers")
@@ -49,6 +56,8 @@ export default async function NewTravelerPage() {
             }
           : null
       }
+    
+      lockedDisplayName={lockedDisplayName}
     />
   );
 }

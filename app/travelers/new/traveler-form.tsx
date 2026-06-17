@@ -61,7 +61,7 @@ type Prefill = {
   image_paths: string[];
 };
 
-export default function TravelerForm({ userEmail, prefill }: { userEmail: string; prefill?: Prefill | null }) {
+export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: { userEmail: string; prefill?: Prefill | null; lockedDisplayName?: string | null }) {
   const [state, action, pending] = useActionState<TravelerFormState, FormData>(createTraveler, undefined);
   const [interests, setInterests] = useState<string[]>([]);
   const [name, setName] = useState(prefill?.name ?? "");
@@ -102,7 +102,12 @@ export default function TravelerForm({ userEmail, prefill }: { userEmail: string
 
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="name">{t("form_name", lang)}</label>
-              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder="例: John Smith" />
+              <input id="name" name="name" required value={lockedDisplayName ?? name} onChange={(e) => { if (!lockedDisplayName) setName(e.target.value); }} placeholder="例: John Smith"  disabled={!!lockedDisplayName} style={{ ...inputStyle, opacity: lockedDisplayName ? 0.7 : 1, cursor: lockedDisplayName ? "not-allowed" : "text" }} />
+              {lockedDisplayName && (
+                <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 4 }}>
+                  🔒 {lang === "ja" ? "アカウント登録名 (変更不可)" : "Your account name (cannot be changed)"}
+                </div>
+              )}
               {state?.errors?.name && <div style={errStyle}>{state.errors.name}</div>}
             </div>
 

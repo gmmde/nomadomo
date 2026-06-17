@@ -11,6 +11,13 @@ export default async function EditTravelerPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/travelers/edit");
 
+
+  const { data: usSettings } = await supabase
+    .from("user_settings")
+    .select("display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const lockedDisplayName = (usSettings?.display_name as string | null) ?? null;
   const { data: t } = await supabase
     .from("travelers")
     .select("name, country, interests, bio, image_paths, avatar_path, emoji, gender, gender_other, birth_year, nationality, occupation, hobbies, available_slots, trip_period")
@@ -39,6 +46,8 @@ export default async function EditTravelerPage() {
         available_slots: (t.available_slots as string[]) ?? [],
         trip_period: (t.trip_period as string | null) ?? null,
       }}
+    
+      lockedDisplayName={lockedDisplayName}
     />
   );
 }

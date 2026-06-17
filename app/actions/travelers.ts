@@ -72,6 +72,17 @@ export async function createTraveler(
   const { fields, errors } = parseTravelerFields(formData);
   if (Object.keys(errors).length > 0) return { errors };
 
+  // display_name (user_settings) が設定済なら fields.name を必ず上書き
+  {
+    const { data: us } = await supabase
+      .from("user_settings")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const dn = (us?.display_name as string | undefined) ?? "";
+    if (dn.trim()) fields.name = dn.trim();
+  }
+
   const { error } = await supabase.from("travelers").insert({
     user_id: user.id,
     ...fields,
@@ -99,6 +110,17 @@ export async function updateTraveler(
 
   const { fields, errors } = parseTravelerFields(formData);
   if (Object.keys(errors).length > 0) return { errors };
+
+  // display_name (user_settings) が設定済なら fields.name を必ず上書き
+  {
+    const { data: us } = await supabase
+      .from("user_settings")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const dn = (us?.display_name as string | undefined) ?? "";
+    if (dn.trim()) fields.name = dn.trim();
+  }
 
   // 旧 image_paths を取得して差分削除
   const { data: existing } = await supabase

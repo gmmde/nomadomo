@@ -58,7 +58,7 @@ const chip = (a: boolean): React.CSSProperties => ({
 const primary: React.CSSProperties = { width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 const danger: React.CSSProperties = { width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
-export default function EditTravelerForm({ userEmail, initial }: { userEmail: string; initial: Initial }) {
+export default function EditTravelerForm({ userEmail, initial, lockedDisplayName }: { userEmail: string; initial: Initial; lockedDisplayName?: string | null }) {
   const [state, action, pending] = useActionState<TravelerFormState, FormData>(updateTraveler, undefined);
   const [interests, setInterests] = useState<string[]>(initial.interests);
   const [name, setName] = useState(initial.name);
@@ -102,7 +102,12 @@ export default function EditTravelerForm({ userEmail, initial }: { userEmail: st
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="name">{t("form_name", lang)}</label>
-              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={input} />
+              <input id="name" name="name" required value={lockedDisplayName ?? name} onChange={(e) => { if (!lockedDisplayName) setName(e.target.value); }} disabled={!!lockedDisplayName} style={{ ...input, opacity: lockedDisplayName ? 0.7 : 1, cursor: lockedDisplayName ? "not-allowed" : "text" }} />
+              {lockedDisplayName && (
+                <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 4 }}>
+                  🔒 {lang === "ja" ? "アカウント登録名 (変更不可)" : "Your account name (cannot be changed)"}
+                </div>
+              )}
               {state?.errors?.name && <div style={err}>{state.errors.name}</div>}
             </div>
 

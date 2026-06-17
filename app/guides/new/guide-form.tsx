@@ -108,7 +108,7 @@ type Prefill = {
   image_paths: string[];
 };
 
-export default function GuideForm({ userEmail, prefill }: { userEmail: string; prefill?: Prefill | null }) {
+export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { userEmail: string; prefill?: Prefill | null; lockedDisplayName?: string | null }) {
   const [state, action, pending] = useActionState<GuideFormState, FormData>(
     createGuide,
     undefined,
@@ -163,7 +163,12 @@ export default function GuideForm({ userEmail, prefill }: { userEmail: string; p
             {/* Name */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="name">{t("form_name", lang)}</label>
-              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: Yuki Tanaka" : "e.g. Yuki Tanaka"} />
+              <input id="name" name="name" required value={lockedDisplayName ?? name} onChange={(e) => { if (!lockedDisplayName) setName(e.target.value); }} placeholder={lang === "ja" ? "例: Yuki Tanaka" : "e.g. Yuki Tanaka"}  disabled={!!lockedDisplayName} style={{ ...inputStyle, opacity: lockedDisplayName ? 0.7 : 1, cursor: lockedDisplayName ? "not-allowed" : "text" }} />
+              {lockedDisplayName && (
+                <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 4 }}>
+                  🔒 {lang === "ja" ? "アカウント登録名 (変更不可)" : "Your account name (cannot be changed)"}
+                </div>
+              )}
               {state?.errors?.name && <div style={errStyle}>{state.errors.name}</div>}
             </div>
 

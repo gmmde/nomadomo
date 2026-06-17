@@ -11,6 +11,13 @@ export default async function NewGuidePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/guides/new");
 
+
+  const { data: usSettings } = await supabase
+    .from("user_settings")
+    .select("display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const lockedDisplayName = (usSettings?.display_name as string | null) ?? null;
   // 既にガイドプロファイルがあれば編集画面へ
   const { data: existing } = await supabase
     .from("guides")
@@ -48,6 +55,8 @@ export default async function NewGuidePage() {
             }
           : null
       }
+    
+      lockedDisplayName={lockedDisplayName}
     />
   );
 }

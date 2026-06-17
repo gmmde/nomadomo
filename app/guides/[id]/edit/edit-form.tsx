@@ -134,9 +134,11 @@ const danger: React.CSSProperties = {
 export default function EditGuideForm({
   userEmail,
   initial,
+  lockedDisplayName,
 }: {
   userEmail: string;
   initial: Initial;
+  lockedDisplayName?: string | null;
 }) {
   const [state, action, pending] = useActionState<GuideFormState, FormData>(
     updateGuide,
@@ -238,7 +240,12 @@ export default function EditGuideForm({
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="name">{t("form_name", lang)}</label>
-              <input id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} style={input} />
+              <input id="name" name="name" required value={lockedDisplayName ?? name} onChange={(e) => { if (!lockedDisplayName) setName(e.target.value); }} disabled={!!lockedDisplayName} style={{ ...input, opacity: lockedDisplayName ? 0.7 : 1, cursor: lockedDisplayName ? "not-allowed" : "text" }} />
+              {lockedDisplayName && (
+                <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 4 }}>
+                  🔒 {lang === "ja" ? "アカウント登録名 (変更不可)" : "Your account name (cannot be changed)"}
+                </div>
+              )}
               {state?.errors?.name && <div style={err}>{state.errors.name}</div>}
             </div>
 
