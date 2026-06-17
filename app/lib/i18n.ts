@@ -222,6 +222,9 @@ export const dict: Dict = {
   settings_reset_mode_done: { en: "Reset! You'll see the picker next time.", ja: "モード選択をリセットしたわ。ホームに戻って画面選択してね" },
   settings_reset_mode_btn: { en: "Show the mode picker again", ja: "モード選択画面を再表示する" },
   settings_save_failed: { en: "Save failed", ja: "保存失敗" },
+  profile_english_notice_title: { en: "💡 Please write in English when possible", ja: "💡 できるだけ英語で書いてね" },
+  profile_english_notice_body: { en: "NomaDomo has built-in translation, but English is preferred so foreign travelers can read your profile naturally. Mix in Japanese sparingly if needed.", ja: "翻訳機能あるけど、英語で書いてもらえると外国人旅行者が自然に読めるからおすすめよ。日本語は最小限でね" },
+
 
 
   // ===== Block / Report menu =====

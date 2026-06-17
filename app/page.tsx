@@ -11,6 +11,7 @@ import ChatScreen from "./_components/chat-screen";
 import TutorialOverlay from "./_components/tutorial-overlay";
 import ProfileActionsMenu from "./_components/profile-actions-menu";
 import AccountDeletionPrompt from "./_components/account-deletion-prompt";
+import NameInputScreen from "./_components/name-input-screen";
 import BrandLogo from "./_components/brand-logo";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
@@ -227,6 +228,7 @@ function HomeInner() {
   const [staleUnreviewedMeetings, setStaleUnreviewedMeetings] = useState(0);
   const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
   const [pendingDeletion, setPendingDeletion] = useState<{ scheduledAt: string } | null>(null);
+  const [displayNameSet, setDisplayNameSet] = useState<boolean | null>(null);
   // chatPeer に対する自分のロール (traveler/guide) と相手のガイドモード
   const [chatMyRole, setChatMyRole] = useState<"traveler" | "guide" | "unknown">("unknown");
   const [chatPeerGuideMode, setChatPeerGuideMode] = useState<"free" | "paid" | null>(null);
@@ -338,7 +340,7 @@ function HomeInner() {
     }
     supabase
       .from("user_settings")
-      .select("app_mode, tutorial_completed, language")
+      .select("app_mode, tutorial_completed, language, display_name")
       .eq("user_id", currentUserId)
       .maybeSingle()
       .then(({ data }) => {
@@ -348,6 +350,8 @@ function HomeInner() {
         const completed = data?.tutorial_completed === true;
         setTutorialOpen(!completed);
         setTutorialChecked(true);
+        const dn = data?.display_name as string | undefined;
+        setDisplayNameSet(Boolean(dn && dn.length > 0));
         // DB の language と localStorage を同期 (新デバイスでログインしたとき EN フラッシュ防止)
         const dbLang = data?.language as string | undefined;
         if ((dbLang === "ja" || dbLang === "en") && typeof window !== "undefined") {
@@ -1108,8 +1112,13 @@ function HomeInner() {
             「一瞬ホームが見えてから ModePicker が乗る」 flash を防ぐ */}
         {(loading || (currentUserId && !appModeLoaded)) && <Splash />}
 
-        {/* MODE PICKER — guides loading に gate しない（新規ユーザは即座に出すべき） */}
-        {currentUserId && appModeLoaded && !appMode && (
+        {/* NAME INPUT — まだ display_name 未登録なら最優先で表示 */}
+        {currentUserId && appModeLoaded && displayNameSet === false && (
+          <NameInputScreen onComplete={() => setDisplayNameSet(true)} />
+        )}
+
+        {/* MODE PICKER — display_name 設定済かつモード未選択のとき */}
+        {currentUserId && appModeLoaded && displayNameSet && !appMode && (
           <ModePicker onPick={saveAppMode} />
         )}
 

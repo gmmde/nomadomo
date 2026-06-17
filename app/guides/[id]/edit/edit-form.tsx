@@ -13,6 +13,7 @@ import AvailableSlots from "@/app/lib/available-slots";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import ImageUploader from "@/app/lib/image-uploader";
 import { useLang, t } from "@/app/lib/i18n";
+import EnglishNotice from "@/app/_components/english-notice";
 
 const AREA_OPTIONS = ["Kyoto"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
@@ -221,6 +222,7 @@ export default function EditGuideForm({
           </div>
         </div>
         <form action={action}>
+          <EnglishNotice />
             <input type="hidden" name="id" value={initial.id} />
 
             {/* Photos */}

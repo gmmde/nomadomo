@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { createTraveler, type TravelerFormState } from "@/app/actions/travelers";
 import ImageUploader from "@/app/lib/image-uploader";
 import { useLang, t } from "@/app/lib/i18n";
+import EnglishNotice from "@/app/_components/english-notice";
 import AvatarPicker from "@/app/lib/avatar-picker";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import AvailableSlots from "@/app/lib/available-slots";
@@ -92,6 +93,7 @@ export default function TravelerForm({ userEmail, prefill }: { userEmail: string
           </div>
 
           <form action={action}>
+          <EnglishNotice />
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>

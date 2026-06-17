@@ -6,6 +6,7 @@ import { useState } from "react";
 import { updateTraveler, deleteTraveler, type TravelerFormState } from "@/app/actions/travelers";
 import ImageUploader from "@/app/lib/image-uploader";
 import { useLang, t } from "@/app/lib/i18n";
+import EnglishNotice from "@/app/_components/english-notice";
 import AvatarPicker from "@/app/lib/avatar-picker";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import AvailableSlots from "@/app/lib/available-slots";
@@ -92,6 +93,7 @@ export default function EditTravelerForm({ userEmail, initial }: { userEmail: st
           </div>
 
           <form action={action}>
+          <EnglishNotice />
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_photos", lang)}</label>
