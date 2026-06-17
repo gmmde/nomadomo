@@ -100,7 +100,7 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ fontSize: 13, fontWeight: 800, color: "#8a7560", textTransform: "uppercase" }}>
-        {t("reviews_avg_star", lang)} {avgRating.toFixed(1)} · {count} {lang === "ja" ? "件" : ""}
+        {t("reviews_avg_star", lang)} {avgRating.toFixed(1)} · {count} {t("items_unit", lang)}
       </div>
       {visible.length === 0 ? (
         <div style={{ padding: 8, fontSize: 12, color: "#8a7560", fontWeight: 700 }}>{t("reviews_empty", lang)}</div>

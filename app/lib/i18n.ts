@@ -72,7 +72,7 @@ export const dict: Dict = {
   local_dashboard_bookings: { en: "📅 Bookings", ja: "📅 予約" },
   own_guide_open: { en: "🏯 View your guide profile", ja: "🏯 自分のガイドプロファイルを見る" },
   create_guide_profile: { en: "+ Create a guide profile", ja: "+ ガイドプロファイルを作成しよう" },
-  items_unit: { en: "", ja: "件" },
+  items_unit: { en: "items", ja: "件" },
   switch_mode_tooltip: { en: "Tap to switch mode", ja: "タップでモード切替" },
   settings_aria: { en: "Settings", ja: "設定" },
   yo: { en: "y.o.", ja: "歳" },
