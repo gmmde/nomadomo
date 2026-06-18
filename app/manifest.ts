@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "NomaDomo - 日本で本物のローカルと出会う",
     short_name: "NomaDomo",
-    description: "日本各地の学生ガイド・地元民と旅行者をマッチングするモバイルWebアプリ",
+    description: "日本各地のローカルガイドと旅行者をマッチングするモバイルWebアプリ",
     start_url: "/",
     display: "standalone",
     background_color: "#f5ead0",

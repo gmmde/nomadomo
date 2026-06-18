@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     default: "NomaDomo - Meet a real local in Japan",
     template: "%s | NomaDomo",
   },
-  description: "Match with local student guides across Japan. Free mates or paid amateur guides — get the real local experience, not a tourist tour.",
-  keywords: ["Japan", "local guide", "travel", "student guide", "mate", "日本", "ガイド"],
+  description: "Match with local guides across Japan. Free mates or paid amateur guides — get the real local experience, not a tourist tour.",
+  keywords: ["Japan", "local guide", "travel", "mate", "日本", "ガイド"],
   authors: [{ name: "gmmde" }],
   openGraph: {
     type: "website",
@@ -27,12 +27,12 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: "NomaDomo",
     title: "NomaDomo - Meet a real local in Japan",
-    description: "Match with local student guides across Japan. Free mates or paid amateur guides — get the real local experience.",
+    description: "Match with local guides across Japan. Free mates or paid amateur guides — get the real local experience.",
   },
   twitter: {
     card: "summary_large_image",
     title: "NomaDomo - Meet a real local in Japan",
-    description: "Match with student guides across Japan — free mates or paid amateur guides.",
+    description: "Match with local guides across Japan — free mates or paid amateur guides.",
   },
   robots: {
     index: true,

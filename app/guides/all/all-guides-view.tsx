@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSignedUrls } from "@/app/lib/use-signed-urls";
+import { useLang } from "@/app/lib/i18n";
+import { getSortedAreas } from "@/app/lib/areas";
 
 export type GuideRow = {
   id: number;
@@ -29,7 +31,6 @@ export type GuideRow = {
 type SortKey = "recommended" | "newest" | "price_asc" | "price_desc";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"];
-const AREA_OPTIONS = ["Tokyo", "Osaka", "Kyoto", "Hokkaido", "Kanagawa", "Hyogo", "Fukuoka", "Aichi", "Okinawa", "Other"];
 const LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"];
 const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "", label: "指定なし" },
@@ -65,6 +66,8 @@ function modeCardStyle(mode: "free" | "paid") {
 }
 
 function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
+  const [lang] = useLang();
+  const sortedAreas = getSortedAreas(lang);
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
   const [query, setQuery] = useState(initialQuery);
@@ -203,8 +206,8 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             </div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>活動域</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
-              {AREA_OPTIONS.map((a) => (
-                <button key={a} onClick={() => toggleArr(areas, setAreas, a)} style={chip(areas.includes(a), "#2e8b57")}>📍 {a}</button>
+              {sortedAreas.map((a) => (
+                <button key={a.value} onClick={() => toggleArr(areas, setAreas, a.value)} style={chip(areas.includes(a.value), "#2e8b57")}>📍 {a.label}</button>
               ))}
             </div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>タグ</div>

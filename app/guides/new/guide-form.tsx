@@ -9,9 +9,9 @@ import AvailableSlots from "@/app/lib/available-slots";
 import HobbiesTags from "@/app/lib/hobbies-tags";
 import ImageUploader from "@/app/lib/image-uploader";
 import { useLang, t } from "@/app/lib/i18n";
+import { getSortedAreas } from "@/app/lib/areas";
 import EnglishNotice from "@/app/_components/english-notice";
 
-const AREA_OPTIONS = ["Tokyo", "Osaka", "Kyoto", "Hokkaido", "Kanagawa", "Hyogo", "Fukuoka", "Aichi", "Okinawa", "Other"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
 const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "form_gender_female" | "form_gender_nonbinary" | "form_gender_other" }> = [
@@ -125,6 +125,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
   const [nationality, setNationality] = useState(prefill?.nationality ?? "");
   const [occupation, setOccupation] = useState(prefill?.occupation ?? "");
   const [lang] = useLang();
+  const sortedAreas = getSortedAreas(lang);
 
   function toggle(list: string[], value: string): string[] {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -286,8 +287,8 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_areas", lang)}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {AREA_OPTIONS.map((a) => (
-                  <button key={a} type="button" onClick={() => setAreas((s) => s.includes(a) ? s.filter((x) => x !== a) : [...s, a])} style={chipStyle(areas.includes(a))}>{a}</button>
+                {sortedAreas.map((a) => (
+                  <button key={a.value} type="button" onClick={() => setAreas((s) => s.includes(a.value) ? s.filter((x) => x !== a.value) : [...s, a.value])} style={chipStyle(areas.includes(a.value))}>{a.label}</button>
                 ))}
               </div>
               {areas.map((a) => <input key={a} type="hidden" name="areas" value={a} />)}

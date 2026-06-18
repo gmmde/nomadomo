@@ -3,18 +3,21 @@
 import { useState } from "react";
 
 /**
- * NomaDomo ブランドロゴ
+ * NomaDomo ブランドロゴ。
  *
- * /public/logo-camel.png があれば camel 画像を表示、
- * 無ければ camel 領域をスキップしてテキストだけ表示する。
- * (PNG が用意できるまでクリーンな状態を保つ)
- *
- * フォント: Avenir Next Bold → Avenir → Helvetica Neue → system-ui → sans-serif
+ * テキスト部 (NomaDomo の字) は /public/logo-letter.png を表示。
+ * ラクダ部は /public/logo-camel.png を表示。
+ * ファイルが無ければ何も出さず (alt 経由でアクセシビリティ確保)。
  *
  * variant:
- *  - "full": 縦並び (camel 大 + テキスト下) — Splash 用
- *  - "row":  横並び (camel 小 + テキスト右) — Home トップバー用
- *  - "text": テキストのみ
+ *  - "full": 縦並び (camel 上 + 字 下) — Splash 用
+ *  - "row":  横並び (camel 左 + 字 右) — トップバー用
+ *  - "text": 字のみ
+ *
+ * size: テキスト画像の高さ (px)
+ * camelHeight: ラクダ画像の高さ (px、未指定なら variant 依存)
+ *
+ * 注意: nomaColor / domoColor は PNG に色が焼き込み済みのため無視される。
  */
 type Props = {
   variant?: "full" | "row" | "text";
@@ -24,50 +27,40 @@ type Props = {
   camelHeight?: number;
 };
 
-const FONT_FAMILY = '"Avenir Next", "AvenirNext-Bold", Avenir, "Helvetica Neue", system-ui, sans-serif';
-
 export default function BrandLogo({
   variant = "row",
   size = 24,
-  domoColor = "#ad001c",
-  nomaColor = "#2ecc71",
   camelHeight,
 }: Props) {
-  const [imgFailed, setImgFailed] = useState(false);
+  const [letterFailed, setLetterFailed] = useState(false);
+  const [camelFailed, setCamelFailed] = useState(false);
   const ch = camelHeight ?? (variant === "full" ? 110 : variant === "row" ? 32 : 0);
 
-  const text = (
-    <span
-      style={{
-        fontFamily: FONT_FAMILY,
-        fontWeight: 800,
-        fontSize: size,
-        letterSpacing: "-0.02em",
-        lineHeight: 1,
-        whiteSpace: "nowrap",
-      }}
-    >
-      <span style={{ color: nomaColor }}>Noma</span>
-      <span style={{ color: domoColor }}>Domo</span>
-    </span>
-  );
+  const letter = !letterFailed ? (
+    <img
+      src="/logo-letter.png"
+      alt="NomaDomo"
+      onError={() => setLetterFailed(true)}
+      style={{ height: size * 1.1, width: "auto", display: "block" }}
+    />
+  ) : null;
 
-  if (variant === "text") return text;
+  if (variant === "text") return letter;
 
-  const camel = !imgFailed ? (
+  const camel = !camelFailed ? (
     <img
       src="/logo-camel.png"
       alt=""
-      onError={() => setImgFailed(true)}
+      onError={() => setCamelFailed(true)}
       style={{ height: ch, width: "auto", display: "block" }}
     />
   ) : null;
 
   if (variant === "full") {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: camel ? 14 : 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: camel ? 4 : 0 }}>
         {camel}
-        {text}
+        {letter}
       </div>
     );
   }
@@ -76,7 +69,7 @@ export default function BrandLogo({
   return (
     <div style={{ display: "flex", alignItems: "center", gap: camel ? 8 : 0 }}>
       {camel}
-      {text}
+      {letter}
     </div>
   );
 }
