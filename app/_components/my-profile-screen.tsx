@@ -134,14 +134,6 @@ export default function MyProfileScreen({
           <Link href="/history" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
             {lang === "ja" ? "マッチ履歴" : "Match history"}
           </Link>
-          <button
-            type="button"
-            onClick={onContactSupport}
-            disabled={supportPending}
-            style={{ width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, cursor: supportPending ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: supportPending ? 0.6 : 1 }}
-          >
-            {supportPending ? "..." : t("settings_contact_support", lang)}
-          </button>
           <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
             {t("my_bookings", lang)}
           </Link>
@@ -186,6 +178,15 @@ export default function MyProfileScreen({
               {t("settings_logout", lang)}
             </button>
           </form>
+          {/* 開発者問い合わせは一番下 */}
+          <button
+            type="button"
+            onClick={onContactSupport}
+            disabled={supportPending}
+            style={{ width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, cursor: supportPending ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: supportPending ? 0.6 : 1, marginTop: 8 }}
+          >
+            {supportPending ? "..." : t("settings_contact_support", lang)}
+          </button>
         </div>
       )}
       <div style={{ height: 100 }} />
