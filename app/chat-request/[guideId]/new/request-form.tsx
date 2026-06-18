@@ -39,17 +39,28 @@ export default function RequestForm({ guideUserId, guideName, guideEmoji, guideU
   const [lang] = useLang();
 
   if (state?.success) {
-    setTimeout(() => router.push("/requests"), 1500);
     const waiting = t("request_sent_waiting", lang).replace("{name}", guideName);
     return (
       <div style={wrap}>
         <div style={card} className="screen-enter">
-          <div style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 14, padding: 20, color: "#2e8b57", fontWeight: 700, lineHeight: 1.6 }}>
-            {t("request_sent_ok", lang)}<br/>
-            {waiting}<br/>
-            <br/>
-            <span style={{ fontSize: 12, color: "#8a7560" }}>{t("request_redirecting", lang)}</span>
+          <div style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 14, padding: 20, color: "#2e8b57", fontWeight: 700, lineHeight: 1.6, marginBottom: 16 }}>
+            ✅ {t("request_sent_ok", lang)}<br/>
+            {waiting}
           </div>
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            style={{ width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 15, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}
+          >
+            🏠 {lang === "ja" ? "ホームに戻る" : "Back to Home"}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/requests")}
+            style={{ width: "100%", background: "transparent", color: "#8a7560", border: "2px solid #e8c99a", borderRadius: 16, padding: 12, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            📨 {lang === "ja" ? "送信したリクエスト一覧" : "View sent requests"}
+          </button>
         </div>
       </div>
     );
