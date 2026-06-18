@@ -14,6 +14,7 @@ import AccountDeletionPrompt from "./_components/account-deletion-prompt";
 import { startSupportChat } from "./actions/support";
 import NameInputScreen from "./_components/name-input-screen";
 import BrandLogo from "./_components/brand-logo";
+import { getSortedAreas } from "./lib/areas";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
 import InboxScreen from "./_components/inbox-screen";
@@ -111,8 +112,6 @@ const ADMIN_EMAILS = ["tonoikenta@icloud.com", "nomadomo@gmail.com"];
 
 const filters = [
   "All",
-  "🤝 Free",
-  "💼 Pro",
   "🍜 Food",
   "⛩ Temples",
   "🌙 Nightlife",
@@ -196,6 +195,9 @@ function HomeInner() {
   const [loading, setLoading] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
+  const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
+  const [areaPickerOpen, setAreaPickerOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [travelerProfile, setTravelerProfile] = useState<TravelerProfile | null>(null);
@@ -1032,10 +1034,14 @@ function HomeInner() {
 
   const visibleGuides = (() => {
     const notBlocked = guides.filter((g) => !g.user_id || !blockedUserIds.has(g.user_id));
-    const active = notBlocked.filter((g) => !g.paused || g.user_id === currentUserId);
+    let active = notBlocked.filter((g) => !g.paused || g.user_id === currentUserId);
+    // mode filter (Available now の隣の Free/Pro トグル)
+    if (homeModeFilter === "free") active = active.filter((g) => g.mode === "free");
+    else if (homeModeFilter === "paid") active = active.filter((g) => g.mode === "paid");
+    // area filter
+    if (homeAreaFilter) active = active.filter((g) => g.areas.includes(homeAreaFilter));
+    // tag filter (既存)
     if (activeFilter === "All") return active;
-    if (activeFilter === "🤝 Free") return active.filter((g) => g.mode === "free");
-    if (activeFilter === "💼 Pro") return active.filter((g) => g.mode === "paid");
     const kw = filterKeyword[activeFilter] ?? "";
     return active.filter((g) => g.tags.includes(kw));
   })();
@@ -1286,10 +1292,48 @@ function HomeInner() {
             )}
 
             {/* GUIDES (or Travelers in Local mode) */}
-            <div data-tutorial="home-list" style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
-              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? `${t("travelers_nearby", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
-              <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
+            <div data-tutorial="home-list" style={{ padding: "0 20px 4px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+              <div style={{ fontSize: 14, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, whiteSpace: "nowrap" }}>{appMode === "local" ? `${t("travelers_nearby", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
+              <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 11, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
             </div>
+            {/* Free / Pro / Area selector (Traveler モードのみ) */}
+            {appMode !== "local" && (
+              <div style={{ padding: "0 20px 12px", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                {(["all", "free", "paid"] as const).map((v) => {
+                  const label = v === "all" ? (lang === "ja" ? "全て" : "All") : v === "free" ? "🤝 Free" : "💼 Pro";
+                  const active = homeModeFilter === v;
+                  return (
+                    <button key={v} type="button" onClick={() => setHomeModeFilter(v)}
+                      style={{ background: active ? (v === "paid" ? "#2e8b57" : "#ad001c") : "#ffffffdd", color: active ? "#fff" : "#8a7560", border: `2px solid ${active ? (v === "paid" ? "#2e8b57" : "#ad001c") : "#f0d9b5"}`, borderRadius: 18, padding: "5px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                      {label}
+                    </button>
+                  );
+                })}
+                <div style={{ position: "relative" }}>
+                  <button type="button" onClick={() => setAreaPickerOpen((x) => !x)}
+                    style={{ background: homeAreaFilter ? "#2e8b57" : "#ffffffdd", color: homeAreaFilter ? "#fff" : "#8a7560", border: `2px solid ${homeAreaFilter ? "#2e8b57" : "#f0d9b5"}`, borderRadius: 18, padding: "5px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                    📍 {homeAreaFilter ?? (lang === "ja" ? "エリア" : "Area")} ▾
+                  </button>
+                  {areaPickerOpen && (
+                    <>
+                      <div onClick={() => setAreaPickerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
+                      <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 12, padding: 6, zIndex: 51, boxShadow: "0 8px 20px rgba(0,0,0,0.18)", minWidth: 140, maxHeight: 280, overflowY: "auto" }}>
+                        <button type="button" onClick={() => { setHomeAreaFilter(null); setAreaPickerOpen(false); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", background: homeAreaFilter === null ? "#e6f5ee" : "transparent", border: "none", padding: "8px 10px", fontSize: 12, fontWeight: 700, color: "#1a1008", cursor: "pointer", borderRadius: 8, fontFamily: "inherit" }}>
+                          {lang === "ja" ? "全エリア" : "All areas"}
+                        </button>
+                        {getSortedAreas(lang).map((a) => (
+                          <button key={a.value} type="button" onClick={() => { setHomeAreaFilter(a.value); setAreaPickerOpen(false); }}
+                            style={{ display: "block", width: "100%", textAlign: "left", background: homeAreaFilter === a.value ? "#e6f5ee" : "transparent", border: "none", padding: "8px 10px", fontSize: 12, fontWeight: 700, color: "#1a1008", cursor: "pointer", borderRadius: 8, fontFamily: "inherit" }}>
+                            📍 {a.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {loading ? (
               <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
