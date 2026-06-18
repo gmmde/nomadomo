@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { signup, type AuthState } from "@/app/actions/auth";
 import BrandLogo from "@/app/_components/brand-logo";
 import { useLang, t } from "@/app/lib/i18n";
+import LangToggle from "@/app/_components/lang-toggle";
 
 const wrapStyle: React.CSSProperties = {
   background: "#f5ead0",
@@ -57,7 +58,8 @@ export default function SignupPage() {
   const [lang] = useLang();
 
   return (
-    <div style={wrapStyle}>
+    <div style={{ ...wrapStyle, position: "relative" }}>
+      <LangToggle position="absolute" topRight={true} />
       <div style={cardStyle}>
         <div style={{ marginBottom: 4 }}>
           <BrandLogo variant="text" size={28} />

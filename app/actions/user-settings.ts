@@ -71,6 +71,11 @@ export async function setDisplayName(formData: FormData): Promise<UserSettingsAc
         { onConflict: "user_id" },
       );
     if (error) return { error: error.message };
+
+    // 既存 guides/travelers の name にも即反映 (DB trigger と二重で safe)
+    await supabase.from("guides").update({ name: normalized }).eq("user_id", user.id);
+    await supabase.from("travelers").update({ name: normalized }).eq("user_id", user.id);
+
     return { success: true };
   } catch (e) {
     const m = e instanceof Error ? e.message : "setDisplayName failed";

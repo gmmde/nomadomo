@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { setDisplayName } from "@/app/actions/user-settings";
 import { useLang, t } from "@/app/lib/i18n";
 import BrandLogo from "./brand-logo";
+import LangToggle from "./lang-toggle";
 
 const wrap: React.CSSProperties = {
   position: "fixed", inset: 0, zIndex: 998,
@@ -83,6 +84,7 @@ export default function NameInputScreen({ onComplete }: Props) {
 
   return (
     <div style={wrap}>
+      <LangToggle position="absolute" topRight={true} />
       <div style={card}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
           <BrandLogo variant="full" size={26} camelHeight={70} />
