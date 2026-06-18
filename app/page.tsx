@@ -11,6 +11,7 @@ import ChatScreen from "./_components/chat-screen";
 import TutorialOverlay from "./_components/tutorial-overlay";
 import ProfileActionsMenu from "./_components/profile-actions-menu";
 import AccountDeletionPrompt from "./_components/account-deletion-prompt";
+import { startSupportChat } from "./actions/support";
 import NameInputScreen from "./_components/name-input-screen";
 import BrandLogo from "./_components/brand-logo";
 import MyProfileScreen from "./_components/my-profile-screen";
@@ -106,7 +107,7 @@ function isTrustedLocal(stars: string, tour_count: number): boolean {
 }
 
 // Admin email list (Vercel env var ADMIN_EMAILS でも上書き可)
-const ADMIN_EMAILS = ["tonoikenta@icloud.com"];
+const ADMIN_EMAILS = ["tonoikenta@icloud.com", "nomadomo@gmail.com"];
 
 const filters = [
   "All",
@@ -229,6 +230,25 @@ function HomeInner() {
   const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
   const [pendingDeletion, setPendingDeletion] = useState<{ scheduledAt: string } | null>(null);
   const [displayNameSet, setDisplayNameSet] = useState<boolean | null>(null);
+  const [supportPending, setSupportPending] = useState(false);
+
+  async function handleContactSupport() {
+    if (supportPending) return;
+    setSupportPending(true);
+    const r = await startSupportChat();
+    setSupportPending(false);
+    if (r?.error) { alert(r.error); return; }
+    if (r?.adminUserId) {
+      setChatPeer({
+        id: r.adminUserId,
+        name: lang === "ja" ? "NomaDomo サポート" : "NomaDomo Support",
+        emoji: "🛟",
+      });
+      setChatOrigin("inbox");
+      setScreen("chat");
+    }
+  }
+
   // chatPeer に対する自分のロール (traveler/guide) と相手のガイドモード
   const [chatMyRole, setChatMyRole] = useState<"traveler" | "guide" | "unknown">("unknown");
   const [chatPeerGuideMode, setChatPeerGuideMode] = useState<"free" | "paid" | null>(null);
@@ -1674,6 +1694,8 @@ function HomeInner() {
             adminEmails={ADMIN_EMAILS}
             appMode={appMode}
             lang={lang}
+            onContactSupport={handleContactSupport}
+            supportPending={supportPending}
           />
         )}
         {/* bottom nav を screen-enter の外側で描画 (アニメ中の position:fixed 不安定を回避) */}
