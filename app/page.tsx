@@ -111,8 +111,8 @@ const ADMIN_EMAILS = ["tonoikenta@icloud.com", "nomadomo@gmail.com"];
 
 const filters = [
   "All",
-  "🤝 mate",
-  "💼 guide",
+  "🤝 Free",
+  "💼 Pro",
   "🍜 Food",
   "⛩ Temples",
   "🌙 Nightlife",
@@ -1034,8 +1034,8 @@ function HomeInner() {
     const notBlocked = guides.filter((g) => !g.user_id || !blockedUserIds.has(g.user_id));
     const active = notBlocked.filter((g) => !g.paused || g.user_id === currentUserId);
     if (activeFilter === "All") return active;
-    if (activeFilter === "🤝 mate") return active.filter((g) => g.mode === "free");
-    if (activeFilter === "💼 guide") return active.filter((g) => g.mode === "paid");
+    if (activeFilter === "🤝 Free") return active.filter((g) => g.mode === "free");
+    if (activeFilter === "💼 Pro") return active.filter((g) => g.mode === "paid");
     const kw = filterKeyword[activeFilter] ?? "";
     return active.filter((g) => g.tags.includes(kw));
   })();
@@ -1452,7 +1452,7 @@ function HomeInner() {
                   <span style={{ fontSize: 28, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{selectedGuide.name}</span>
                   {selectedGuide.mode !== "free" && <span style={{ fontSize: 18 }}>✨</span>}
                   <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: selectedGuide.mode === "paid" ? "rgba(173,0,28,0.85)" : "rgba(46,139,87,0.85)" }}>
-                    {selectedGuide.mode === "paid" ? "GUIDE" : "MATE"}
+                    {selectedGuide.mode === "paid" ? "PRO" : "FREE"}
                   </span>
                   {selectedGuide.paused && (
                     <span style={{ fontSize: 10, fontWeight: 900, padding: "3px 8px", borderRadius: 10, background: "rgba(245,198,73,0.95)", color: "#1a1008" }}>

@@ -194,7 +194,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
           <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 12, marginBottom: 14 }}>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>モード</div>
             <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-              {([["all", "すべて", "#8a7560"], ["mate", "🤝 mate (無料)", "#ad001c"], ["guide", "💼 guide (有料)", "#2e8b57"]] as const).map(([v, label, c]) => (
+              {([["all", "すべて", "#8a7560"], ["mate", "🤝 Free (無料)", "#ad001c"], ["guide", "💼 Pro (有料)", "#2e8b57"]] as const).map(([v, label, c]) => (
                 <button key={v} onClick={() => setModeFilter(v)} style={{
                   flex: 1,
                   background: modeFilter === v ? c : "#fff",
