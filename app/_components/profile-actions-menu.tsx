@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLang, t } from "../lib/i18n";
@@ -66,7 +67,7 @@ export default function ProfileActionsMenu({ targetUserId, targetName, hide }: P
         …
       </button>
 
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div
           onClick={() => { if (!pending) setOpen(false); }}
           style={{
@@ -138,7 +139,8 @@ export default function ProfileActionsMenu({ targetUserId, targetName, hide }: P
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -144,7 +144,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
               {!isDemo && currentUserId && traveler.user_id !== currentUserId && (
 <ProfileActionsMenu targetUserId={traveler.user_id} targetName={traveler.name} />
               )}
-              <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+              {isOwn && <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>}
             </div>
           </div>
 
