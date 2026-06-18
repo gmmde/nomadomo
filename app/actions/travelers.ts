@@ -69,19 +69,20 @@ export async function createTraveler(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/travelers/new");
 
-  const { fields, errors } = parseTravelerFields(formData);
-  if (Object.keys(errors).length > 0) return { errors };
-
-  // display_name (user_settings) が設定済なら fields.name を必ず上書き
+  // display_name (user_settings) を最優先で formData.name に注入
+  // (フォームの name 入力が disabled だと空で送られるためバリデーション前に補う必要がある)
   {
     const { data: us } = await supabase
       .from("user_settings")
       .select("display_name")
       .eq("user_id", user.id)
       .maybeSingle();
-    const dn = (us?.display_name as string | undefined) ?? "";
-    if (dn.trim()) fields.name = dn.trim();
+    const dn = ((us?.display_name as string | undefined) ?? "").trim();
+    if (dn) formData.set("name", dn);
   }
+
+  const { fields, errors } = parseTravelerFields(formData);
+  if (Object.keys(errors).length > 0) return { errors };
 
   const { error } = await supabase.from("travelers").insert({
     user_id: user.id,
@@ -108,19 +109,20 @@ export async function updateTraveler(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { fields, errors } = parseTravelerFields(formData);
-  if (Object.keys(errors).length > 0) return { errors };
-
-  // display_name (user_settings) が設定済なら fields.name を必ず上書き
+  // display_name (user_settings) を最優先で formData.name に注入
+  // (フォームの name 入力が disabled だと空で送られるためバリデーション前に補う必要がある)
   {
     const { data: us } = await supabase
       .from("user_settings")
       .select("display_name")
       .eq("user_id", user.id)
       .maybeSingle();
-    const dn = (us?.display_name as string | undefined) ?? "";
-    if (dn.trim()) fields.name = dn.trim();
+    const dn = ((us?.display_name as string | undefined) ?? "").trim();
+    if (dn) formData.set("name", dn);
   }
+
+  const { fields, errors } = parseTravelerFields(formData);
+  if (Object.keys(errors).length > 0) return { errors };
 
   // 旧 image_paths を取得して差分削除
   const { data: existing } = await supabase
