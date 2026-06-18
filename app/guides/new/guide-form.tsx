@@ -149,6 +149,14 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
 
           <form action={action}>
           <EnglishNotice />
+          {(state?.error || (state?.errors && Object.keys(state.errors).length > 0)) && (
+            <div style={{ background: "#ad001c20", border: "2px solid #ad001c", borderRadius: 12, padding: 14, marginBottom: 16, color: "#ad001c", fontWeight: 700 }}>
+              <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 4 }}>⚠️ {t("form_has_errors_title", lang)}</div>
+              <div style={{ fontSize: 12, color: "#5a4a18", fontWeight: 600, lineHeight: 1.5 }}>
+                {state?.error ? state.error : t("form_has_errors_body", lang)}
+              </div>
+            </div>
+          )}
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>

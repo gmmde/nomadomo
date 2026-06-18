@@ -227,6 +227,9 @@ export const dict: Dict = {
   settings_contact_support: { en: "📨 Contact the developer", ja: "📨 開発者に問い合わせる" },
   settings_support_hint: { en: "Send bug reports, feature requests, or any feedback directly.", ja: "バグ報告・要望・感想などお気軽に送って" },
   support_peer_name: { en: "NomaDomo Support", ja: "NomaDomo サポート" },
+  form_has_errors_title: { en: "Please review your input", ja: "入力内容に不備があるわよ" },
+  form_has_errors_body: { en: "Some fields need attention. Look for the red error messages below.", ja: "下のほうに赤いエラーメッセージが出てる項目があるはず。確認してね" },
+
 
 
 
