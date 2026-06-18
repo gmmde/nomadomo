@@ -1,11 +1,9 @@
 "use client";
 
-import BrandLogo from "./brand-logo";
-
 export default function Splash() {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}>
-      <BrandLogo variant="full" size={42} nomaColor="#2ecc71" domoColor="#ad001c" camelHeight={140} />
+      <img src="/logo.png" alt="NomaDomo" style={{ width: "min(260px, 70%)", height: "auto", display: "block" }} />
       <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 700 }}>
         Meet a real local in Japan
       </div>

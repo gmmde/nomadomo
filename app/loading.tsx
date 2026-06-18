@@ -1,5 +1,3 @@
-import BrandLogo from "./_components/brand-logo";
-
 export default function Loading() {
   return (
     <div
@@ -15,7 +13,7 @@ export default function Loading() {
         zIndex: 1000,
       }}
     >
-      <BrandLogo variant="full" size={36} camelHeight={110} />
+      <img src="/logo.png" alt="NomaDomo" style={{ width: "min(260px, 70%)", height: "auto", display: "block" }} />
       <div
         style={{
           width: 28,
