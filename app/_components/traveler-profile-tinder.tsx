@@ -110,8 +110,11 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
     <div className="screen-enter" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f5ead0" }}>
       <div style={{ width: "100%", maxWidth: 390, minHeight: "100vh", margin: "0 auto", background: "#f5ead0", position: "relative" }}>
         <div style={{ position: "relative", height: "70vh", minHeight: 480, background: "#1a1008", overflow: "hidden" }}>
+          {carouselImages.slice(1).map((im) => im.src && (
+            <img key={`pf-${im.path}`} src={im.src} alt="" style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }} loading="eager" decoding="async" />
+          ))}
           {cur?.src ? (
-            <img src={cur.src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={cur.src} alt="" loading="eager" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 120, background: "#ffefd5" }}>
               {traveler.emoji}
