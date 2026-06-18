@@ -138,7 +138,7 @@ export default function MyProfileScreen({
               {t("admin_analytics", lang)}
             </Link>
           )}
-          {ownGuide ? (
+          {appMode === "local" && (ownGuide ? (
             <>
             <Link href={`/guides/${ownGuide.id}/edit`} style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
               {t("edit_guide_profile", lang)}
@@ -157,7 +157,7 @@ export default function MyProfileScreen({
             <Link href="/guides/new" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
               {t("register_as_guide", lang)}
             </Link>
-          )}
+          ))}
           {appMode !== "local" && (
             travelerProfile ? (
               <Link href="/travelers/edit" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
@@ -168,11 +168,6 @@ export default function MyProfileScreen({
                 {t("register_as_traveler", lang)}
               </Link>
             )
-          )}
-          {appMode === "local" && !travelerProfile && (
-            <Link href="/travelers/new" style={{ display: "block", width: "100%", background: "#fff", color: "#8a7560", border: "1.5px dashed #e8c99a", borderRadius: 16, padding: 10, fontSize: 11, fontWeight: 700, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-              {t("optional_traveler_hint", lang)}
-            </Link>
           )}
           <form action={signout}>
             <button type="submit" style={{ width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
