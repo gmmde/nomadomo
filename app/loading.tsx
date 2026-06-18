@@ -13,7 +13,7 @@ export default function Loading() {
         zIndex: 1000,
       }}
     >
-      <img src="/logo.png" alt="NomaDomo" style={{ width: "min(260px, 70%)", height: "auto", display: "block" }} />
+      <img src="/logo-2.png" alt="NomaDomo" style={{ width: "min(260px, 70%)", height: "auto", display: "block" }} />
       <div
         style={{
           width: 28,
