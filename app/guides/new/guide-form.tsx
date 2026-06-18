@@ -11,7 +11,7 @@ import ImageUploader from "@/app/lib/image-uploader";
 import { useLang, t } from "@/app/lib/i18n";
 import EnglishNotice from "@/app/_components/english-notice";
 
-const AREA_OPTIONS = ["Kyoto"] as const;
+const AREA_OPTIONS = ["Tokyo", "Osaka", "Kyoto", "Hokkaido", "Kanagawa", "Hyogo", "Fukuoka", "Aichi", "Okinawa", "Other"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
 const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "form_gender_female" | "form_gender_nonbinary" | "form_gender_other" }> = [
@@ -120,7 +120,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
   const [bio, setBio] = useState(prefill?.bio ?? "");
   const [birthYear, setBirthYear] = useState(prefill?.birth_year != null ? String(prefill.birth_year) : "");
   const [gender, setGender] = useState(prefill?.gender ?? "");
-  const [areas, setAreas] = useState<string[]>(["Kyoto"]);
+  const [areas, setAreas] = useState<string[]>(["Tokyo"]);
   const [genderOther, setGenderOther] = useState(prefill?.gender_other ?? "");
   const [nationality, setNationality] = useState(prefill?.nationality ?? "");
   const [occupation, setOccupation] = useState(prefill?.occupation ?? "");

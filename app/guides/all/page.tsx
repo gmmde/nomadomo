@@ -28,7 +28,7 @@ export default async function AllGuidesPage() {
     gender: (g.gender as string | null) ?? null,
     birth_year: (g.birth_year as number | null) ?? null,
     avatar_path: (g.avatar_path as string | null) ?? null,
-    areas: (g.areas as string[]) ?? ["Kyoto"],
+    areas: (g.areas as string[]) ?? ["Japan"],
     created_at: g.created_at as string,
   }));
 

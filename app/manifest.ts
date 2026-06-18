@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "NomaDomo - 京都で本物のローカルと出会う",
+    name: "NomaDomo - 日本で本物のローカルと出会う",
     short_name: "NomaDomo",
-    description: "京都の大学生ガイドと旅行者をマッチングするモバイルWebアプリ",
+    description: "日本各地の学生ガイド・地元民と旅行者をマッチングするモバイルWebアプリ",
     start_url: "/",
     display: "standalone",
     background_color: "#f5ead0",

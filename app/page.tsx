@@ -770,7 +770,7 @@ function HomeInner() {
         name: g.name,
         emoji: g.emoji ?? "🧑",
         avatarPath: (g.avatar_path as string | null) ?? null,
-        areas: (g.areas as string[]) ?? ["Kyoto"],
+        areas: (g.areas as string[]) ?? ["Japan"],
         nationality: (g.nationality as string | null) ?? null,
         occupation: (g.occupation as string | null) ?? null,
         hobbies: (g.hobbies as string[]) ?? [],
@@ -1220,7 +1220,7 @@ function HomeInner() {
               </>)}
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.05) 100%)", zIndex: 2, pointerEvents: "none" }}/>
               <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Kyoto, Japan</div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Japan</div>
                 <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45)" }}>
                   Meet a <span style={{ color: "#a8eabf" }}>real local</span>,<br/>not a tour guide
                 </div>
@@ -1287,7 +1287,7 @@ function HomeInner() {
 
             {/* GUIDES (or Travelers in Local mode) */}
             <div data-tutorial="home-list" style={{ padding: "0 20px 10px", display: "flex", justifyContent: "space-between" }}>
-              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? `${t("travelers_in_kyoto", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
+              <div style={{ fontSize: 15, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10 }}>{appMode === "local" ? `${t("travelers_nearby", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
               <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 12, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
             </div>
 

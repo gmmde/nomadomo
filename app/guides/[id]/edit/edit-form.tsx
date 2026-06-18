@@ -15,7 +15,7 @@ import ImageUploader from "@/app/lib/image-uploader";
 import { useLang, t } from "@/app/lib/i18n";
 import EnglishNotice from "@/app/_components/english-notice";
 
-const AREA_OPTIONS = ["Kyoto"] as const;
+const AREA_OPTIONS = ["Tokyo", "Osaka", "Kyoto", "Hokkaido", "Kanagawa", "Hyogo", "Fukuoka", "Aichi", "Okinawa", "Other"] as const;
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"] as const;
 const LANGUAGE_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"] as const;
 const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "form_gender_female" | "form_gender_nonbinary" | "form_gender_other" }> = [

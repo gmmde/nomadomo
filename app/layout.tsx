@@ -14,11 +14,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nomadomo.vercel.ap
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "NomaDomo - Meet a real local in Kyoto",
+    default: "NomaDomo - Meet a real local in Japan",
     template: "%s | NomaDomo",
   },
-  description: "Match with Kyoto student guides and locals. Free mates or paid amateur guides — get the real Kyoto experience, not a tourist tour.",
-  keywords: ["Kyoto", "Japan", "local guide", "travel", "student guide", "mate", "京都", "ガイド"],
+  description: "Match with local student guides across Japan. Free mates or paid amateur guides — get the real local experience, not a tourist tour.",
+  keywords: ["Japan", "local guide", "travel", "student guide", "mate", "日本", "ガイド"],
   authors: [{ name: "gmmde" }],
   openGraph: {
     type: "website",
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     alternateLocale: ["ja_JP"],
     url: SITE_URL,
     siteName: "NomaDomo",
-    title: "NomaDomo - Meet a real local in Kyoto",
-    description: "Match with Kyoto student guides and locals. Free mates or paid amateur guides — get the real Kyoto experience.",
+    title: "NomaDomo - Meet a real local in Japan",
+    description: "Match with local student guides across Japan. Free mates or paid amateur guides — get the real local experience.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NomaDomo - Meet a real local in Kyoto",
-    description: "Match with Kyoto student guides — free mates or paid amateur guides.",
+    title: "NomaDomo - Meet a real local in Japan",
+    description: "Match with student guides across Japan — free mates or paid amateur guides.",
   },
   robots: {
     index: true,

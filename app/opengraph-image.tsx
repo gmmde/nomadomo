@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "NomaDomo - 京都で本物のローカルと出会う";
+export const alt = "NomaDomo - 日本で本物のローカルと出会う";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -76,7 +76,7 @@ export default async function OG() {
             marginBottom: 36,
           }}
         >
-          📍 Kyoto, Japan
+          📍 Japan
         </div>
 
         {/* メインコピー */}
@@ -92,7 +92,7 @@ export default async function OG() {
             alignItems: "center",
           }}
         >
-          <span>京都で本物のローカルと出会う</span>
+          <span>日本で本物のローカルと出会う</span>
           <span style={{ fontSize: 32, color: "#8a7560", marginTop: 16, fontWeight: 700 }}>
             観光ツアーじゃ味わえない地元の体験を
           </span>

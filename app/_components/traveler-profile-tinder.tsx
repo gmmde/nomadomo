@@ -200,7 +200,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
         <div style={{ padding: "10px 20px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontSize: 13, color: "#1a1008", fontWeight: 800 }}>
             <span style={{ fontSize: 18, fontWeight: 900, color: "#2e8b57" }}>✈️</span>
-            <span style={{ marginLeft: 6, color: "#8a7560" }}>Visiting Kyoto</span>
+            <span style={{ marginLeft: 6, color: "#8a7560" }}>Visiting Japan</span>
           </div>
           {traveler.languages.length > 0 && (
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>

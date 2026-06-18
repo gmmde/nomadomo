@@ -46,7 +46,7 @@ export default async function EditGuidePage({ params }: Props) {
         gender: (guide.gender as string | null) ?? null,
         birth_year: (guide.birth_year as number | null) ?? null,
         avatar_path: (guide.avatar_path as string | null) ?? null,
-        areas: (guide.areas as string[]) ?? ["Kyoto"],
+        areas: (guide.areas as string[]) ?? ["Japan"],
         nationality: (guide.nationality as string | null) ?? null,
         occupation: (guide.occupation as string | null) ?? null,
         gender_other: (guide.gender_other as string | null) ?? null,
