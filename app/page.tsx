@@ -267,6 +267,20 @@ function HomeInner() {
     return () => { delete document.body.dataset.screen; };
   }, [screen]);
 
+  // ?support=<uuid> で来たら サポート (開発者) とのチャットを開く
+  useEffect(() => {
+    const sid = searchParams.get("support");
+    if (!sid || !currentUserId) return;
+    setChatPeer({
+      id: sid,
+      name: lang === "ja" ? "NomaDomo サポート" : "NomaDomo Support",
+      emoji: "🛟",
+    });
+    setChatOrigin("inbox");
+    setScreen("chat");
+    router.replace("/", { scroll: false });
+  }, [searchParams, currentUserId, lang, router]);
+
   // ?guide=ID で来たら該当ガイドのプロフィール画面に飛ぶ (例: /guides/all 経由)
   useEffect(() => {
     const gid = searchParams.get("guide");

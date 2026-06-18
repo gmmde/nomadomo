@@ -7,6 +7,7 @@ import { useLang, t, type Lang } from "@/app/lib/i18n";
 import { signout } from "@/app/actions/auth";
 import { unblockUser } from "@/app/actions/blocks";
 import { requestAccountDeletion } from "@/app/actions/account";
+import { startSupportChat } from "@/app/actions/support";
 
 type Initial = {
   language: Lang;
@@ -32,6 +33,16 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
   const [unblockingId, setUnblockingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
+  const [supportPending, setSupportPending] = useState(false);
+
+  async function onContactSupport() {
+    setSupportPending(true);
+    const r = await startSupportChat();
+    setSupportPending(false);
+    if (r?.error) { alert(r.error); return; }
+    if (r?.adminUserId) router.push(`/?support=${r.adminUserId}`);
+  }
+
 
   // 初回マウントで DB の language を localStorage に同期 (Settings 開いて差分があったら即適用)
   useEffect(() => {
@@ -212,6 +223,22 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         <button onClick={onSave} disabled={status === "saving"} style={{ ...primary, opacity: status === "saving" ? 0.6 : 1, marginBottom: 14 }}>
           {status === "saving" ? "..." : status === "saved" ? t("settings_saved", lang) : t("settings_save", lang)}
         </button>
+
+        {/* Contact support */}
+        <div style={sectionBox}>
+          <div style={sectionTitle}>💬 {lang === "ja" ? "サポート" : "Support"}</div>
+          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 10, lineHeight: 1.5 }}>
+            {t("settings_support_hint", lang)}
+          </div>
+          <button
+            type="button"
+            onClick={onContactSupport}
+            disabled={supportPending}
+            style={{ width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 14, padding: 12, fontSize: 13, fontWeight: 900, cursor: supportPending ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: supportPending ? 0.6 : 1 }}
+          >
+            {supportPending ? "..." : t("settings_contact_support", lang)}
+          </button>
+        </div>
 
         {/* Blocked users */}
         <div style={sectionBox}>

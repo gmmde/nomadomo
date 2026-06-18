@@ -224,6 +224,10 @@ export const dict: Dict = {
   settings_save_failed: { en: "Save failed", ja: "保存失敗" },
   profile_english_notice_title: { en: "💡 Please write in English when possible", ja: "💡 できるだけ英語で書いてね" },
   profile_english_notice_body: { en: "NomaDomo has built-in translation, but English is preferred so foreign travelers can read your profile naturally. Mix in Japanese sparingly if needed.", ja: "翻訳機能あるけど、英語で書いてもらえると外国人旅行者が自然に読めるからおすすめよ。日本語は最小限でね" },
+  settings_contact_support: { en: "📨 Contact the developer", ja: "📨 開発者に問い合わせる" },
+  settings_support_hint: { en: "Send bug reports, feature requests, or any feedback directly.", ja: "バグ報告・要望・感想などお気軽に送って" },
+  support_peer_name: { en: "NomaDomo Support", ja: "NomaDomo サポート" },
+
 
 
 
