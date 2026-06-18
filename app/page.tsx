@@ -1438,9 +1438,7 @@ function HomeInner() {
                 <button onClick={goBack} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", border: "none", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>←</button>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                   {!isOwn && !isDemo && selectedGuide.user_id && (
-                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <ProfileActionsMenu targetUserId={selectedGuide.user_id} targetName={selectedGuide.name} />
-                    </div>
+<ProfileActionsMenu targetUserId={selectedGuide.user_id} targetName={selectedGuide.name} />
                   )}
                   <Link href="/settings" aria-label="設定" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
                 </div>

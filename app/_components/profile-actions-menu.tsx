@@ -46,18 +46,21 @@ export default function ProfileActionsMenu({ targetUserId, targetName, hide }: P
         onClick={() => setOpen(true)}
         aria-label={t("profile_actions_menu", lang)}
         style={{
-          background: "rgba(255,255,255,0.18)",
-          border: "2px solid rgba(255,255,255,0.4)",
+          background: "rgba(0,0,0,0.4)",
+          border: "none",
           color: "#fff",
-          width: 30,
-          height: 30,
+          width: 38,
+          height: 38,
           borderRadius: "50%",
-          fontSize: 16,
+          fontSize: 22,
           fontWeight: 900,
           cursor: "pointer",
           fontFamily: "inherit",
           lineHeight: 1,
           padding: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         …
