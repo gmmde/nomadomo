@@ -50,6 +50,23 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewDone, peerReviewed]);
 
+  // タブ復帰 / online 復帰時の Realtime 再接続トリガ
+  const [realtimeTick, setRealtimeTick] = useState(0);
+  useEffect(() => {
+    function onVis() {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        setRealtimeTick((t) => t + 1);
+      }
+    }
+    function onOnline() { setRealtimeTick((t) => t + 1); }
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVis);
+    if (typeof window !== "undefined") window.addEventListener("online", onOnline);
+    return () => {
+      if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVis);
+      if (typeof window !== "undefined") window.removeEventListener("online", onOnline);
+    };
+  }, []);
+
   // 相手レビュー監視: Realtime のみ + 切断時 exponential backoff 再接続
   useEffect(() => {
     if (peerReviewed) return;
@@ -103,7 +120,7 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
       if (retryTimer) clearTimeout(retryTimer);
       if (ch) supabase.removeChannel(ch);
     };
-  }, [meetingId, peerId, peerReviewed]);
+  }, [meetingId, peerId, peerReviewed, realtimeTick]);
 
   const reviewTitle = lang === "ja"
     ? `${peerName} はどんな人だった？`

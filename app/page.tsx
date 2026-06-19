@@ -200,6 +200,22 @@ function HomeInner() {
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Realtime 再接続トリガ: タブ復帰 / online 復帰時に bump → 既存 channel 全部 re-subscribe
+  const [realtimeTick, setRealtimeTick] = useState(0);
+  useEffect(() => {
+    function onVis() {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        setRealtimeTick((t) => t + 1);
+      }
+    }
+    function onOnline() { setRealtimeTick((t) => t + 1); }
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVis);
+    if (typeof window !== "undefined") window.addEventListener("online", onOnline);
+    return () => {
+      if (typeof document !== "undefined") document.removeEventListener("visibilitychange", onVis);
+      if (typeof window !== "undefined") window.removeEventListener("online", onOnline);
+    };
+  }, []);
   const [travelerProfile, setTravelerProfile] = useState<TravelerProfile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -501,7 +517,7 @@ function HomeInner() {
     }
     refresh();
     const ch = supabase
-      .channel(`chatreq-notify-${currentUserId}`)
+      .channel(`chatreq-notify-${currentUserId}-${realtimeTick}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "chat_requests", filter: `guide_user_id=eq.${currentUserId}` },
@@ -512,7 +528,7 @@ function HomeInner() {
       cancelled = true;
       supabase.removeChannel(ch);
     };
-  }, [supabase, currentUserId]);
+  }, [supabase, currentUserId, realtimeTick]);
 
   // 自分のフォロー先一覧を取得（follows RLS で自分の行のみ取れる）
   useEffect(() => {
@@ -618,7 +634,7 @@ function HomeInner() {
 
     // realtime: 自分宛の新着で +1
     const ch = supabase
-      .channel(`inbox-notify-${currentUserId}`)
+      .channel(`inbox-notify-${currentUserId}-${realtimeTick}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${currentUserId}` },
@@ -634,7 +650,7 @@ function HomeInner() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [supabase, currentUserId]);
+  }, [supabase, currentUserId, realtimeTick]);
 
   // Inbox: 過去メッセージから会話相手一覧 + guides/travelers から名前解決
   // 現 app_mode に合致するチャットのみ表示 (= 役割逆転で過去チャットが混ざるのを防ぐ)
@@ -963,7 +979,7 @@ function HomeInner() {
     }
     refresh();
     const ch = supabase
-      .channel(`meeting-${currentUserId}-${peerId}`)
+      .channel(`meeting-${currentUserId}-${peerId}-${realtimeTick}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "meetings" },
@@ -977,7 +993,7 @@ function HomeInner() {
       )
       .subscribe();
     return () => { cancelled = true; supabase.removeChannel(ch); };
-  }, [supabase, currentUserId, chatPeer?.id, meetingRefreshTick]);
+  }, [supabase, currentUserId, chatPeer?.id, meetingRefreshTick, realtimeTick]);
 
   // チャット画面が開いたら、chatPeer とのメッセージ履歴をロード + リアルタイム購読
   useEffect(() => {
@@ -1008,7 +1024,7 @@ function HomeInner() {
     })();
 
     const channel = supabase
-      .channel(pairChannel("chat", currentUserId, peerId))
+      .channel(`${pairChannel("chat", currentUserId, peerId)}-${realtimeTick}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
@@ -1030,7 +1046,7 @@ function HomeInner() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [screen, currentUserId, chatPeer?.id, supabase]);
+  }, [screen, currentUserId, chatPeer?.id, supabase, realtimeTick]);
 
   const visibleGuides = (() => {
     const notBlocked = guides.filter((g) => !g.user_id || !blockedUserIds.has(g.user_id));
