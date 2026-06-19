@@ -254,7 +254,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                   style={(() => { const s = modeCardStyle(g.mode); return { display: "block", textDecoration: "none", color: "inherit", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 18, padding: 14 }; })()}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
+                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
                       <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>

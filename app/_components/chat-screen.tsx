@@ -245,7 +245,7 @@ export default function ChatScreen({
           {(() => {
             const pg = chatPeer.guideId ? guides.find((x) => x.id === chatPeer.guideId) : null;
             return pg?.avatarPath && avatarUrls[pg.avatarPath]
-              ? <img src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ? <img loading="lazy" decoding="async" src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : chatPeer.emoji;
           })()}
         </div>

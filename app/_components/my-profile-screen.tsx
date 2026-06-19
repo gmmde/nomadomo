@@ -101,7 +101,7 @@ export default function MyProfileScreen({
           title={ownGuide ? t("open_own_guide_profile", lang) : undefined}
         >
           {ownGuide?.avatarPath && avatarUrls[ownGuide.avatarPath]
-            ? <img src={avatarUrls[ownGuide.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <img loading="lazy" decoding="async" src={avatarUrls[ownGuide.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : (ownGuide?.emoji ?? "😊")}
         </div>
         {travelerProfile ? (

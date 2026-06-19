@@ -148,7 +148,7 @@ export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath 
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
         <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#ffefd5", border: "2px solid #e8c99a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, overflow: "hidden", flexShrink: 0 }}>
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img loading="lazy" decoding="async" src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : avatarPath ? (
             <div style={{ width: 24, height: 24, borderRadius: "50%", border: "3px solid #e8c99a", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite" }} />
           ) : (

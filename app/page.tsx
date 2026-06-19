@@ -1394,7 +1394,7 @@ function HomeInner() {
                     >
                       <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>
                         {t.avatar_path && travelerAvatarUrls[t.avatar_path] ? (
-                          <img src={travelerAvatarUrls[t.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <img loading="lazy" decoding="async" src={travelerAvatarUrls[t.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
                           <span>{t.emoji ?? "🧑"}</span>
                         )}
@@ -1430,7 +1430,7 @@ function HomeInner() {
                         {savedIds.has(Number(g.id)) ? "❤️" : "🤍"}
                       </button>
                     )}
-                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
+                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                     <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
                     <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>

@@ -62,7 +62,7 @@ export default function SavedScreen({
                 >
                   <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", overflow: "hidden" }}>
                     {g.avatarPath && avatarUrls[g.avatarPath]
-                      ? <img src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       : g.emoji}
                   </div>
                   <div style={{ flex: 1 }}>
