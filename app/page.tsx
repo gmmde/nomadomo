@@ -13,6 +13,7 @@ import ProfileActionsMenu from "./_components/profile-actions-menu";
 import AccountDeletionPrompt from "./_components/account-deletion-prompt";
 import { startSupportChat } from "./actions/support";
 import { notifyMessageSent } from "./actions/notify";
+import { detectArea } from "./lib/geo";
 import NameInputScreen from "./_components/name-input-screen";
 import BrandLogo from "./_components/brand-logo";
 import { getSortedAreas } from "./lib/areas";
@@ -199,6 +200,18 @@ function HomeInner() {
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
   const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
+  const [geoBusy, setGeoBusy] = useState(false);
+  // 「📍 現在地で自動選択」: ボタン押下で navigator.geolocation を起動
+  async function autoDetectArea() {
+    setGeoBusy(true);
+    try {
+      const a = await detectArea();
+      if (a) setHomeAreaFilter(a);
+    } finally {
+      setGeoBusy(false);
+      setAreaPickerOpen(false);
+    }
+  }
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   // Realtime 再接続トリガ: タブ復帰 / online 復帰時に bump → 既存 channel 全部 re-subscribe
@@ -1342,6 +1355,10 @@ function HomeInner() {
                     <>
                       <div onClick={() => setAreaPickerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
                       <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 12, padding: 6, zIndex: 51, boxShadow: "0 8px 20px rgba(0,0,0,0.18)", minWidth: 140, maxHeight: 280, overflowY: "auto" }}>
+                        <button type="button" disabled={geoBusy} onClick={autoDetectArea}
+                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", border: "none", borderBottom: "1px solid #f0d9b5", padding: "8px 10px", fontSize: 12, fontWeight: 800, color: geoBusy ? "#b8a98a" : "#2e8b57", cursor: geoBusy ? "wait" : "pointer", borderRadius: 0, fontFamily: "inherit" }}>
+                          📍 {geoBusy ? (lang === "ja" ? "検出中..." : "Detecting...") : (lang === "ja" ? "現在地から自動選択" : "Use my location")}
+                        </button>
                         <button type="button" onClick={() => { setHomeAreaFilter(null); setAreaPickerOpen(false); }}
                           style={{ display: "block", width: "100%", textAlign: "left", background: homeAreaFilter === null ? "#e6f5ee" : "transparent", border: "none", padding: "8px 10px", fontSize: 12, fontWeight: 700, color: "#1a1008", cursor: "pointer", borderRadius: 8, fontFamily: "inherit" }}>
                           {lang === "ja" ? "全エリア" : "All areas"}
