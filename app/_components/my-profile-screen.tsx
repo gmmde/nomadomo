@@ -52,6 +52,41 @@ export default function MyProfileScreen({
   onContactSupport,
   supportPending,
 }: Props) {
+  // 未ログイン: サインイン/ログイン CTA だけ表示する別画面
+  if (!userEmail) {
+    return (
+      <div className="screen-enter" style={{ minHeight: "100vh" }}>
+        <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9 }}>
+          <div style={{ width: 36 }} />
+          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("my_profile", lang)}</div>
+          <div style={{ width: 36 }} />
+        </div>
+        <div style={{ padding: "48px 24px 32px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 56 }}>👋</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "#1a1008" }}>
+            {lang === "ja" ? "サインインしてはじめよう" : "Sign in to get started"}
+          </div>
+          <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600, lineHeight: 1.7, maxWidth: 320 }}>
+            {lang === "ja"
+              ? "NomaDomo を使うにはアカウントが必要よ。ログインまたは新規登録してね。"
+              : "Sign in to chat with locals, send message requests, and save profiles."}
+          </div>
+          <div style={{ width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+            <Link href="/login" style={{ display: "block", width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+              {lang === "ja" ? "ログイン" : "Log in"}
+            </Link>
+            <Link href="/signup" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 14, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
+              {lang === "ja" ? "新規登録" : "Sign up"}
+            </Link>
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", padding: "60px 20px 30px", opacity: 0.6 }}>
+          <img src="/logo-camel.png" alt="" style={{ height: 60, width: "auto", display: "block" }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen-enter" style={{ minHeight: "100vh" }}>
       <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9 }}>

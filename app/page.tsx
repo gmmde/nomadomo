@@ -1098,7 +1098,11 @@ function HomeInner() {
   }
 
   // 自分自身のガイドプロファイル (あれば)
-  const ownGuide = guides.find((g) => g.user_id === currentUserId) ?? null;
+  // currentUserId が null の時に find が user_id=null のダミー (Yuki Tanaka 等)
+  // に当たってしまわないよう明示ガード
+  const ownGuide = currentUserId
+    ? guides.find((g) => g.user_id === currentUserId) ?? null
+    : null;
 
   type NavKey = "home" | "inbox" | "saved" | "myprofile" | "requests";
   const NAV_ITEMS_TRAVELER: Array<{ icon: string; label: string; key: NavKey }> = [
