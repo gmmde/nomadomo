@@ -40,7 +40,7 @@ export default function HobbiesTags({ initial = [] }: Props) {
           {tags.map((t) => (
             <div key={t} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff9f0", border: "1.5px solid #ad001c", color: "#ad001c", borderRadius: 16, padding: "4px 8px 4px 12px", fontSize: 12, fontWeight: 800 }}>
               {t}
-              <button type="button" onClick={() => remove(t)} style={{ background: "#ad001c", border: "none", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
+              <button type="button" onClick={() => remove(t)} aria-label="削除" style={{ background: "#ad001c", border: "none", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
             </div>
           ))}
         </div>

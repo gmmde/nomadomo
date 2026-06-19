@@ -240,7 +240,7 @@ export default function ChatScreen({
   return (
     <div className="screen-enter" style={{ height: "100dvh", minHeight: "100svh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+        <button onClick={goBack} aria-label="戻る" style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
         <div
           onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
           style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}

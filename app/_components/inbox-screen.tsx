@@ -55,7 +55,7 @@ export default function InboxScreen({
   return (
     <div className="screen-enter" style={{ minHeight: "100vh" }}>
       <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9 }}>
-        <button onClick={goBack} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+        <button onClick={goBack} aria-label="戻る" style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
         <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("inbox_title", lang)}</div>
         <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
       </div>

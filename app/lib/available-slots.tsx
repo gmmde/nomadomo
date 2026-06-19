@@ -83,7 +83,7 @@ export default function AvailableSlots({ initial = [] }: Props) {
           {slots.map((s) => (
             <div key={s} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#2e8b57", color: "#fff", borderRadius: 16, padding: "5px 10px 5px 12px", fontSize: 12, fontWeight: 800 }}>
               {formatSlot(s)}
-              <button type="button" onClick={() => removeSlot(s)} style={{ background: "rgba(255,255,255,0.25)", border: "none", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
+              <button type="button" onClick={() => removeSlot(s)} aria-label="削除" style={{ background: "rgba(255,255,255,0.25)", border: "none", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
             </div>
           ))}
         </div>

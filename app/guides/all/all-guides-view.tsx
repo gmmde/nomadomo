@@ -165,7 +165,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             style={{ background: "none", border: "none", outline: "none", fontSize: 13, fontWeight: 600, flex: 1, fontFamily: "inherit", color: "#1a1008" }}
           />
           {query && (
-            <button onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "#8a7560", fontSize: 16, cursor: "pointer" }}>×</button>
+            <button aria-label="クリア" onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "#8a7560", fontSize: 16, cursor: "pointer" }}>×</button>
           )}
         </div>
 

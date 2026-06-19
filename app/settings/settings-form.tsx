@@ -164,7 +164,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
       <div style={card} className="screen-enter">
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <button onClick={() => router.back()} style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, cursor: "pointer" }}>←</button>
+          <button onClick={() => router.back()} aria-label="戻る" style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, cursor: "pointer" }}>←</button>
           <div style={{ fontSize: 20, fontWeight: 900 }}>⚙️ {t("settings_title", lang)}</div>
         </div>
 
