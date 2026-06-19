@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   // 自分の設定を取得 (無ければデフォルト)
   const { data: s } = await supabase
     .from("user_settings")
-    .select("language, email_on_new_message, email_on_booking, show_to_anon, app_mode")
+    .select("language, email_on_new_message, email_on_booking, show_to_anon, app_mode, push_enabled")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -56,6 +56,7 @@ export default async function SettingsPage() {
         email_on_booking: s?.email_on_booking ?? true,
         show_to_anon: s?.show_to_anon ?? true,
         app_mode: (s?.app_mode === 'local' || s?.app_mode === 'traveler') ? s.app_mode : null,
+        push_enabled: s?.push_enabled ?? false,
       }}
       blockedList={blockedList}
     />

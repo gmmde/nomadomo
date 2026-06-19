@@ -12,6 +12,7 @@ import TutorialOverlay from "./_components/tutorial-overlay";
 import ProfileActionsMenu from "./_components/profile-actions-menu";
 import AccountDeletionPrompt from "./_components/account-deletion-prompt";
 import { startSupportChat } from "./actions/support";
+import { notifyMessageSent } from "./actions/notify";
 import NameInputScreen from "./_components/name-input-screen";
 import BrandLogo from "./_components/brand-logo";
 import { getSortedAreas } from "./lib/areas";
@@ -1091,6 +1092,9 @@ function HomeInner() {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       return;
     }
+
+    // Push 通知 (fire-and-forget)
+    notifyMessageSent({ recipientId: peerId, preview: body }).catch(() => {});
 
     // optimistic を本物に置換（realtime callback が先に拾ってたら id 重複を除く）
     if (data) {

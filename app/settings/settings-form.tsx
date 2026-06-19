@@ -8,6 +8,8 @@ import { signout } from "@/app/actions/auth";
 import { unblockUser } from "@/app/actions/blocks";
 import { requestAccountDeletion } from "@/app/actions/account";
 import { startSupportChat } from "@/app/actions/support";
+import { isPushSupported, subscribePush, unsubscribePush, serializeSubscription, getExistingSubscription } from "@/app/lib/push";
+import { saveSubscription, setPushEnabled as setPushEnabledServer } from "@/app/actions/push";
 
 type Initial = {
   language: Lang;
@@ -15,6 +17,7 @@ type Initial = {
   email_on_booking: boolean;
   show_to_anon: boolean;
   app_mode: 'local' | 'traveler' | null;
+  push_enabled: boolean;
 };
 type BlockedUser = { user_id: string; name: string; emoji: string };
 
@@ -41,6 +44,38 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
     setSupportPending(false);
     if (r?.error) { alert(r.error); return; }
     if (r?.adminUserId) router.push(`/?support=${r.adminUserId}`);
+  }
+
+  async function onTogglePush(want: boolean) {
+    setPushErr(null);
+    setPushPending(true);
+    try {
+      if (want) {
+        const r = await subscribePush();
+        if (r.status !== "granted" || !r.subscription) {
+          setPushErr(
+            r.status === "denied"
+              ? (lang === "ja" ? "ブラウザの通知設定で許可してから OFF→ON を切り替えてね" : "Please allow notifications in your browser settings")
+              : r.status === "unsupported"
+              ? (lang === "ja" ? "このブラウザは Push 非対応" : "Push not supported in this browser")
+              : (lang === "ja" ? "許可されなかったわよ" : "Permission denied")
+          );
+          return;
+        }
+        const ser = serializeSubscription(r.subscription);
+        if (!ser) { setPushErr("subscription parse failed"); return; }
+        const saved = await saveSubscription({ ...ser, userAgent: navigator.userAgent });
+        if (!saved.ok) { setPushErr(saved.error ?? "save failed"); return; }
+        setPushOn(true);
+      } else {
+        const sub = await getExistingSubscription();
+        if (sub) await unsubscribePush();
+        await setPushEnabledServer(false);
+        setPushOn(false);
+      }
+    } finally {
+      setPushPending(false);
+    }
   }
 
 
@@ -86,6 +121,10 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
   const [emailMsg, setEmailMsg] = useState(initial.email_on_new_message);
   const [emailBook, setEmailBook] = useState(initial.email_on_booking);
   const [showAnon, setShowAnon] = useState(initial.show_to_anon);
+  const [pushOn, setPushOn] = useState(initial.push_enabled);
+  const [pushPending, setPushPending] = useState(false);
+  const [pushErr, setPushErr] = useState<string | null>(null);
+  const pushSupported = typeof window !== "undefined" && isPushSupported();
   const [appMode, setAppMode] = useState<'local' | 'traveler' | null>(initial.app_mode);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
 
@@ -201,6 +240,23 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         {/* Notifications */}
         <div style={sectionBox}>
           <div style={sectionTitle}>🔔 {t("settings_notifications", lang)}</div>
+          <div style={row}>
+            <div style={label}>
+              📲 {lang === "ja" ? "プッシュ通知" : "Push notifications"}
+              {!pushSupported && (
+                <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 600, marginTop: 2 }}>
+                  {lang === "ja" ? "このブラウザ非対応" : "Not supported in this browser"}
+                </div>
+              )}
+            </div>
+            <Toggle
+              on={pushOn}
+              onChange={(v) => { if (!pushPending && pushSupported) onTogglePush(v); }}
+            />
+          </div>
+          {pushErr && (
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, paddingBottom: 8 }}>{pushErr}</div>
+          )}
           <div style={row}>
             <div style={label}>{t("settings_email_new_msg", lang)}</div>
             <Toggle on={emailMsg} onChange={setEmailMsg} />

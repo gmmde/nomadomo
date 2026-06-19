@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/app/lib/supabase/server";
+import { notifyChatRequestSent, notifyMessageSent } from "@/app/actions/notify";
 
 export type RequestFormState =
   | { error?: string; success?: boolean }
@@ -65,6 +66,9 @@ export async function createChatRequest(
   });
   if (error) return { error: error.message };
 
+  // Push 通知 (fire-and-forget)
+  notifyChatRequestSent({ guideUserId }).catch(() => {});
+
   revalidatePath("/requests");
   return { success: true };
 }
@@ -122,6 +126,11 @@ export async function respondChatRequest(formData: FormData): Promise<void> {
         });
         if (msgErr) {
           console.error("[respondChatRequest] seed message failed:", msgErr.message);
+        } else {
+          notifyMessageSent({
+            recipientId: full.traveler_id as string,
+            preview: "✅ Your request was accepted!",
+          }).catch(() => {});
         }
       }
     }

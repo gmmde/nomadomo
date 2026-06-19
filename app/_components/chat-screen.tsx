@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import type { RefObject } from "react";
 import { t, type Lang } from "../lib/i18n";
 import { proposeMeet, acceptMeet } from "../actions/meetings";
+import { notifyMessageSent } from "../actions/notify";
 import MeetPaymentModal from "./meet-payment-modal";
 import { createClient } from "../lib/supabase/client";
 import { useEffect, useRef } from "react";
@@ -175,6 +176,8 @@ export default function ChatScreen({
         setUploading(false);
         return;
       }
+      // Push 通知 (fire-and-forget)
+      notifyMessageSent({ recipientId: chatPeer.id, preview: "📷 Image" }).catch(() => {});
     } catch (err) {
       const m = err instanceof Error ? err.message : "image upload failed";
       setUploadErr(m);
