@@ -108,7 +108,7 @@ function isTrustedLocal(stars: string, tour_count: number): boolean {
 }
 
 // Admin email list (Vercel env var ADMIN_EMAILS でも上書き可)
-const ADMIN_EMAILS = ["tonoikenta@icloud.com", "nomadomo@gmail.com"];
+const ADMIN_EMAILS = ["tonoikenta@icloud.com", "nomadomojp@gmail.com"];
 
 const filters = [
   "All",
