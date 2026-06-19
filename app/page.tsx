@@ -9,6 +9,7 @@ import Lightbox from "./_components/lightbox";
 import ModePicker from "./_components/mode-picker";
 import ChatScreen from "./_components/chat-screen";
 import TutorialOverlay from "./_components/tutorial-overlay";
+import ConsentModal from "./_components/consent-modal";
 import ProfileActionsMenu from "./_components/profile-actions-menu";
 import AccountDeletionPrompt from "./_components/account-deletion-prompt";
 import { startSupportChat } from "./actions/support";
@@ -1836,6 +1837,8 @@ function HomeInner() {
       {pendingDeletion && currentUserId && (
         <AccountDeletionPrompt scheduledAt={pendingDeletion.scheduledAt} />
       )}
+      {/* 規約同意モーダル (ログイン中で同意未完了の場合に表示) */}
+      {currentUserId && !pendingDeletion && <ConsentModal />}
     </div>
   );
 }
