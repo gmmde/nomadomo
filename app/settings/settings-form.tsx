@@ -164,7 +164,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
       <div style={card} className="screen-enter">
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <button onClick={() => router.back()} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", color: "#2b1d1a", fontSize: 20, cursor: "pointer" }}>←</button>
+          <button onClick={() => router.back()} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", cursor: "pointer", flex: "none" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></button>
           <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{t("settings_title", lang)} <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Settings</span></div>
         </div>
 
@@ -241,14 +241,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         <div style={sectionBox}>
           <div style={sectionTitle}>🔔 {t("settings_notifications", lang)}</div>
           <div style={row}>
-            <div style={label}>
-              📲 {lang === "ja" ? "プッシュ通知" : "Push notifications"}
-              {!pushSupported && (
-                <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 600, marginTop: 2 }}>
-                  {lang === "ja" ? "このブラウザ非対応" : "Not supported in this browser"}
-                </div>
-              )}
-            </div>
+            <RowLabel d={IC.bell} jp={lang === "ja" ? "プッシュ通知" : "Push notifications"} en={lang === "ja" ? "Push notifications" : "プッシュ通知"} sub={!pushSupported ? (lang === "ja" ? "このブラウザ非対応" : "Not supported in this browser") : undefined} />
             <Toggle
               on={pushOn}
               onChange={(v) => { if (!pushPending && pushSupported) onTogglePush(v); }}
@@ -258,11 +251,11 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
             <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, paddingBottom: 8 }}>{pushErr}</div>
           )}
           <div style={row}>
-            <div style={label}>{t("settings_email_new_msg", lang)}</div>
+            <RowLabel d={IC.mail} jp={t("settings_email_new_msg", lang)} en={lang === "ja" ? "Email on new message" : "新着メッセージをメール通知"} />
             <Toggle on={emailMsg} onChange={setEmailMsg} />
           </div>
           <div style={{ ...row, borderBottom: "none" }}>
-            <div style={label}>{t("settings_email_booking", lang)}</div>
+            <RowLabel d={IC.cal} jp={t("settings_email_booking", lang)} en={lang === "ja" ? "Email on booking" : "予約をメール通知"} />
             <Toggle on={emailBook} onChange={setEmailBook} />
           </div>
         </div>
@@ -271,7 +264,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         <div style={sectionBox}>
           <div style={sectionTitle}>🔒 {t("settings_privacy", lang)}</div>
           <div style={{ ...row, borderBottom: "none" }}>
-            <div style={label}>{t("settings_show_to_anon", lang)}</div>
+            <RowLabel d={IC.eye} jp={t("settings_show_to_anon", lang)} en={lang === "ja" ? "Show profile to logged-out visitors" : "未ログイン訪問者にプロフィールを表示"} />
             <Toggle on={showAnon} onChange={setShowAnon} />
           </div>
         </div>
@@ -389,6 +382,34 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
           </div>
         </div>
       )}
+      </div>
+    </div>
+  );
+}
+
+const IC = {
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" />',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" />',
+  cal: '<rect x="3" y="4" width="18" height="18" rx="2" /><path d="M3 10h18M8 2v4M16 2v4" />',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" />',
+} as const;
+
+function Tile({ d, danger = false }: { d: string; danger?: boolean }) {
+  return (
+    <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, borderRadius: 11, background: danger ? "#ffe7ea" : "#ffefd5", flex: "none" }}>
+      <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: d }} />
+    </span>
+  );
+}
+
+function RowLabel({ d, jp, en, sub, danger = false }: { d: string; jp: string; en: string; sub?: string; danger?: boolean }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 13, flex: 1, minWidth: 0 }}>
+      <Tile d={d} danger={danger} />
+      <div style={{ minWidth: 0 }}>
+        <div className="font-display" style={{ fontWeight: 700, fontSize: 14, color: danger ? "#ad001c" : "#2b1d1a", lineHeight: 1.2 }}>{jp}</div>
+        <div style={{ fontSize: 11, color: "#a8978a", marginTop: 1 }}>{en}</div>
+        {sub && <div style={{ fontSize: 10, color: "#c0392b", fontWeight: 700, marginTop: 2 }}>{sub}</div>}
       </div>
     </div>
   );
