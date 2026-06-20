@@ -59,12 +59,12 @@ export default async function RequestsPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <BackButton />
-          <div style={{ fontSize: 18, fontWeight: 900 }}>📨 Message requests</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>メッセージ申請 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Requests</span></div>
         </div>
 
         {/* Incoming (as guide / local) */}
         <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 900, marginBottom: 10, textTransform: "uppercase" }}>
+          <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".05em" }}>
             Requests to you ({incoming.length})
           </div>
           {incoming.length === 0 ? (
@@ -75,10 +75,10 @@ export default async function RequestsPage() {
                 const tname = tMap.get(r.traveler_id) ?? `User (${r.traveler_id.slice(0, 8)})`;
                 const s = STATUS_LABEL[r.status] ?? { label: r.status, color: "#8a7560" };
                 return (
-                  <div key={r.id} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
+                  <div key={r.id} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 14, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <div style={{ fontSize: 14, fontWeight: 900 }}>From {tname}</div>
-                      <div style={{ fontSize: 10, fontWeight: 900, color: s.color }}>{s.label}</div>
+                      <div className="font-display" style={{ fontSize: 15, fontWeight: 800, color: "#2b1d1a" }}>From {tname}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: s.color, background: "#fff8ec", border: "1px solid #f3e8d6", borderRadius: 999, padding: "3px 9px" }}>{s.label}</div>
                     </div>
                     {r.preferred_date && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📅 {new Date(r.preferred_date).toLocaleString()}</div>}
                     {r.preferred_place && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📍 {r.preferred_place}</div>}
@@ -88,12 +88,12 @@ export default async function RequestsPage() {
                         <form action={respondChatRequest}>
                           <input type="hidden" name="id" value={r.id} />
                           <input type="hidden" name="action" value="accept" />
-                          <button type="submit" style={{ background: "#2e8b57", color: "#fff", border: "none", borderRadius: 10, padding: "8px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>✅ Accept (unlock chat)</button>
+                          <button type="submit" style={{ background: "#2e8b57", color: "#fff", border: "none", borderRadius: 12, padding: "9px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>✅ Accept (unlock chat)</button>
                         </form>
                         <form action={respondChatRequest}>
                           <input type="hidden" name="id" value={r.id} />
                           <input type="hidden" name="action" value="decline" />
-                          <button type="submit" style={{ background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>Decline</button>
+                          <button type="submit" style={{ background: "#fff", color: "#ad001c", border: "1.5px solid #ad001c", borderRadius: 12, padding: "9px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>Decline</button>
                         </form>
                       </div>
                     )}
@@ -106,7 +106,7 @@ export default async function RequestsPage() {
 
         {/* Outgoing (as traveler) */}
         <div>
-          <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 900, marginBottom: 10, textTransform: "uppercase" }}>
+          <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".05em" }}>
             Requests you sent ({outgoing.length})
           </div>
           {outgoing.length === 0 ? (
@@ -117,10 +117,10 @@ export default async function RequestsPage() {
                 const g = gMap.get(r.guide_user_id);
                 const s = STATUS_LABEL[r.status] ?? { label: r.status, color: "#8a7560" };
                 return (
-                  <div key={r.id} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
+                  <div key={r.id} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 14, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <div style={{ fontSize: 14, fontWeight: 900 }}>To {g?.emoji ?? "🧑"} {g?.name ?? "Guide"}</div>
-                      <div style={{ fontSize: 10, fontWeight: 900, color: s.color }}>{s.label}</div>
+                      <div className="font-display" style={{ fontSize: 15, fontWeight: 800, color: "#2b1d1a" }}>To {g?.emoji ?? "🧑"} {g?.name ?? "Guide"}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: s.color, background: "#fff8ec", border: "1px solid #f3e8d6", borderRadius: 999, padding: "3px 9px" }}>{s.label}</div>
                     </div>
                     {r.preferred_date && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📅 {new Date(r.preferred_date).toLocaleString()}</div>}
                     {r.preferred_place && <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>📍 {r.preferred_place}</div>}

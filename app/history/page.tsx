@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import BackButton from "@/app/lib/back-button";
 import { createClient } from "@/app/lib/supabase/server";
 
 export const metadata = { title: "Match history - NomaDomo" };
@@ -90,8 +90,8 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
     <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center" }}>
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", padding: "20px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-          <Link href="/" style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 20, fontWeight: 900 }}>🎉 Match history</div>
+          <BackButton />
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>マッチ履歴 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Match history</span></div>
         </div>
 
         {rows.length === 0 ? (
@@ -103,17 +103,17 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
             {rows.map((r) => {
               const date = r.completedAt ? new Date(r.completedAt).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" }) : "";
               return (
-                <div key={r.meetingId} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
+                <div key={r.meetingId} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 14, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#ffefd5", border: "1px solid #ecdcc4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{r.peerEmoji}</div>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "#ffefd5", border: "1px solid #f0e3cf", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{r.peerEmoji}</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 900, color: "#1a1008" }}>{r.peerName}</div>
-                      {date && <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>📅 {date}</div>}
+                      <div className="font-display" style={{ fontSize: 15, fontWeight: 800, color: "#2b1d1a" }}>{r.peerName}</div>
+                      {date && <div style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 600 }}>📅 {date}</div>}
                     </div>
                   </div>
                   {r.myReview ? (
-                    <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 10, padding: 10, marginBottom: 6 }}>
-                      <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800, marginBottom: 4 }}>あなたのレビュー</div>
+                    <div style={{ background: "#fff8ec", border: "1px solid #f3e8d6", borderRadius: 12, padding: 10, marginBottom: 6 }}>
+                      <div style={{ fontSize: 10, color: "#ad001c", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".04em" }}>あなたのレビュー</div>
                       <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.myReview.rating)}<span style={{ color: "#f3e8d6" }}>{"★".repeat(5 - r.myReview.rating)}</span></div>
                       {r.myReview.comment && <div style={{ fontSize: 12, color: "#1a1008", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.myReview.comment}</div>}
                     </div>
@@ -121,8 +121,8 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
                     <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic", padding: "4px 0" }}>レビュー未投稿</div>
                   )}
                   {r.peerReview ? (
-                    <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 10, padding: 10 }}>
-                      <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800, marginBottom: 4 }}>{r.peerReview.reviewerName} からのレビュー</div>
+                    <div style={{ background: "#fff8ec", border: "1px solid #f3e8d6", borderRadius: 12, padding: 10 }}>
+                      <div style={{ fontSize: 10, color: "#ad001c", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".04em" }}>{r.peerReview.reviewerName} からのレビュー</div>
                       <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.peerReview.rating)}<span style={{ color: "#f3e8d6" }}>{"★".repeat(5 - r.peerReview.rating)}</span></div>
                       {r.peerReview.comment && <div style={{ fontSize: 12, color: "#1a1008", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.peerReview.comment}</div>}
                     </div>
