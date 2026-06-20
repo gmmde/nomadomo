@@ -60,11 +60,6 @@ function ageFromBirth(year: number | null): number | null {
 }
 
 
-function modeCardStyle(mode: "free" | "paid") {
-  if (mode === "free") return { bg: "#e6f5ee", border: "#9fc9b6" };
-  return { bg: "#fceaec", border: "#e8b5bc" };
-}
-
 function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
   const [lang] = useLang();
   const sortedAreas = getSortedAreas(lang);
@@ -150,9 +145,9 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <BackButton />
-          <div style={{ fontSize: 18, fontWeight: 900 }}>ガイド一覧</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>ガイド一覧 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>All guides</span></div>
           <div style={{ flex: 1 }}/>
-          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 800 }}>{filtered.length} / {guides.length}</div>
+          <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 700 }}>{filtered.length} / {guides.length}</div>
         </div>
 
         {/* Search */}
@@ -251,24 +246,22 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                 <Link
                   key={g.id}
                   href={`/?guide=${g.id}`}
-                  style={(() => { const s = modeCardStyle(g.mode); return { display: "block", textDecoration: "none", color: "inherit", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 18, padding: 14 }; })()}
+                  style={{ display: "block", textDecoration: "none", color: "inherit", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 14, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "1px solid #ecdcc4", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
+                    <div style={{ width: 56, height: 56, borderRadius: 16, background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "1px solid #f0e3cf", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
-                      <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>
+                      <div className="font-display" style={{ fontSize: 15.5, fontWeight: 800, color: "#2b1d1a" }}>{g.name}</div>
+                      <div style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 600 }}>
                         {g.university}{age != null ? ` · ${age}歳` : ""}{g.gender === "male" ? " · ♂" : g.gender === "female" ? " · ♀" : ""}
                       </div>
                     </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".04em", padding: "3px 9px", borderRadius: 999, background: g.mode === "free" ? "#e6f5ee" : "#fceaec", color: g.mode === "free" ? "#2e8b57" : "#ad001c" }}>{g.mode === "free" ? "FREE" : "PRO"}</span>
                       {g.mode === "free" ? (
-                        <div style={{ fontSize: 12, color: "#ad001c", fontWeight: 900 }}>🤝 Free</div>
+                        <span style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 700 }}>無料</span>
                       ) : (
-                        <>
-                          <div style={{ fontSize: 14, color: g.mode === "paid" ? "#2e8b57" : "#ad001c", fontWeight: 900 }}>¥{(g.rate_per_day ?? 0).toLocaleString()}</div>
-                          <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800 }}>/day</div>
-                        </>
+                        <span style={{ fontSize: 13, color: "#2b1d1a", fontWeight: 900 }}>¥{(g.rate_per_day ?? 0).toLocaleString()}<span style={{ fontSize: 9, color: "#9a8a7c", fontWeight: 700, marginLeft: 1 }}>/day</span></span>
                       )}
                     </div>
                   </div>
@@ -279,7 +272,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                   )}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                     {[...g.tags, ...g.languages].slice(0, 6).map((t) => (
-                      <span key={t} style={{ background: "#ffefd5", border: "1px solid #f3e8d6", borderRadius: 6, padding: "2px 6px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>
+                      <span key={t} style={{ background: "#fff5e9", border: "1px solid #f3e8d6", borderRadius: 999, padding: "3px 9px", fontSize: 10, color: "#b03a2e", fontWeight: 700 }}>{t}</span>
                     ))}
                     <span style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginLeft: "auto" }}>
                       {g.tour_count === 0 ? "✨ 新規" : `★ ${g.rating.toFixed(1)}`}

@@ -29,9 +29,9 @@ export default async function AllTravelersPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <BackButton />
-          <div style={{ fontSize: 18, fontWeight: 900 }}>✈️ 旅行者一覧</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>旅行者一覧 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Travelers</span></div>
           <div style={{ flex: 1 }}/>
-          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 800 }}>{rows.length}</div>
+          <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 700 }}>{rows.length}</div>
         </div>
 
         {rows.length === 0 ? (
@@ -44,14 +44,14 @@ export default async function AllTravelersPage() {
               <Link
                 key={t.id}
                 href={`/travelers/${t.id}`}
-                style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, textDecoration: "none", color: "inherit" }}
+                style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 14, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}
               >
-                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "1px solid #ecdcc4", flexShrink: 0 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "1px solid #f0e3cf", flexShrink: 0 }}>
                   {t.emoji ?? "🧑"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 900 }}>{t.name}</div>
-                  <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>
+                  <div className="font-display" style={{ fontSize: 15.5, fontWeight: 800, color: "#2b1d1a" }}>{t.name}</div>
+                  <div style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 600 }}>
                     ✈ From {t.country}{t.occupation ? ` · ${t.occupation}` : ""}{t.trip_period ? ` · 📅 ${t.trip_period}` : ""}
                   </div>
                   {t.bio && (
@@ -60,7 +60,7 @@ export default async function AllTravelersPage() {
                     </div>
                   )}
                 </div>
-                <div style={{ fontSize: 18, color: "#ad001c" }}>💬</div>
+                <div style={{ display: "grid", placeItems: "center", width: 34, height: 34, borderRadius: 11, background: "#ffefd5", flex: "none" }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 20.5l1.5-5.2A8.4 8.4 0 1 1 21 11.5z" /></svg></div>
               </Link>
             ))}
           </div>
