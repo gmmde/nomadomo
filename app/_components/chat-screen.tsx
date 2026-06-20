@@ -363,7 +363,8 @@ export default function ChatScreen({
       {uploadErr && (
         <div style={{ padding: "6px 20px", background: "#fff3cd", borderTop: "1px solid #f5c649", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>📷 {uploadErr}</div>
       )}
-      <div style={{ padding: "12px 16px 24px", display: "flex", gap: 8, alignItems: "center", background: "#fff", borderTop: "1px solid #f0e3cf", flex: "none" }}>
+      <div style={{ padding: "8px 14px 16px", flex: "none" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", background: "rgba(255,255,255,.94)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid #f0e3cf", borderRadius: 26, padding: "8px 10px", boxShadow: "0 12px 34px -12px rgba(120,50,20,.4)" }}>
         <input
           ref={fileInputRef}
           type="file"
@@ -376,7 +377,7 @@ export default function ChatScreen({
           onClick={() => fileInputRef.current?.click()}
           disabled={!currentUserId || uploading}
           aria-label="画像を送る"
-          style={{ width: 44, height: 44, borderRadius: "50%", background: uploading ? "#d8c4ad" : "#fff", border: "1px solid #f0e3cf", cursor: uploading ? "wait" : "pointer", fontSize: 18, fontFamily: "inherit", color: "#2b1d1a", flex: "none" }}
+          style={{ width: 42, height: 42, borderRadius: "50%", background: "transparent", border: "none", cursor: uploading ? "wait" : "pointer", fontSize: 18, fontFamily: "inherit", color: "#2b1d1a", flex: "none" }}
         >
           {uploading ? "..." : "📷"}
         </button>
@@ -386,7 +387,7 @@ export default function ChatScreen({
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder={`Message ${chatPeer.name}...`}
           disabled={!currentUserId}
-          style={{ flex: 1, minWidth: 0, background: "#f6efe2", border: "none", borderRadius: 22, padding: "13px 16px", fontSize: 13.5, color: "#2b1d1a", fontFamily: "inherit", fontWeight: 500, outline: "none" }}
+          style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", borderRadius: 22, padding: "11px 6px", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit", fontWeight: 500, outline: "none" }}
         />
         <button
           onClick={sendMessage}
@@ -394,6 +395,7 @@ export default function ChatScreen({
           aria-label="送信"
           style={{ width: 46, height: 46, borderRadius: "50%", background: currentUserId && input.trim() ? "#ad001c" : "#d8c4ad", border: "none", cursor: currentUserId ? "pointer" : "not-allowed", display: "grid", placeItems: "center", flex: "none", boxShadow: currentUserId && input.trim() ? "0 6px 14px -6px rgba(173,0,28,.6)" : "none" }}
         ><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+        </div>
       </div>
     </div>
   );
