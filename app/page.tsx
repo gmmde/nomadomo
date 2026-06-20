@@ -113,21 +113,6 @@ function isTrustedLocal(stars: string, tour_count: number): boolean {
 // Admin email list (Vercel env var ADMIN_EMAILS でも上書き可)
 const ADMIN_EMAILS = ["tonoikenta@icloud.com", "nomadomojp@gmail.com"];
 
-const filters = [
-  "All",
-  "🍜 Food",
-  "⛩ Temples",
-  "🌙 Nightlife",
-  "🚲 Hidden spots",
-  "🎨 Art",
-  "🎌 Anime",
-  "🚗 Drive",
-  "🌿 Nature",
-  "🎭 Culture",
-  "🏛 History",
-  "🕳 Deep",
-  "🎵 Music",
-];
 
 const filterKeyword: Record<string, string> = {
   "🍜 Food": "Food",
@@ -200,6 +185,7 @@ function HomeInner() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
   const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
+  const [homeInstant, setHomeInstant] = useState(false);
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
   const [geoBusy, setGeoBusy] = useState(false);
   // 「📍 現在地で自動選択」: ボタン押下で navigator.geolocation を起動
@@ -1198,266 +1184,243 @@ function HomeInner() {
           <ModePicker onPick={saveAppMode} />
         )}
 
-        {/* HOME */}
+        {/* HOME — リデザイン: Claude Design モック 1:1 移植 (機能は全保持) */}
         {screen === "home" && (
-          <div className="screen-enter">
-            {/* TOPBAR — リデザイン: クリーム基調のクリーンヘッダー (ロゴ維持) */}
-            <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
-              <BrandLogo variant="row" size={22} />
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="screen-enter" style={{ background: "#fff8ec", minHeight: "100vh", position: "relative", paddingBottom: 8 }}>
+
+            {/* slim brand bar (ロゴ維持) */}
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "9px 0 1px" }}>
+              <BrandLogo variant="row" size={17} />
+            </div>
+
+            {/* header: area + gear + avatar/login */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 22px 2px" }}>
+              <button onClick={() => setAreaPickerOpen(true)} style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "transparent", padding: "6px 4px", cursor: "pointer", fontFamily: "inherit" }}>
+                <span style={{ display: "grid", placeItems: "center", width: 30, height: 30, borderRadius: "50%", background: "#ffefd5" }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+                </span>
+                <span style={{ textAlign: "left" }}>
+                  <span style={{ display: "block", fontSize: 10, letterSpacing: ".04em", color: "#ad001c", fontWeight: 700, whiteSpace: "nowrap" }}>エリア · AREA</span>
+                  <span className="font-display" style={{ display: "flex", alignItems: "center", gap: 4, fontWeight: 700, fontSize: 16, color: "#2b1d1a", whiteSpace: "nowrap" }}>{homeAreaFilter ?? (lang === "ja" ? "日本全国" : "All Japan")}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.5}><path d="M6 9l6 6 6-6"/></svg>
+                  </span>
+                </span>
+              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Link href="/settings" aria-label="設定" data-tutorial="settings-gear" style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", boxShadow: "0 2px 8px rgba(120,60,20,.06)", textDecoration: "none" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={1.8}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+                </Link>
                 {userEmail ? (
-                  <div onClick={() => setScreen("myprofile")} style={{ width: 38, height: 38, borderRadius: "50%", background: "#fff", border: "1.5px solid #f0e2cc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer", boxShadow: "0 2px 6px rgba(120,80,40,0.08)" }}>😊</div>
+                  <button onClick={() => setScreen("myprofile")} aria-label="マイページ" style={{ border: "none", padding: 0, background: "#ffefd5", cursor: "pointer", width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", fontSize: 22, boxShadow: "0 2px 8px rgba(120,60,20,.12)" }}>😊</button>
                 ) : (
-                  <Link href="/login" style={{ background: "#ad001c", border: "none", borderRadius: 18, padding: "7px 14px", fontSize: 11, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
-                    {t("login", lang)}
-                  </Link>
+                  <Link href="/login" style={{ background: "#ad001c", color: "#fff", borderRadius: 18, padding: "8px 14px", fontSize: 11, fontWeight: 800, textDecoration: "none" }}>{t("login", lang)}</Link>
                 )}
-                <Link href="/settings" aria-label="設定" data-tutorial="settings-gear" style={{ width: 38, height: 38, borderRadius: "50%", background: "#fff", border: "1.5px solid #f0e2cc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#ad001c", textDecoration: "none", boxShadow: "0 2px 6px rgba(120,80,40,0.08)" }}>⚙</Link>
               </div>
             </div>
 
-            {/* HERO — リデザイン: 写真を廃しクリーム地にテキスト見出し (日英) */}
-            <div style={{ padding: "20px 20px 8px" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "4px 11px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 12 }}>📍 Japan</div>
-              <div className="font-display" style={{ fontSize: 27, fontWeight: 900, lineHeight: 1.25, color: "#1a1008", letterSpacing: "0.01em" }}>
-                本物のローカルと、<br/>出会おう。
-              </div>
-              <div style={{ color: "#ad001c", fontSize: 12.5, fontWeight: 700, marginTop: 7 }}>Meet a real local in Japan — not a tour.</div>
+            {/* greeting + hero */}
+            <div style={{ padding: "12px 22px 4px" }}>
+              <p style={{ margin: 0, fontSize: 13, color: "#9a8a7c", fontWeight: 500 }}>{lang === "ja" ? `こんにちは、${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "ゲスト")} さん 👋` : `Hi, ${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "there")} 👋`}</p>
+              <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</h1>
+              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#b03a2e", fontWeight: 700 }}>Meet a real local in Japan — not a tour.</p>
             </div>
 
-            {/* SEARCH */}
-            <div style={{ padding: "12px 20px" }}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const fd = new FormData(e.currentTarget);
-                  const q = String(fd.get("q") ?? "").trim();
-                  router.push(`/guides/all${q ? `?q=${encodeURIComponent(q)}` : ""}`);
-                }}
-                style={{ background: "#ffffffee", border: "2px solid #e8c99a", borderRadius: 16, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}
-              >
-                <span style={{ color: "#ad001c", fontSize: 18 }}>🔍</span>
-                <input
-                  name="q"
-                  placeholder={t("search_placeholder", lang)}
-                  style={{ background: "none", border: "none", outline: "none", fontSize: 14, fontWeight: 600, flex: 1, fontFamily: "inherit", color: "#1a1008" }}
-                />
-                <button
-                  type="submit"
-                  aria-label={t("search_button", lang)}
-                  style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: "50%", width: 40, height: 40, minWidth: 40, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(173,0,28,0.28)" }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            {/* search */}
+            <div style={{ padding: "14px 22px 6px" }}>
+              <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const q = String(fd.get("q") ?? "").trim(); router.push(`/guides/all${q ? `?q=${encodeURIComponent(q)}` : ""}`); }}
+                style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 18, padding: "13px 16px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input name="q" placeholder={t("search_placeholder", lang)} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
+                <button type="submit" aria-label={t("search_button", lang)} style={{ display: "grid", placeItems: "center", width: 34, height: 34, minWidth: 34, borderRadius: 12, background: "#ad001c", border: "none", cursor: "pointer" }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2}><path d="M3 6h18M6 12h12M10 18h4"/></svg>
                 </button>
               </form>
             </div>
 
-            {/* 体験から探す (Explore by vibe) — リデザイン: モック準拠のカテゴリタイル */}
-            {appMode !== "local" && (
-            <div style={{ padding: "2px 20px 10px" }}>
-              <div className="font-display" style={{ fontSize: 16, fontWeight: 800, color: "#1a1008", marginBottom: 10 }}>体験から探す <span style={{ fontSize: 10, color: "#8a7560", fontWeight: 600 }}>Explore by vibe</span></div>
-              <div style={{ display: "flex", gap: 11, overflowX: "auto" }}>
+            {/* categories */}
+            <div style={{ padding: "12px 0 4px" }}>
+              <div style={{ padding: "0 22px 10px" }}>
+                <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />体験から探す <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Explore by vibe</span></h2>
+              </div>
+              <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 22px 6px" }}>
                 {[
-                  { f: "\ud83c\udf5c Food", icon: "\ud83c\udf5c", ja: "\u98df\u3079\u6b69\u304d" },
-                  { f: "\ud83c\udf19 Nightlife", icon: "\ud83c\udf19", ja: "\u591c\u904a\u3073" },
-                  { f: "\ud83c\udfad Culture", icon: "\u26e9\ufe0f", ja: "\u6587\u5316" },
-                  { f: "\ud83c\udf3f Nature", icon: "\ud83c\udf3f", ja: "\u81ea\u7136" },
-                  { f: "\ud83c\udfa8 Art", icon: "\ud83c\udfa8", ja: "\u30a2\u30fc\u30c8" },
-                  { f: "\ud83d\udeb2 Hidden spots", icon: "\ud83d\udeb2", ja: "\u7a74\u5834" },
+                  { f: "🍜 Food", icon: "🍜", ja: "食べ歩き", en: "Foodie" },
+                  { f: "🌙 Nightlife", icon: "🌙", ja: "夜遊び", en: "Nightlife" },
+                  { f: "🎭 Culture", icon: "⛩️", ja: "文化", en: "Culture" },
+                  { f: "🌿 Nature", icon: "🌿", ja: "自然", en: "Nature" },
+                  { f: "🎨 Art", icon: "🎨", ja: "アート", en: "Art" },
+                  { f: "🚲 Hidden spots", icon: "🚲", ja: "穴場", en: "Hidden" },
                 ].map((v) => {
                   const on = activeFilter === v.f;
                   return (
-                    <button key={v.f} onClick={() => setActiveFilter(on ? "All" : v.f)} style={{ flex: "none", width: 70, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-                      <span style={{ width: 60, height: 60, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e2cc", boxShadow: "0 3px 9px rgba(120,80,40,0.08)" }}>{v.icon}</span>
-                      <span className="font-display" style={{ fontSize: 11.5, fontWeight: 700, color: "#1a1008" }}>{v.ja}</span>
+                    <button key={v.f} onClick={() => setActiveFilter(on ? "All" : v.f)} style={{ flex: "none", width: 78, border: "none", background: "transparent", padding: "4px 2px", cursor: "pointer", textAlign: "center", fontFamily: "inherit" }}>
+                      <span style={{ display: "grid", placeItems: "center", width: 60, height: 60, margin: "0 auto 6px", borderRadius: 20, fontSize: 26, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e3cf", boxShadow: "0 3px 9px rgba(120,80,40,.08)" }}>{v.icon}</span>
+                      <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap" }}>{v.ja}</span>
+                      <span style={{ display: "block", fontSize: 9.5, color: "#b6a48f", whiteSpace: "nowrap" }}>{v.en}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
-            )}
 
-            {/* FILTERS */}
-            <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, overflowX: "auto" }}>
-              {filters.map(f => (
-                <button key={f} onClick={() => setActiveFilter(f)} style={{ background: activeFilter === f ? "#ad001c" : "#ffffffdd", border: `2px solid ${activeFilter === f ? "#ad001c" : "#f0d9b5"}`, borderRadius: 20, padding: "7px 14px", fontSize: 12, fontWeight: 700, color: activeFilter === f ? "#fff" : "#8a7560", whiteSpace: "nowrap", cursor: "pointer", fontFamily: "inherit" }}>{f}</button>
-              ))}
-            </div>
-
-            {/* LOCAL DASHBOARD (Local モード時のみ) */}
+            {/* LOCAL DASHBOARD (Local モードのみ) */}
             {appMode === "local" && currentUserId && (
-              <div style={{ padding: "0 20px 12px" }}>
+              <div style={{ padding: "4px 22px 8px" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <Link href="/requests" style={{ display: "block", background: pendingRequestCount > 0 ? "#ad001c" : "#fff9f0", color: pendingRequestCount > 0 ? "#fff" : "#1a1008", border: `2px solid ${pendingRequestCount > 0 ? "#ad001c" : "#e8c99a"}`, borderRadius: 14, padding: 14, textDecoration: "none" }}>
+                  <Link href="/requests" style={{ display: "block", background: pendingRequestCount > 0 ? "#ad001c" : "#fff", color: pendingRequestCount > 0 ? "#fff" : "#2b1d1a", border: `1px solid ${pendingRequestCount > 0 ? "#ad001c" : "#f0e3cf"}`, borderRadius: 16, padding: 14, textDecoration: "none", boxShadow: "0 6px 18px -10px rgba(120,50,20,.3)" }}>
                     <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.85, marginBottom: 4 }}>{t("local_dashboard_requests", lang)}</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{pendingRequestCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
+                    <div className="font-display" style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{pendingRequestCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
                   </Link>
-                  <Link href="/bookings" style={{ display: "block", background: "#fff9f0", color: "#1a1008", border: "2px solid #e8c99a", borderRadius: 14, padding: 14, textDecoration: "none" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#8a7560", marginBottom: 4 }}>{t("local_dashboard_bookings", lang)}</div>
-                    <div style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, color: "#2e8b57" }}>{upcomingBookingsCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
+                  <Link href="/bookings" style={{ display: "block", background: "#fff", color: "#2b1d1a", border: "1px solid #f0e3cf", borderRadius: 16, padding: 14, textDecoration: "none", boxShadow: "0 6px 18px -10px rgba(120,50,20,.3)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#9a8a7c", marginBottom: 4 }}>{t("local_dashboard_bookings", lang)}</div>
+                    <div className="font-display" style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, color: "#2e8b57" }}>{upcomingBookingsCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
                   </Link>
                 </div>
                 {ownGuide ? (
-                  <Link href={`/?guide=${ownGuide.id}`} style={{ display: "block", marginTop: 10, background: "#e6f5ee", color: "#1e6b40", border: "2px solid #2e8b57", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 12, fontWeight: 800, textAlign: "center" }}>
-                    {t("own_guide_open", lang)} ({ownGuide.name})
-                  </Link>
+                  <Link href={`/?guide=${ownGuide.id}`} style={{ display: "block", marginTop: 10, background: "#e8f4ec", color: "#2e8b57", border: "1px solid #2e8b57", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 12, fontWeight: 800, textAlign: "center" }}>{t("own_guide_open", lang)} ({ownGuide.name})</Link>
                 ) : (
-                  <Link href="/guides/new" style={{ display: "block", marginTop: 10, background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 13, fontWeight: 900, textAlign: "center" }}>
-                    {t("create_guide_profile", lang)}
-                  </Link>
+                  <Link href="/guides/new" style={{ display: "block", marginTop: 10, background: "#ad001c", color: "#fff", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 13, fontWeight: 900, textAlign: "center" }}>{t("create_guide_profile", lang)}</Link>
                 )}
               </div>
             )}
 
-            {/* GUIDES (or Travelers in Local mode) */}
-            <div data-tutorial="home-list" style={{ padding: "0 20px 4px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
-              <div className="font-display" style={{ fontSize: 14, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, whiteSpace: "nowrap" }}>{appMode === "local" ? `${t("travelers_nearby", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
-              <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 11, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
-            </div>
-            {/* Free / Pro / Area selector (Traveler モードのみ) */}
-            {appMode !== "local" && (
-              <div style={{ padding: "0 20px 12px", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                {(["all", "free", "paid"] as const).map((v) => {
-                  const label = v === "all" ? (lang === "ja" ? "全て" : "All") : v === "free" ? "🤝 Free" : "💼 Pro";
-                  const active = homeModeFilter === v;
-                  return (
-                    <button key={v} type="button" onClick={() => setHomeModeFilter(v)}
-                      style={{ background: active ? (v === "paid" ? "#2e8b57" : "#ad001c") : "#ffffffdd", color: active ? "#fff" : "#8a7560", border: `2px solid ${active ? (v === "paid" ? "#2e8b57" : "#ad001c") : "#f0d9b5"}`, borderRadius: 18, padding: "5px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                      {label}
-                    </button>
-                  );
-                })}
-                <div style={{ position: "relative" }}>
-                  <button type="button" onClick={() => setAreaPickerOpen((x) => !x)}
-                    style={{ background: homeAreaFilter ? "#2e8b57" : "#ffffffdd", color: homeAreaFilter ? "#fff" : "#8a7560", border: `2px solid ${homeAreaFilter ? "#2e8b57" : "#f0d9b5"}`, borderRadius: 18, padding: "5px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                    📍 {homeAreaFilter ?? (lang === "ja" ? "エリア" : "Area")} ▾
-                  </button>
-                  {areaPickerOpen && (
-                    <>
-                      <div onClick={() => setAreaPickerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
-                      <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 12, padding: 6, zIndex: 51, boxShadow: "0 8px 20px rgba(0,0,0,0.18)", minWidth: 140, maxHeight: 280, overflowY: "auto" }}>
-                        <button type="button" disabled={geoBusy} onClick={autoDetectArea}
-                          style={{ display: "block", width: "100%", textAlign: "left", background: "transparent", border: "none", borderBottom: "1px solid #f0d9b5", padding: "8px 10px", fontSize: 12, fontWeight: 800, color: geoBusy ? "#b8a98a" : "#2e8b57", cursor: geoBusy ? "wait" : "pointer", borderRadius: 0, fontFamily: "inherit" }}>
-                          📍 {geoBusy ? (lang === "ja" ? "検出中..." : "Detecting...") : (lang === "ja" ? "現在地から自動選択" : "Use my location")}
-                        </button>
-                        <button type="button" onClick={() => { setHomeAreaFilter(null); setAreaPickerOpen(false); }}
-                          style={{ display: "block", width: "100%", textAlign: "left", background: homeAreaFilter === null ? "#e6f5ee" : "transparent", border: "none", padding: "8px 10px", fontSize: 12, fontWeight: 700, color: "#1a1008", cursor: "pointer", borderRadius: 8, fontFamily: "inherit" }}>
-                          {lang === "ja" ? "全エリア" : "All areas"}
-                        </button>
-                        {getSortedAreas(lang).map((a) => (
-                          <button key={a.value} type="button" onClick={() => { setHomeAreaFilter(a.value); setAreaPickerOpen(false); }}
-                            style={{ display: "block", width: "100%", textAlign: "left", background: homeAreaFilter === a.value ? "#e6f5ee" : "transparent", border: "none", padding: "8px 10px", fontSize: 12, fontWeight: 700, color: "#1a1008", cursor: "pointer", borderRadius: 8, fontFamily: "inherit" }}>
-                            📍 {a.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {loading ? (
-              <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    style={{
-                      background: "#ffffffee",
-                      border: "2px solid #f0d9b5",
-                      borderRadius: 20,
-                      padding: 16,
-                      minWidth: 152,
-                      flexShrink: 0,
-                    }}
-                    aria-hidden="true"
-                  >
-                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#f0d9b5", marginBottom: 10, animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
-                    <div style={{ height: 14, background: "#f0d9b5", borderRadius: 6, marginBottom: 6, width: "70%", animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
-                    <div style={{ height: 10, background: "#f0d9b5", borderRadius: 5, marginBottom: 10, width: "50%", animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
-                    <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
-                      <div style={{ width: 32, height: 14, background: "#f0d9b5", borderRadius: 6, animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
-                      <div style={{ width: 26, height: 14, background: "#f0d9b5", borderRadius: 6, animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
+            {appMode === "local" ? (
+              /* Local: travelers list */
+              <div data-tutorial="home-list" style={{ padding: "4px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+                {travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id)).map((tv) => (
+                  <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", alignItems: "center", gap: 13, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 16, display: "grid", placeItems: "center", fontSize: 26, flex: "none", overflow: "hidden", ...(tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? { backgroundImage: `url("${travelerAvatarUrls[tv.avatar_path]}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!(tv.avatar_path && travelerAvatarUrls[tv.avatar_path]) && (tv.emoji ?? "🧑")}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="font-display" style={{ fontSize: 15.5, fontWeight: 700, color: "#2b1d1a" }}>{tv.name}</div>
+                      <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600 }}>✈️ From {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</div>
                     </div>
-                    <div style={{ height: 12, background: "#f0d9b5", borderRadius: 5, width: "60%", animation: "pulse 1.4s ease-in-out infinite", animationDelay: `${i * 0.15}s` }} />
-                  </div>
+                    <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
+                  </Link>
                 ))}
+                {travelersList.length === 0 && <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("no_travelers", lang)}</div>}
               </div>
-            ) : appMode === "local" ? (
-              travelersList.length === 0 ? (
-                <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>{t("no_travelers", lang)}</div>
-              ) : (
-                <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                  {travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id)).map((t) => (
-                    <Link
-                      key={t.id}
-                      href={`/travelers/${t.id}`}
-                      style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 12, textDecoration: "none", color: "inherit" }}
-                    >
-                      <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>
-                        {t.avatar_path && travelerAvatarUrls[t.avatar_path] ? (
-                          <img loading="lazy" decoding="async" src={travelerAvatarUrls[t.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          <span>{t.emoji ?? "🧑"}</span>
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 900 }}>{t.name}</div>
-                        <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>
-                          ✈️ From {t.country}{t.occupation ? ` · ${t.occupation}` : ""}
-                        </div>
-                        {t.bio && (
-                          <div style={{ fontSize: 12, color: "#555", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                            {t.bio}
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
-                    </Link>
-                  ))}
-                </div>
-              )
-            ) : visibleGuides.length === 0 ? (
-              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>{t("no_guides", lang)}</div>
             ) : (
-              <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
-                {visibleGuides.map(g => {
-                  const isFree = g.mode === "free";
-                  const grad = isFree ? "linear-gradient(150deg,#9fd39a 0%,#4f9e6a 60%,#2e6b46 100%)" : "linear-gradient(150deg,#ffb56b 0%,#e8693e 60%,#b8341f 100%)";
-                  return (
-                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 22, overflow: "hidden", minWidth: 200, maxWidth: 200, cursor: "pointer", position: "relative", boxShadow: "0 8px 22px rgba(90,60,30,0.10)", flexShrink: 0 }}>
-                    <div style={{ position: "relative", height: 150, background: grad, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                      {g.avatarPath && avatarUrls[g.avatarPath] ? (
-                        <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <span style={{ fontSize: 56, filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.18))" }}>{g.emoji}</span>
-                      )}
-                      <span style={{ position: "absolute", top: 10, left: 10, padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, color: "#fff", background: isFree ? "#2e8b57" : "#ad001c", boxShadow: "0 2px 6px rgba(0,0,0,0.18)" }}>{isFree ? "🤝 Free" : "💼 Pro"}</span>
-                      {currentUserId && (
-                        <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.88)", border: "none", borderRadius: "50%", width: 30, height: 30, fontSize: 15, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          {savedIds.has(Number(g.id)) ? "❤️" : "🤍"}
-                        </button>
-                      )}
-                    </div>
-                    <div style={{ padding: "12px 13px 14px" }}>
-                      <div className="font-display" style={{ fontSize: 17, fontWeight: 900, marginBottom: 1 }}>{g.name}</div>
-                      <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                        {[...g.tags, ...g.languages].slice(0, 4).map(t => <span key={t} style={{ background: "#fff7ec", border: "1px solid #f0e2cc", borderRadius: 8, padding: "3px 8px", fontSize: 10, color: "#7a6a5c", fontWeight: 700 }}>{t}</span>)}
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{isFree ? "🤝 Free" : g.rate}</span>
-                        {g.mode === "paid" ? <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span> : isTrustedLocal(g.stars, g.tour_count) ? <span style={{ fontSize: 10, color: "#2e8b57", fontWeight: 800 }}>✨ {t("trusted_local", lang)}</span> : null}
-                      </div>
-                      <button onClick={(e) => { e.stopPropagation(); setSelectedGuide(g); setScreen("profile"); }} className="font-display" style={{ marginTop: 11, width: "100%", border: "none", borderRadius: 13, padding: "10px", fontSize: 13, fontWeight: 800, color: "#fff", background: isFree ? "#2e8b57" : "#ad001c", cursor: "pointer", fontFamily: "inherit", boxShadow: isFree ? "0 4px 12px rgba(46,139,87,0.25)" : "0 4px 12px rgba(173,0,28,0.25)" }}>🤝 {lang === "ja" ? "会う" : "Meet"}</button>
-                    </div>
+              <>
+                {/* featured guides (horizontal) */}
+                <div style={{ padding: "12px 0 4px" }}>
+                  <div data-tutorial="home-list" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 22px 12px" }}>
+                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -2 }} />おすすめガイド <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>For you</span></h2>
+                    <Link href="/guides/all" style={{ fontSize: 12.5, fontWeight: 700, color: "#ad001c", textDecoration: "none" }}>すべて見る →</Link>
                   </div>
-                  );
-                })}
-              </div>
+                  <div style={{ display: "flex", gap: 16, overflowX: "auto", padding: "2px 22px 10px" }}>
+                    {visibleGuides.slice(0, 6).map((g) => {
+                      const isFree = g.mode === "free";
+                      const av = g.avatarPath ? avatarUrls[g.avatarPath] : null;
+                      return (
+                        <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ flex: "none", width: 236, background: "#fff", borderRadius: 24, overflow: "hidden", boxShadow: "0 14px 34px -16px rgba(120,50,20,.32)", border: "1px solid #f3e8d6", cursor: "pointer" }}>
+                          <div style={{ position: "relative", height: 176, display: "grid", placeItems: "center", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: isFree ? "linear-gradient(150deg,#9fd39a,#2e6b46)" : "linear-gradient(150deg,#ffb56b,#b8341f)" }) }}>
+                            {!av && <span style={{ fontSize: 62, filter: "drop-shadow(0 3px 6px rgba(0,0,0,.2))" }}>{g.emoji}</span>}
+                            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 42%, rgba(20,8,5,.62) 100%)" }} />
+                            <span style={{ position: "absolute", top: 12, left: 12, fontSize: 11, fontWeight: 800, color: "#fff", padding: "4px 10px", borderRadius: 30, background: isFree ? "#2e8b57" : "#ad001c", boxShadow: "0 2px 6px rgba(0,0,0,.2)" }}>{isFree ? "無料 Mate" : "Pro ガイド"}</span>
+                            <span style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.92)", padding: "4px 9px", borderRadius: 30 }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: "#2b1d1a" }}>{g.mode === "paid" && g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
+                            </span>
+                            <div style={{ position: "absolute", left: 14, bottom: 11, right: 14 }}>
+                              <p className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 18, color: "#fff" }}>{g.name}</p>
+                              <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(255,255,255,.88)", fontWeight: 500 }}>{g.uni}{g.areas[0] ? ` · ${g.areas[0]}` : ""}</p>
+                            </div>
+                          </div>
+                          <div style={{ padding: "12px 14px 14px" }}>
+                            {isTrustedLocal(g.stars, g.tour_count) && (
+                              <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 9, background: "#e8f4ec", padding: "4px 9px", borderRadius: 8 }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" strokeWidth={2.4}><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+                                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2e8b57" }}>信頼できる local · Trusted</span>
+                              </div>
+                            )}
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 11 }}>
+                              {[...g.tags, ...g.languages].slice(0, 3).map((tag) => <span key={tag} style={{ background: "#f6efe2", color: "#7a6a5c", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 8 }}>{tag}</span>)}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <span className="font-display" style={{ fontWeight: 700, fontSize: 14, color: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "🤝 Free" : g.rate}</span>
+                              <span className="font-display" style={{ background: "#ad001c", color: "#fff", fontWeight: 700, fontSize: 12.5, padding: "8px 16px", borderRadius: 12, boxShadow: "0 6px 14px -6px rgba(173,0,28,.7)" }}>会う Meet</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {!loading && visibleGuides.length === 0 && <div style={{ padding: "20px", color: "#b09a86", fontWeight: 700 }}>{t("no_guides", lang)}</div>}
+                  </div>
+                </div>
+
+                {/* locals here (vertical) */}
+                <div style={{ padding: "14px 22px 0" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{homeAreaFilter ?? (lang === "ja" ? "日本全国" : "Japan")}のローカル <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Locals here</span></h2>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ display: "flex", background: "#f1e6d4", borderRadius: 13, padding: 3 }}>
+                      {(["all", "free", "paid"] as const).map((v) => {
+                        const active = homeModeFilter === v;
+                        const label = v === "all" ? (lang === "ja" ? "全て" : "All") : v === "free" ? "Free" : "Pro";
+                        return <button key={v} onClick={() => setHomeModeFilter(v)} style={{ border: "none", borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", background: active ? "#fff" : "transparent", color: active ? (v === "free" ? "#2e8b57" : v === "paid" ? "#ad001c" : "#2b1d1a") : "#9a8a7c", boxShadow: active ? "0 2px 6px rgba(120,50,20,.12)" : "none" }}>{label}</button>;
+                      })}
+                    </div>
+                    <button onClick={() => setHomeInstant((x) => !x)} style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto", border: "none", background: "transparent", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: homeInstant ? "#2e8b57" : "#9a8a7c", whiteSpace: "nowrap" }}>今すぐ予約可</span>
+                      <span style={{ width: 38, height: 22, borderRadius: 11, background: homeInstant ? "#2e8b57" : "#e3d2bb", position: "relative", transition: "background .15s" }}><span style={{ position: "absolute", top: 2, left: homeInstant ? 18 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} /></span>
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {visibleGuides.map((g) => {
+                      const isFree = g.mode === "free";
+                      const av = g.avatarPath ? avatarUrls[g.avatarPath] : null;
+                      return (
+                        <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ display: "flex", gap: 13, alignItems: "center", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)", cursor: "pointer" }}>
+                          <div style={{ width: 62, height: 62, borderRadius: 16, flex: "none", display: "grid", placeItems: "center", fontSize: 30, overflow: "hidden", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!av && (g.emoji ?? "🧑")}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                              <span className="font-display" style={{ fontWeight: 700, fontSize: 15.5, color: "#2b1d1a" }}>{g.name}</span>
+                              <span style={{ fontSize: 9.5, fontWeight: 800, color: "#fff", padding: "2px 7px", borderRadius: 20, background: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "FREE" : "PRO"}</span>
+                              {isTrustedLocal(g.stars, g.tour_count) && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" strokeWidth={2.4}><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>}
+                            </div>
+                            <p style={{ margin: "2px 0 0", fontSize: 11, color: "#b09a86" }}>{g.uni}</p>
+                            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>
+                              {[...g.tags, ...g.languages].slice(0, 2).map((tag) => <span key={tag} style={{ background: "#f6efe2", color: "#7a6a5c", fontSize: 9.5, fontWeight: 700, padding: "2px 7px", borderRadius: 7 }}>{tag}</span>)}
+                            </div>
+                          </div>
+                          <div style={{ flex: "none", textAlign: "right" }}>
+                            <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "Free" : g.rate}</span>
+                            {currentUserId && <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ marginTop: 4, border: "none", background: "transparent", fontSize: 16, cursor: "pointer", padding: 0, lineHeight: 1 }}>{savedIds.has(Number(g.id)) ? "❤️" : "🤍"}</button>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {!loading && visibleGuides.length === 0 && <div style={{ textAlign: "center", padding: "30px 10px", color: "#b09a86", fontSize: 13, fontWeight: 600 }}>条件に合うローカルがいません<br/><span style={{ fontSize: 11 }}>No locals match these filters</span></div>}
+                  </div>
+                </div>
+              </>
             )}
 
-            <div style={{ height: 100 }}/>
+            <div style={{ height: 100 }} />
+
+            {/* area picker sheet */}
+            {areaPickerOpen && (
+              <div onClick={() => setAreaPickerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(28,17,16,.4)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 390, background: "#fff8ec", borderRadius: "28px 28px 0 0", padding: "14px 20px 30px", maxHeight: "72vh", overflowY: "auto" }}>
+                  <div style={{ width: 40, height: 5, borderRadius: 3, background: "#e3d2bb", margin: "0 auto 14px" }} />
+                  <h2 className="font-display" style={{ margin: "0 0 4px", fontWeight: 900, fontSize: 20, color: "#2b1d1a" }}>エリアを選ぶ</h2>
+                  <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "#b03a2e", fontWeight: 700 }}>Choose your area · across Japan</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <button onClick={autoDetectArea} disabled={geoBusy} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #f0e3cf", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 700, color: geoBusy ? "#b09a86" : "#2e8b57", cursor: geoBusy ? "wait" : "pointer", fontFamily: "inherit" }}>📍 {geoBusy ? (lang === "ja" ? "検出中…" : "Detecting…") : (lang === "ja" ? "現在地から自動選択" : "Use my location")}</button>
+                    <button onClick={() => { setHomeAreaFilter(null); setAreaPickerOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: homeAreaFilter === null ? "#e8f4ec" : "#fff", border: `1px solid ${homeAreaFilter === null ? "#2e8b57" : "#f0e3cf"}`, borderRadius: 14, padding: "12px 14px", cursor: "pointer", fontFamily: "inherit" }}><span className="font-display" style={{ fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "日本全国" : "All Japan"}</span></button>
+                    {getSortedAreas(lang).map((a) => (
+                      <button key={a.value} onClick={() => { setHomeAreaFilter(a.value); setAreaPickerOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: homeAreaFilter === a.value ? "#e8f4ec" : "#fff", border: `1px solid ${homeAreaFilter === a.value ? "#2e8b57" : "#f0e3cf"}`, borderRadius: 14, padding: "12px 14px", cursor: "pointer", fontFamily: "inherit" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+                          <span className="font-display" style={{ fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{a.label}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {/* bottom nav は screen-enter の外側で描画 (transform で position:fixed が壊れるのを回避) */}
