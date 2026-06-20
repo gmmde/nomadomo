@@ -290,8 +290,6 @@ function HomeInner() {
   const [tutorialChecked, setTutorialChecked] = useState(false);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
   const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
-  const [heroImgError, setHeroImgError] = useState(false);
-  const [heroImgLoaded, setHeroImgLoaded] = useState(false);
   const [lang] = useLang();
   const guideTr = useTranslate();
 
@@ -1203,72 +1201,28 @@ function HomeInner() {
         {/* HOME */}
         {screen === "home" && (
           <div className="screen-enter">
-            {/* TOPBAR (sticky で上端に固定) */}
-            <div style={{ background: "#ad001c", padding: "12px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 9 }}>
-              <img src="/logo.png" alt="NomaDomo" style={{ height: 40, width: "auto", display: "block" }} />
+            {/* TOPBAR — リデザイン: クリーム基調のクリーンヘッダー (ロゴ維持) */}
+            <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
+              <BrandLogo variant="row" size={22} />
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {userEmail ? (
-                  <div onClick={() => setScreen("myprofile")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer" }}>😊</div>
+                  <div onClick={() => setScreen("myprofile")} style={{ width: 38, height: 38, borderRadius: "50%", background: "#fff", border: "1.5px solid #f0e2cc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer", boxShadow: "0 2px 6px rgba(120,80,40,0.08)" }}>😊</div>
                 ) : (
-                  <Link href="/login" style={{ background: "#ffffff28", border: "2px solid #ffffff60", borderRadius: 18, padding: "6px 12px", fontSize: 11, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
+                  <Link href="/login" style={{ background: "#ad001c", border: "none", borderRadius: 18, padding: "7px 14px", fontSize: 11, fontWeight: 800, color: "#fff", textDecoration: "none" }}>
                     {t("login", lang)}
                   </Link>
                 )}
-                <Link href="/settings" aria-label="設定" data-tutorial="settings-gear" style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff60", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", textDecoration: "none" }}>⚙</Link>
+                <Link href="/settings" aria-label="設定" data-tutorial="settings-gear" style={{ width: 38, height: 38, borderRadius: "50%", background: "#fff", border: "1.5px solid #f0e2cc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#ad001c", textDecoration: "none", boxShadow: "0 2px 6px rgba(120,80,40,0.08)" }}>⚙</Link>
               </div>
             </div>
 
-            {/* MAP BG HERO */}
-            <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
-              {!heroImgError && (
-                <img
-                  src="/home-hero.png"
-                  alt=""
-                  onError={() => setHeroImgError(true)}
-                  onLoad={() => setHeroImgLoaded(true)}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    zIndex: 1,
-                    // ごく僅かに下端のみソフト fade (body 背景に滑らかに繋がる)
-                    maskImage: "linear-gradient(to bottom, black 88%, rgba(0,0,0,0) 100%)",
-                    WebkitMaskImage: "linear-gradient(to bottom, black 88%, rgba(0,0,0,0) 100%)",
-                  }}
-                />
-              )}
-              {(!heroImgLoaded || heroImgError) && (<>
-              <svg width="100%" height="200" viewBox="0 0 380 200" preserveAspectRatio="xMidYMid slice">
-                <rect width="380" height="200" fill="#f5ead0"/>
-                <rect x="0" y="0" width="60" height="45" fill="#e8d9b8" rx="2"/><rect x="65" y="0" width="80" height="30" fill="#ddd0b0" rx="2"/><rect x="150" y="0" width="50" height="50" fill="#e8d9b8" rx="2"/><rect x="205" y="0" width="70" height="35" fill="#ddd0b0" rx="2"/><rect x="320" y="0" width="60" height="60" fill="#ddd0b0" rx="2"/>
-                <rect x="0" y="50" width="45" height="55" fill="#e8d9b8" rx="2"/><rect x="110" y="55" width="65" height="50" fill="#e8d9b8" rx="2"/><rect x="180" y="40" width="50" height="60" fill="#ddd0b0" rx="2"/><rect x="235" y="38" width="80" height="45" fill="#e8d9b8" rx="2"/>
-                <path d="M0 108 Q60 98 120 110 Q180 122 240 108 Q300 94 380 105 L380 128 Q300 118 240 132 Q180 146 120 132 Q60 118 0 130 Z" fill="#a8d8ea" opacity="0.85"/>
-                <rect x="0" y="135" width="68" height="58" fill="#e8d9b8" rx="2"/><rect x="73" y="128" width="48" height="65" fill="#ddd0b0" rx="2"/><rect x="126" y="135" width="72" height="55" fill="#e8d9b8" rx="2"/><rect x="260" y="133" width="58" height="55" fill="#e8d9b8" rx="2"/>
-                <line x1="0" y1="48" x2="380" y2="48" stroke="#fff9f0" strokeWidth="5"/><line x1="0" y1="98" x2="380" y2="98" stroke="#fff9f0" strokeWidth="5"/><line x1="0" y1="165" x2="380" y2="165" stroke="#fff9f0" strokeWidth="5"/>
-                <line x1="60" y1="0" x2="60" y2="200" stroke="#fff9f0" strokeWidth="4"/><line x1="145" y1="0" x2="145" y2="200" stroke="#fff9f0" strokeWidth="4"/><line x1="235" y1="0" x2="235" y2="200" stroke="#fff9f0" strokeWidth="4"/><line x1="330" y1="0" x2="330" y2="200" stroke="#fff9f0" strokeWidth="4"/>
-                <g transform="translate(90,65)"><circle cx="0" cy="0" r="10" fill="#ad001c"/><circle cx="0" cy="0" r="5" fill="#fff"/></g>
-                <g transform="translate(200,75)"><circle cx="0" cy="0" r="8" fill="#ad001c" opacity="0.7"/><circle cx="0" cy="0" r="4" fill="#fff"/></g>
-                <text x="155" y="120" fontSize="8" fill="#5a9ab5" fontWeight="700" opacity="0.9">Kamo River</text>
-              </svg>
-              <svg style={{ position: "absolute", top: -8, right: -8, opacity: 0.88, pointerEvents: "none" }} width="140" height="140" viewBox="0 0 160 160">
-                <path d="M160 0 C145 20 125 35 105 55" stroke="#7a5230" strokeWidth="9" fill="none" strokeLinecap="round"/>
-                <path d="M160 0 C148 25 140 40 130 60" stroke="#7a5230" strokeWidth="7" fill="none" strokeLinecap="round"/>
-                <path d="M105 55 C88 68 72 78 55 88" stroke="#8a6340" strokeWidth="6" fill="none" strokeLinecap="round"/>
-                <path d="M130 60 C115 72 100 80 85 92" stroke="#8a6340" strokeWidth="5" fill="none" strokeLinecap="round"/>
-                <g transform="translate(100,52)"><g transform="rotate(0)"><ellipse cx="0" cy="-11" rx="5" ry="9" fill="#ffb7c5"/></g><g transform="rotate(72)"><ellipse cx="0" cy="-11" rx="5" ry="9" fill="#ffb7c5"/></g><g transform="rotate(144)"><ellipse cx="0" cy="-11" rx="5" ry="9" fill="#ffb7c5"/></g><g transform="rotate(216)"><ellipse cx="0" cy="-11" rx="5" ry="9" fill="#ffb7c5"/></g><g transform="rotate(288)"><ellipse cx="0" cy="-11" rx="5" ry="9" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="4" fill="#fffde7"/><circle cx="0" cy="0" r="2" fill="#f9c74f"/></g>
-                <g transform="translate(83,90)"><g transform="rotate(20)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(92)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(164)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(236)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><g transform="rotate(308)"><ellipse cx="0" cy="-12" rx="6" ry="10" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="5" fill="#fffde7"/><circle cx="0" cy="0" r="2.5" fill="#f9c74f"/></g>
-                <g transform="translate(52,86)"><g transform="rotate(5)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(77)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(149)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(221)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><g transform="rotate(293)"><ellipse cx="0" cy="-9" rx="4" ry="7" fill="#ffb7c5"/></g><circle cx="0" cy="0" r="3.5" fill="#fffde7"/><circle cx="0" cy="0" r="1.8" fill="#f9c74f"/></g>
-              </svg>
-              </>)}
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.05) 100%)", zIndex: 2, pointerEvents: "none" }}/>
-              <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Japan</div>
-                <div className="font-display" style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45)" }}>
-                  Meet a <span style={{ color: "#a8eabf" }}>real local</span>,<br/>not a tour guide
-                </div>
+            {/* HERO — リデザイン: 写真を廃しクリーム地にテキスト見出し (日英) */}
+            <div style={{ padding: "20px 20px 8px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "4px 11px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 12 }}>📍 Japan</div>
+              <div className="font-display" style={{ fontSize: 27, fontWeight: 900, lineHeight: 1.25, color: "#1a1008", letterSpacing: "0.01em" }}>
+                本物のローカルと、<br/>出会おう。
               </div>
+              <div style={{ color: "#ad001c", fontSize: 12.5, fontWeight: 700, marginTop: 7 }}>Meet a real local in Japan — not a tour.</div>
             </div>
 
             {/* SEARCH */}
@@ -1441,29 +1395,38 @@ function HomeInner() {
               <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>{t("no_guides", lang)}</div>
             ) : (
               <div style={{ padding: "0 20px", display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
-                {visibleGuides.map(g => (
-                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={(() => { const s = modeCardStyle(g.mode); return { background: s.bg, border: `2px solid ${s.border}`, borderRadius: 20, padding: 16, minWidth: 152, cursor: "pointer", position: "relative" }; })()}>
-                    {currentUserId && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }}
-                        style={{ position: "absolute", top: 8, right: 8, background: "none", border: "none", fontSize: 18, cursor: "pointer", padding: 4, lineHeight: 1 }}
-                        aria-label="お気に入り"
-                      >
-                        {savedIds.has(Number(g.id)) ? "❤️" : "🤍"}
-                      </button>
-                    )}
-                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
-                    <div className="font-display" style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
-                    <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
-                      {[...g.tags, ...g.languages].map(t => <span key={t} style={{ background: "#ffefd5", border: "1.5px solid #e8c99a", borderRadius: 6, padding: "3px 7px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>)}
+                {visibleGuides.map(g => {
+                  const isFree = g.mode === "free";
+                  const grad = isFree ? "linear-gradient(150deg,#9fd39a 0%,#4f9e6a 60%,#2e6b46 100%)" : "linear-gradient(150deg,#ffb56b 0%,#e8693e 60%,#b8341f 100%)";
+                  return (
+                  <div key={g.id} onClick={() => { setSelectedGuide(g); setScreen("profile"); }} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 22, overflow: "hidden", minWidth: 200, maxWidth: 200, cursor: "pointer", position: "relative", boxShadow: "0 8px 22px rgba(90,60,30,0.10)", flexShrink: 0 }}>
+                    <div style={{ position: "relative", height: 150, background: grad, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                      {g.avatarPath && avatarUrls[g.avatarPath] ? (
+                        <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span style={{ fontSize: 56, filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.18))" }}>{g.emoji}</span>
+                      )}
+                      <span style={{ position: "absolute", top: 10, left: 10, padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, color: "#fff", background: isFree ? "#2e8b57" : "#ad001c", boxShadow: "0 2px 6px rgba(0,0,0,0.18)" }}>{isFree ? "🤝 Free" : "💼 Pro"}</span>
+                      {currentUserId && (
+                        <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.88)", border: "none", borderRadius: "50%", width: 30, height: 30, fontSize: 15, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          {savedIds.has(Number(g.id)) ? "❤️" : "🤍"}
+                        </button>
+                      )}
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 13, color: g.mode === "free" ? "#2e8b57" : g.mode === "paid" ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{g.mode === "free" ? "🤝 Free" : g.rate}</span>
-                      {g.mode === "paid" ? <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span> : isTrustedLocal(g.stars, g.tour_count) ? <span style={{ fontSize: 10, color: "#2e8b57", fontWeight: 800 }}>{t("trusted_local", lang)}</span> : null}
+                    <div style={{ padding: "12px 13px 14px" }}>
+                      <div className="font-display" style={{ fontSize: 17, fontWeight: 900, marginBottom: 1 }}>{g.name}</div>
+                      <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                        {[...g.tags, ...g.languages].slice(0, 4).map(t => <span key={t} style={{ background: "#fff7ec", border: "1px solid #f0e2cc", borderRadius: 8, padding: "3px 8px", fontSize: 10, color: "#7a6a5c", fontWeight: 700 }}>{t}</span>)}
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{isFree ? "🤝 Free" : g.rate}</span>
+                        {g.mode === "paid" ? <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span> : isTrustedLocal(g.stars, g.tour_count) ? <span style={{ fontSize: 10, color: "#2e8b57", fontWeight: 800 }}>✨ {t("trusted_local", lang)}</span> : null}
+                      </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
