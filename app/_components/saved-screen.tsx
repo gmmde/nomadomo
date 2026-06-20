@@ -36,10 +36,10 @@ export default function SavedScreen({
 }: Props) {
   return (
     <div className="screen-enter" style={{ minHeight: "100vh" }}>
-      <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9 }}>
+      <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
         <div style={{ width: 36 }} />
-        <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("saved_title", lang)}</div>
-        <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
+        <div className="font-display" style={{ fontSize: 16, fontWeight: 900, color: "#1a1008", flex: 1, textAlign: "center" }}>{t("saved_title", lang)}</div>
+        <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#ad001c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
       </div>
       <div style={{ padding: "20px" }}>
         {!currentUserId ? (

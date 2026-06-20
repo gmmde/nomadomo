@@ -239,11 +239,11 @@ export default function ChatScreen({
 
   return (
     <div className="screen-enter" style={{ height: "100dvh", minHeight: "100svh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ background: "#ad001c", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={goBack} aria-label="戻る" style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer" }}>←</button>
+      <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #f0e2cc" }}>
+        <button onClick={goBack} aria-label="戻る" style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, cursor: "pointer" }}>←</button>
         <div
           onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
-          style={{ width: 36, height: 36, borderRadius: "50%", background: "#ffffff28", border: "2px solid #ffffff50", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}
+          style={{ width: 36, height: 36, borderRadius: "50%", background: "#fff7ec", border: "1.5px solid #f0e2cc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}
         >
           {(() => {
             const pg = chatPeer.guideId ? guides.find((x) => x.id === chatPeer.guideId) : null;
@@ -253,11 +253,11 @@ export default function ChatScreen({
           })()}
         </div>
         <div style={{ flex: 1, paddingLeft: 8 }}>
-          <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>{chatPeer.name}</div>
-          <div style={{ fontSize: 11, color: "#a8ffca", fontWeight: 700 }}>{t("online_now", lang)}</div>
+          <div className="font-display" style={{ fontSize: 15, fontWeight: 900, color: "#1a1008" }}>{chatPeer.name}</div>
+          <div style={{ fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{t("online_now", lang)}</div>
         </div>
-        <Link href={`/report/${chatPeer.id}`} style={{ color: "#fff", fontSize: 16, textDecoration: "none", padding: 4 }}>🚩</Link>
-        <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 30, height: 30, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+        <Link href={`/report/${chatPeer.id}`} style={{ color: "#8a7560", fontSize: 16, textDecoration: "none", padding: 4 }}>🚩</Link>
+        <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 30, height: 30, color: "#ad001c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
       </div>
 
       {/* 🚶 お出かけ中バナー (urgent 中は隠す) */}

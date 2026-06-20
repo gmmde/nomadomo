@@ -1244,12 +1244,38 @@ function HomeInner() {
                 />
                 <button
                   type="submit"
-                  style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 12, padding: "6px 12px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                  aria-label={t("search_button", lang)}
+                  style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: "50%", width: 40, height: 40, minWidth: 40, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(173,0,28,0.28)" }}
                 >
-                  {t("search_button", lang)}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
                 </button>
               </form>
             </div>
+
+            {/* 体験から探す (Explore by vibe) — リデザイン: モック準拠のカテゴリタイル */}
+            {appMode !== "local" && (
+            <div style={{ padding: "2px 20px 10px" }}>
+              <div className="font-display" style={{ fontSize: 16, fontWeight: 800, color: "#1a1008", marginBottom: 10 }}>体験から探す <span style={{ fontSize: 10, color: "#8a7560", fontWeight: 600 }}>Explore by vibe</span></div>
+              <div style={{ display: "flex", gap: 11, overflowX: "auto" }}>
+                {[
+                  { f: "\ud83c\udf5c Food", icon: "\ud83c\udf5c", ja: "\u98df\u3079\u6b69\u304d" },
+                  { f: "\ud83c\udf19 Nightlife", icon: "\ud83c\udf19", ja: "\u591c\u904a\u3073" },
+                  { f: "\ud83c\udfad Culture", icon: "\u26e9\ufe0f", ja: "\u6587\u5316" },
+                  { f: "\ud83c\udf3f Nature", icon: "\ud83c\udf3f", ja: "\u81ea\u7136" },
+                  { f: "\ud83c\udfa8 Art", icon: "\ud83c\udfa8", ja: "\u30a2\u30fc\u30c8" },
+                  { f: "\ud83d\udeb2 Hidden spots", icon: "\ud83d\udeb2", ja: "\u7a74\u5834" },
+                ].map((v) => {
+                  const on = activeFilter === v.f;
+                  return (
+                    <button key={v.f} onClick={() => setActiveFilter(on ? "All" : v.f)} style={{ flex: "none", width: 70, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                      <span style={{ width: 60, height: 60, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e2cc", boxShadow: "0 3px 9px rgba(120,80,40,0.08)" }}>{v.icon}</span>
+                      <span className="font-display" style={{ fontSize: 11.5, fontWeight: 700, color: "#1a1008" }}>{v.ja}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            )}
 
             {/* FILTERS */}
             <div style={{ padding: "0 20px 16px", display: "flex", gap: 8, overflowX: "auto" }}>
@@ -1423,6 +1449,7 @@ function HomeInner() {
                         <span style={{ fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c", fontWeight: 800 }}>{isFree ? "🤝 Free" : g.rate}</span>
                         {g.mode === "paid" ? <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{ratingDisplay(g, lang)}</span> : isTrustedLocal(g.stars, g.tour_count) ? <span style={{ fontSize: 10, color: "#2e8b57", fontWeight: 800 }}>✨ {t("trusted_local", lang)}</span> : null}
                       </div>
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedGuide(g); setScreen("profile"); }} className="font-display" style={{ marginTop: 11, width: "100%", border: "none", borderRadius: 13, padding: "10px", fontSize: 13, fontWeight: 800, color: "#fff", background: isFree ? "#2e8b57" : "#ad001c", cursor: "pointer", fontFamily: "inherit", boxShadow: isFree ? "0 4px 12px rgba(46,139,87,0.25)" : "0 4px 12px rgba(173,0,28,0.25)" }}>🤝 {lang === "ja" ? "会う" : "Meet"}</button>
                     </div>
                   </div>
                   );
