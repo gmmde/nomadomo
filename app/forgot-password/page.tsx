@@ -2,14 +2,15 @@
 import BackButton from "@/app/lib/back-button";
 
 import { useState } from "react";
+import AuthSplash from "@/app/_components/auth-splash";
 import { createClient } from "@/app/lib/supabase/client";
 import { useLang, t } from "@/app/lib/i18n";
 
-const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
-const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 24px" };
-const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
-const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
-const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
+const wrap: React.CSSProperties = { background: "#fff8ec", minHeight: "100vh", display: "flex", justifyContent: "center" };
+const card: React.CSSProperties = { width: "100%", maxWidth: 400, minHeight: "100vh", background: "#fff8ec", padding: "46px 22px 40px" };
+const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 13, padding: "13px 15px", fontSize: 14.5, fontWeight: 600, color: "#2b1d1a", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const label: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#ad001c", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" };
+const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 15, fontSize: 15.5, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 10px 22px -12px rgba(173,0,28,.7)" };
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -33,13 +34,7 @@ export default function ForgotPasswordPage() {
   return (
     <div style={wrap}>
       <div style={card}>
-        <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
-          <span style={{ color: "#2ecc71" }}>Noma</span>
-          <span style={{ color: "#ad001c" }}>Domo</span>
-        </div>
-        <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
-          {t("forgot_desc", lang)}
-        </div>
+<AuthSplash subtitle={t("forgot_desc", lang)} />
 
         {state.status === "ok" ? (
           <div style={{ background: "#2e8b5720", border: "1.5px solid #2e8b57", borderRadius: 12, padding: 16, color: "#2e8b57", fontSize: 13, fontWeight: 700, lineHeight: 1.6 }}>

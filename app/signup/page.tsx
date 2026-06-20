@@ -3,54 +3,57 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signup, type AuthState } from "@/app/actions/auth";
-import BrandLogo from "@/app/_components/brand-logo";
+import AuthSplash from "@/app/_components/auth-splash";
 import { useLang, t } from "@/app/lib/i18n";
 import LangToggle from "@/app/_components/lang-toggle";
 
 const wrapStyle: React.CSSProperties = {
-  background: "#f5ead0",
+  background: "#fff8ec",
   minHeight: "100vh",
   display: "flex",
   justifyContent: "center",
 };
 const cardStyle: React.CSSProperties = {
   width: "100%",
-  maxWidth: 390,
+  maxWidth: 400,
   minHeight: "100vh",
-  background: "#f5ead0",
-  padding: "32px 24px",
+  background: "#fff8ec",
+  padding: "46px 22px 40px",
 };
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#fff9f0",
-  border: "2px solid #e8c99a",
-  borderRadius: 14,
-  padding: "12px 14px",
-  fontSize: 14,
+  background: "#fff",
+  border: "1px solid #ecdcc4",
+  borderRadius: 13,
+  padding: "13px 15px",
+  fontSize: 14.5,
   fontWeight: 600,
-  color: "#1a1008",
+  color: "#2b1d1a",
   outline: "none",
   fontFamily: "inherit",
+  boxSizing: "border-box",
 };
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: 12,
-  fontWeight: 800,
-  color: "#8a7560",
-  marginBottom: 6,
+  fontSize: 11,
+  fontWeight: 700,
+  color: "#ad001c",
+  marginBottom: 7,
   textTransform: "uppercase",
+  letterSpacing: ".05em",
 };
 const btnPrimary: React.CSSProperties = {
   width: "100%",
-  background: "#2e8b57",
+  background: "#ad001c",
   color: "#fff",
   border: "none",
-  borderRadius: 16,
-  padding: 16,
-  fontSize: 16,
+  borderRadius: 14,
+  padding: 15,
+  fontSize: 15.5,
   fontWeight: 900,
   cursor: "pointer",
   fontFamily: "inherit",
+  boxShadow: "0 10px 22px -12px rgba(173,0,28,.7)",
 };
 
 import { useState } from "react";
@@ -66,12 +69,7 @@ export default function SignupPage() {
     <div style={{ ...wrapStyle, position: "relative" }}>
       <LangToggle position="absolute" topRight={true} />
       <div style={cardStyle}>
-        <div style={{ marginBottom: 4 }}>
-          <BrandLogo variant="text" size={28} />
-        </div>
-        <div style={{ fontSize: 14, color: "#8a7560", fontWeight: 700, marginBottom: 28 }}>
-          {t("signup_subtitle", lang)}
-        </div>
+<AuthSplash subtitle={t("signup_subtitle", lang)} />
 
         {state?.checkEmail ? (
           <div style={{ background: "#fff3cd", border: "2px solid #f5c649", borderRadius: 14, padding: 18, marginBottom: 16 }}>
@@ -102,7 +100,7 @@ export default function SignupPage() {
               )}
 
               {/* 年齢確認 + 規約同意 (両方必須) */}
-              <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 12, marginBottom: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 14, marginBottom: 16, display: "flex", flexDirection: "column", gap: 10, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
                 <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12, fontWeight: 700, color: "#1a1008", cursor: "pointer" }}>
                   <input type="checkbox" checked={ageOk} onChange={(e) => setAgeOk(e.target.checked)} style={{ marginTop: 3, flexShrink: 0 }} />
                   <span style={{ lineHeight: 1.5 }}>
