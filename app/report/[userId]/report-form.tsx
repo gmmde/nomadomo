@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { submitReport, type ReportFormState } from "@/app/actions/reports";
 
-const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
-const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 24px" };
-const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const wrap: React.CSSProperties = { background: "#fff8ec", minHeight: "100vh", display: "flex", justifyContent: "center" };
+const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "32px 24px" };
+const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
@@ -32,8 +32,8 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
           <div style={{ fontSize: 20, fontWeight: 900 }}>Report</div>
         </div>
 
-        <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "2px solid #e8c99a" }}>{targetEmoji}</div>
+        <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "1px solid #ecdcc4" }}>{targetEmoji}</div>
           <div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>Reporting</div>
             <div style={{ fontSize: 14, fontWeight: 900 }}>{targetName}</div>

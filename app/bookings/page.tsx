@@ -66,8 +66,8 @@ export default async function BookingsPage() {
   }
 
   return (
-    <div style={{ background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
-      <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 20px" }}>
+    <div style={{ background: "#fff8ec", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
+      <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "32px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <BackButton />
           <div style={{ fontSize: 20, fontWeight: 900 }}>Bookings</div>
@@ -85,9 +85,9 @@ export default async function BookingsPage() {
               {asTraveler.map((b) => {
                 const g = guideMap.get(b.guide_id);
                 return (
-                  <div key={b.id} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
+                  <div key={b.id} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: "2px solid #e8c99a" }}>{g?.emoji ?? "🧑"}</div>
+                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: "1px solid #ecdcc4" }}>{g?.emoji ?? "🧑"}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 14, fontWeight: 900 }}>{g?.name ?? `Guide #${b.guide_id}`}</div>
                         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{new Date(b.start_at).toLocaleString()}</div>
@@ -97,7 +97,7 @@ export default async function BookingsPage() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}d · ¥{b.total_yen.toLocaleString()}</div>
                       {b.payment_status && b.payment_status !== "unpaid" && (
-                        <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 10, background: b.payment_status === "succeeded" ? "#e6f5ee" : b.payment_status === "requires_capture" ? "#fff9f0" : b.payment_status === "refunded" || b.payment_status === "canceled" ? "#f0e6e6" : "#ad001c20", color: b.payment_status === "succeeded" ? "#2e8b57" : b.payment_status === "failed" ? "#ad001c" : "#8a7560", border: `1px solid ${b.payment_status === "succeeded" ? "#2e8b57" : "#e8c99a"}` }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 10, background: b.payment_status === "succeeded" ? "#e6f5ee" : b.payment_status === "requires_capture" ? "#fff" : b.payment_status === "refunded" || b.payment_status === "canceled" ? "#f0e6e6" : "#ad001c20", color: b.payment_status === "succeeded" ? "#2e8b57" : b.payment_status === "failed" ? "#ad001c" : "#8a7560", border: `1px solid ${b.payment_status === "succeeded" ? "#2e8b57" : "#f3e8d6"}` }}>
                           {b.payment_status === "succeeded" ? "💰 Paid" : b.payment_status === "requires_capture" ? "🔒 Authorized" : b.payment_status === "canceled" ? "Canceled" : b.payment_status === "refunded" ? "Refunded" : b.payment_status === "failed" ? "❌ Failed" : b.payment_status}
                         </div>
                       )}
@@ -131,9 +131,9 @@ export default async function BookingsPage() {
               {asGuide.map((b) => {
                 const tname = travelerMap.get(b.traveler_id) ?? `User (${b.traveler_id.slice(0, 8)})`;
                 return (
-                  <div key={b.id} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
+                  <div key={b.id} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: "2px solid #e8c99a" }}>🧑</div>
+                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: "1px solid #ecdcc4" }}>🧑</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 14, fontWeight: 900 }}>{tname}</div>
                         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{new Date(b.start_at).toLocaleString("ja-JP")}</div>
@@ -143,7 +143,7 @@ export default async function BookingsPage() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ fontSize: 12, color: "#1a1008", fontWeight: 700 }}>{b.hours}d · ¥{b.total_yen.toLocaleString()}</div>
                       {b.payment_status && b.payment_status !== "unpaid" && (
-                        <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 10, background: b.payment_status === "succeeded" ? "#e6f5ee" : b.payment_status === "requires_capture" ? "#fff9f0" : b.payment_status === "refunded" || b.payment_status === "canceled" ? "#f0e6e6" : "#ad001c20", color: b.payment_status === "succeeded" ? "#2e8b57" : b.payment_status === "failed" ? "#ad001c" : "#8a7560", border: `1px solid ${b.payment_status === "succeeded" ? "#2e8b57" : "#e8c99a"}` }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 10, background: b.payment_status === "succeeded" ? "#e6f5ee" : b.payment_status === "requires_capture" ? "#fff" : b.payment_status === "refunded" || b.payment_status === "canceled" ? "#f0e6e6" : "#ad001c20", color: b.payment_status === "succeeded" ? "#2e8b57" : b.payment_status === "failed" ? "#ad001c" : "#8a7560", border: `1px solid ${b.payment_status === "succeeded" ? "#2e8b57" : "#f3e8d6"}` }}>
                           {b.payment_status === "succeeded" ? "💰 Paid" : b.payment_status === "requires_capture" ? "🔒 Authorized" : b.payment_status === "canceled" ? "Canceled" : b.payment_status === "refunded" ? "Refunded" : b.payment_status === "failed" ? "❌ Failed" : b.payment_status}
                         </div>
                       )}

@@ -41,12 +41,12 @@ type Initial = {
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh" };
 const header: React.CSSProperties = { background: "#2e8b57", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 };
-const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const err: React.CSSProperties = { fontSize: 11, color: "#ad001c", fontWeight: 800, marginTop: 4 };
 const chip = (a: boolean): React.CSSProperties => ({
-  background: a ? "#2e8b57" : "#fff9f0",
-  border: `2px solid ${a ? "#2e8b57" : "#e8c99a"}`,
+  background: a ? "#2e8b57" : "#fff",
+  border: `2px solid ${a ? "#2e8b57" : "#f3e8d6"}`,
   color: a ? "#fff" : "#8a7560",
   borderRadius: 20,
   padding: "7px 14px",

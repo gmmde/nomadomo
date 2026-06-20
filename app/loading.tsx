@@ -4,7 +4,7 @@ export default function Loading() {
       style={{
         position: "fixed",
         inset: 0,
-        background: "#f5ead0",
+        background: "#fff8ec",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -19,7 +19,7 @@ export default function Loading() {
           width: 28,
           height: 28,
           borderRadius: "50%",
-          border: "3px solid #e8c99a",
+          border: "3px solid #f3e8d6",
           borderTopColor: "#ad001c",
           animation: "spin 0.9s linear infinite",
         }}

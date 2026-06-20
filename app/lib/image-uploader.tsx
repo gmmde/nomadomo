@@ -77,15 +77,15 @@ export default function ImageUploader({
               <img
                 src={signed[p]}
                 alt=""
-                style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12, border: "2px solid #e8c99a", display: "block" }}
+                style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12, border: "1px solid #ecdcc4", display: "block" }}
               />
             ) : (
-              <div style={{ width: 80, height: 80, borderRadius: 12, border: "2px solid #e8c99a", background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite" }} />
+              <div style={{ width: 80, height: 80, borderRadius: 12, border: "1px solid #ecdcc4", background: "#f0d9b5", animation: "pulse 1.4s ease-in-out infinite" }} />
             )}
             <button
               type="button"
               onClick={() => removePath(p)}
-              style={{ position: "absolute", top: -6, right: -6, background: "#ad001c", color: "#fff", border: "2px solid #fff9f0", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", fontWeight: 900, padding: 0, lineHeight: 1 }}
+              style={{ position: "absolute", top: -6, right: -6, background: "#ad001c", color: "#fff", border: "2px solid #fff", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", fontWeight: 900, padding: 0, lineHeight: 1 }}
               aria-label="削除"
             >
               ×
@@ -95,7 +95,7 @@ export default function ImageUploader({
         ))}
         {paths.length < maxImages && (
           <label
-            style={{ width: 80, height: 80, border: "2px dashed #e8c99a", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#8a7560", cursor: uploading ? "wait" : "pointer", background: "#fff9f0", flexShrink: 0 }}
+            style={{ width: 80, height: 80, border: "2px dashed #f3e8d6", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#8a7560", cursor: uploading ? "wait" : "pointer", background: "#fff", flexShrink: 0 }}
           >
             {uploading ? "…" : "+"}
             <input

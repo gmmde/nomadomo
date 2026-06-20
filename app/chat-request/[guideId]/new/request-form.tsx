@@ -8,7 +8,7 @@ import { useLang, t } from "@/app/lib/i18n";
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" };
-const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
@@ -57,7 +57,7 @@ export default function RequestForm({ guideUserId, guideName, guideEmoji, guideU
           <button
             type="button"
             onClick={() => router.push("/requests")}
-            style={{ width: "100%", background: "transparent", color: "#8a7560", border: "2px solid #e8c99a", borderRadius: 16, padding: 12, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+            style={{ width: "100%", background: "transparent", color: "#8a7560", border: "1px solid #ecdcc4", borderRadius: 16, padding: 12, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
           >
             📨 {lang === "ja" ? "送信したリクエスト一覧" : "View sent requests"}
           </button>
@@ -74,8 +74,8 @@ export default function RequestForm({ guideUserId, guideName, guideEmoji, guideU
           <div style={{ fontSize: 18, fontWeight: 900 }}>{t("req_form_title", lang)}</div>
         </div>
 
-        <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", border: "2px solid #e8c99a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{guideEmoji}</div>
+        <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14, marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", border: "1px solid #ecdcc4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{guideEmoji}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 900 }}>{guideName}{guideMode !== "free" ? " ✨" : ""}</div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{guideUniversity}</div>

@@ -16,7 +16,7 @@ export default function GlobalError({
   return (
     <div
       style={{
-        background: "#f5ead0",
+        background: "#fff8ec",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -28,7 +28,7 @@ export default function GlobalError({
         style={{
           width: "100%",
           maxWidth: 390,
-          background: "#fff9f0",
+          background: "#fff",
           border: "2px solid #ad001c",
           borderRadius: 16,
           padding: 24,
@@ -56,7 +56,7 @@ export default function GlobalError({
               color: "#8a7560",
               fontFamily: "monospace",
               background: "#ffefd5",
-              border: "1px dashed #e8c99a",
+              border: "1px dashed #f3e8d6",
               borderRadius: 8,
               padding: 8,
               marginBottom: 14,

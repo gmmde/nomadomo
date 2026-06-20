@@ -23,7 +23,7 @@ const GENDER_OPTIONS: Array<{ value: string; labelKey: "form_gender_male" | "for
 
 
 const wrapStyle: React.CSSProperties = {
-  background: "#f5ead0",
+  background: "#fff8ec",
   minHeight: "100vh",
   display: "flex",
   justifyContent: "center",
@@ -32,7 +32,7 @@ const cardStyle: React.CSSProperties = {
   width: "100%",
   maxWidth: 390,
   minHeight: "100vh",
-  background: "#f5ead0",
+  background: "#fff8ec",
 };
 const headerStyle: React.CSSProperties = {
   background: "#ad001c",
@@ -43,8 +43,8 @@ const headerStyle: React.CSSProperties = {
 };
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#fff9f0",
-  border: "2px solid #e8c99a",
+  background: "#fff",
+  border: "1px solid #ecdcc4",
   borderRadius: 14,
   padding: "12px 14px",
   fontSize: 14,
@@ -69,8 +69,8 @@ const errStyle: React.CSSProperties = {
   marginTop: 4,
 };
 const chipStyle = (active: boolean): React.CSSProperties => ({
-  background: active ? "#ad001c" : "#fff9f0",
-  border: `2px solid ${active ? "#ad001c" : "#e8c99a"}`,
+  background: active ? "#ad001c" : "#fff",
+  border: `2px solid ${active ? "#ad001c" : "#f3e8d6"}`,
   color: active ? "#fff" : "#8a7560",
   borderRadius: 20,
   padding: "7px 14px",

@@ -35,7 +35,7 @@ export default async function AllTravelersPage() {
         </div>
 
         {rows.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700, background: "#fff9f0", border: "2px dashed #e8c99a", borderRadius: 14 }}>
+          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700, background: "#fff", border: "2px dashed #f3e8d6", borderRadius: 14 }}>
             まだ旅行者登録なし
           </div>
         ) : (
@@ -46,7 +46,7 @@ export default async function AllTravelersPage() {
                 href={`/travelers/${t.id}`}
                 style={{ display: "flex", alignItems: "center", gap: 12, background: "#ffffffee", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, textDecoration: "none", color: "inherit" }}
               >
-                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0 }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "1px solid #ecdcc4", flexShrink: 0 }}>
                   {t.emoji ?? "🧑"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

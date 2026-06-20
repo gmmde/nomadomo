@@ -50,7 +50,7 @@ type Initial = {
 };
 
 const wrap: React.CSSProperties = {
-  background: "#f5ead0",
+  background: "#fff8ec",
   minHeight: "100vh",
   display: "flex",
   justifyContent: "center",
@@ -59,7 +59,7 @@ const card: React.CSSProperties = {
   width: "100%",
   maxWidth: 390,
   minHeight: "100vh",
-  background: "#f5ead0",
+  background: "#fff8ec",
 };
 const header: React.CSSProperties = {
   background: "#ad001c",
@@ -70,8 +70,8 @@ const header: React.CSSProperties = {
 };
 const input: React.CSSProperties = {
   width: "100%",
-  background: "#fff9f0",
-  border: "2px solid #e8c99a",
+  background: "#fff",
+  border: "1px solid #ecdcc4",
   borderRadius: 14,
   padding: "12px 14px",
   fontSize: 14,
@@ -96,8 +96,8 @@ const err: React.CSSProperties = {
   marginTop: 4,
 };
 const chip = (a: boolean): React.CSSProperties => ({
-  background: a ? "#ad001c" : "#fff9f0",
-  border: `2px solid ${a ? "#ad001c" : "#e8c99a"}`,
+  background: a ? "#ad001c" : "#fff",
+  border: `2px solid ${a ? "#ad001c" : "#f3e8d6"}`,
   color: a ? "#fff" : "#8a7560",
   borderRadius: 20,
   padding: "7px 14px",
@@ -202,7 +202,7 @@ export default function EditGuideForm({
           </div>
 
           <div style={{ padding: "16px 16px 0" }}>
-          <div style={{ background: paused ? "#fff3cd" : "#fff9f0", border: `2px solid ${paused ? "#f5c649" : "#e8c99a"}`, borderRadius: 14, padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ background: paused ? "#fff3cd" : "#fff", border: `2px solid ${paused ? "#f5c649" : "#f3e8d6"}`, borderRadius: 14, padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ fontSize: 26 }}>{paused ? "🛌" : "✨"}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 900, color: "#1a1008" }}>

@@ -64,9 +64,9 @@ export default function AvailableSlots({ initial = [] }: Props) {
 
   const dayChipStyle = (active: boolean): React.CSSProperties => ({
     width: 38, height: 38, borderRadius: "50%",
-    background: active ? "#ad001c" : "#fff9f0",
+    background: active ? "#ad001c" : "#fff",
     color: active ? "#fff" : "#8a7560",
-    border: `2px solid ${active ? "#ad001c" : "#e8c99a"}`,
+    border: `2px solid ${active ? "#ad001c" : "#f3e8d6"}`,
     fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
   });
 
@@ -90,7 +90,7 @@ export default function AvailableSlots({ initial = [] }: Props) {
       )}
 
       {/* 追加 UI */}
-      <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 12, padding: 10, marginBottom: 4 }}>
+      <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 12, padding: 10, marginBottom: 4 }}>
         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 800, marginBottom: 6 }}>曜日 (複数選択可)</div>
         <div style={{ display: "flex", gap: 5, marginBottom: 10, flexWrap: "wrap" }}>
           {DAYS.map((d) => (
@@ -98,9 +98,9 @@ export default function AvailableSlots({ initial = [] }: Props) {
           ))}
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 8 }}>
-          <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} style={{ flex: 1, background: "#fff", border: "1.5px solid #e8c99a", borderRadius: 8, padding: "6px 8px", fontSize: 13, fontFamily: "inherit" }} />
+          <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} style={{ flex: 1, background: "#fff", border: "1px solid #ecdcc4", borderRadius: 8, padding: "6px 8px", fontSize: 13, fontFamily: "inherit" }} />
           <span style={{ color: "#8a7560", fontWeight: 800 }}>〜</span>
-          <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} style={{ flex: 1, background: "#fff", border: "1.5px solid #e8c99a", borderRadius: 8, padding: "6px 8px", fontSize: 13, fontFamily: "inherit" }} />
+          <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} style={{ flex: 1, background: "#fff", border: "1px solid #ecdcc4", borderRadius: 8, padding: "6px 8px", fontSize: 13, fontFamily: "inherit" }} />
           <button type="button" onClick={addSlots} style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>+ 追加</button>
         </div>
         {error && <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800 }}>{error}</div>}

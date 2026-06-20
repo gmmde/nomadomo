@@ -8,9 +8,9 @@ import { loadStripe, type Stripe as StripeJs } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { createBooking } from "@/app/actions/bookings";
 
-const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
-const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "32px 24px" };
-const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const wrap: React.CSSProperties = { background: "#fff8ec", minHeight: "100vh", display: "flex", justifyContent: "center" };
+const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "32px 24px" };
+const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
@@ -103,7 +103,7 @@ function PayAndSubmit({ guideId, guideName, guideEmoji, guideUniversity, ratePer
     <form onSubmit={onSubmit}>
       <div style={{ marginBottom: 16 }}>
         <label style={label}>💳 {lang === "ja" ? "お支払い情報" : "Payment details"}</label>
-        <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 14 }}>
+        <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 14 }}>
           <PaymentElement />
         </div>
         <div style={{ fontSize: 11, color: "#8a7560", marginTop: 6, fontWeight: 600 }}>
@@ -177,8 +177,8 @@ export default function BookingForm({ guideId, guideName, guideEmoji, guideUnive
           <div style={{ fontSize: 20, fontWeight: 900 }}>{t("booking_title", lang)}</div>
         </div>
 
-        <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a" }}>{guideEmoji}</div>
+        <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "1px solid #ecdcc4" }}>{guideEmoji}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 900 }}>{guideName}</div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{guideUniversity}</div>

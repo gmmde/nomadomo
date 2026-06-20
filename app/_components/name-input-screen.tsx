@@ -8,7 +8,7 @@ import LangToggle from "./lang-toggle";
 
 const wrap: React.CSSProperties = {
   position: "fixed", inset: 0, zIndex: 998,
-  background: "#f5ead0",
+  background: "#fff8ec",
   display: "flex", justifyContent: "center", alignItems: "flex-start",
   padding: "40px 20px 24px", overflowY: "auto",
 };
@@ -18,7 +18,7 @@ const card: React.CSSProperties = {
   fontFamily: "inherit",
 };
 const input: React.CSSProperties = {
-  width: "100%", background: "#fff9f0", border: "2px solid #e8c99a",
+  width: "100%", background: "#fff", border: "1px solid #ecdcc4",
   borderRadius: 14, padding: "14px 16px", fontSize: 18, fontWeight: 700,
   color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
   letterSpacing: "0.02em",
@@ -30,7 +30,7 @@ const btnPrimary: React.CSSProperties = {
 };
 const btnSecondary: React.CSSProperties = {
   width: "100%", background: "transparent", color: "#8a7560",
-  border: "2px solid #e8c99a", borderRadius: 14, padding: 12, fontSize: 13,
+  border: "1px solid #ecdcc4", borderRadius: 14, padding: 12, fontSize: 13,
   fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
 };
 
@@ -129,7 +129,7 @@ export default function NameInputScreen({ onComplete }: Props) {
             <div style={{ fontSize: 18, fontWeight: 900, color: "#1a1008", textAlign: "center" }}>
               {lang === "ja" ? "この名前で登録する？" : "Save this name?"}
             </div>
-            <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 18, textAlign: "center" }}>
+            <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 18, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 6, textTransform: "uppercase" }}>
                 {lang === "ja" ? "あなたの名前" : "Your name"}
               </div>

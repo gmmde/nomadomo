@@ -185,7 +185,7 @@ function Grid({ children }: { children: React.ReactNode }) {
 
 function Card({ label, value, sub, accent, big }: { label: string; value: string; sub?: string; accent?: string; big?: boolean }) {
   return (
-    <div style={{ background: "#fff9f0", border: `2px solid ${accent ?? "#e8c99a"}`, borderRadius: 14, padding: big ? 14 : 12, gridColumn: big ? "span 2" : undefined }}>
+    <div style={{ background: "#fff", border: `2px solid ${accent ?? "#f3e8d6"}`, borderRadius: 14, padding: big ? 14 : 12, gridColumn: big ? "span 2" : undefined }}>
       <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800, marginBottom: 4, textTransform: "uppercase" }}>{label}</div>
       <div style={{ fontSize: big ? 24 : 22, fontWeight: 900, color: accent ?? "#ad001c" }}>{value}</div>
       {sub && <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 2 }}>{sub}</div>}
@@ -196,7 +196,7 @@ function Card({ label, value, sub, accent, big }: { label: string; value: string
 function DailyBar({ data }: { data: Array<{ day: string; count: number }> }) {
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
-    <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 12 }}>
+    <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 12 }}>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 80 }}>
         {data.map((d) => {
           const h = (d.count / max) * 70 + 2;

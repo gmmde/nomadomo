@@ -95,7 +95,7 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
         </div>
 
         {rows.length === 0 ? (
-          <div style={{ background: "#fff9f0", border: "2px dashed #e8c99a", borderRadius: 16, padding: 28, textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
+          <div style={{ background: "#fff", border: "2px dashed #f3e8d6", borderRadius: 16, padding: 28, textAlign: "center", color: "#8a7560", fontWeight: 700, fontSize: 13 }}>
             まだマッチ履歴はないわよ。誰かと「Meet」して、お互いレビューしたらここに残るから。
           </div>
         ) : (
@@ -103,27 +103,27 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
             {rows.map((r) => {
               const date = r.completedAt ? new Date(r.completedAt).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" }) : "";
               return (
-                <div key={r.meetingId} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
+                <div key={r.meetingId} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#ffefd5", border: "2px solid #e8c99a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{r.peerEmoji}</div>
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#ffefd5", border: "1px solid #ecdcc4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{r.peerEmoji}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 900, color: "#1a1008" }}>{r.peerName}</div>
                       {date && <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>📅 {date}</div>}
                     </div>
                   </div>
                   {r.myReview ? (
-                    <div style={{ background: "#fff", border: "1.5px solid #e8c99a", borderRadius: 10, padding: 10, marginBottom: 6 }}>
+                    <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 10, padding: 10, marginBottom: 6 }}>
                       <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800, marginBottom: 4 }}>あなたのレビュー</div>
-                      <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.myReview.rating)}<span style={{ color: "#e8c99a" }}>{"★".repeat(5 - r.myReview.rating)}</span></div>
+                      <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.myReview.rating)}<span style={{ color: "#f3e8d6" }}>{"★".repeat(5 - r.myReview.rating)}</span></div>
                       {r.myReview.comment && <div style={{ fontSize: 12, color: "#1a1008", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.myReview.comment}</div>}
                     </div>
                   ) : (
                     <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic", padding: "4px 0" }}>レビュー未投稿</div>
                   )}
                   {r.peerReview ? (
-                    <div style={{ background: "#fff", border: "1.5px solid #e8c99a", borderRadius: 10, padding: 10 }}>
+                    <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 10, padding: 10 }}>
                       <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 800, marginBottom: 4 }}>{r.peerReview.reviewerName} からのレビュー</div>
-                      <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.peerReview.rating)}<span style={{ color: "#e8c99a" }}>{"★".repeat(5 - r.peerReview.rating)}</span></div>
+                      <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.peerReview.rating)}<span style={{ color: "#f3e8d6" }}>{"★".repeat(5 - r.peerReview.rating)}</span></div>
                       {r.peerReview.comment && <div style={{ fontSize: 12, color: "#1a1008", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.peerReview.comment}</div>}
                     </div>
                   ) : (

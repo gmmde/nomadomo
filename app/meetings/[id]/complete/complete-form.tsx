@@ -7,13 +7,13 @@ import { useLang, t } from "@/app/lib/i18n";
 import { postReview } from "@/app/actions/reviews";
 import { createClient } from "@/app/lib/supabase/client";
 
-const wrap: React.CSSProperties = { background: "#f5ead0", minHeight: "100vh", display: "flex", justifyContent: "center" };
-const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#f5ead0", padding: "20px 20px 100px" };
-const section: React.CSSProperties = { background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 18, padding: 18, marginBottom: 16 };
+const wrap: React.CSSProperties = { background: "#fff8ec", minHeight: "100vh", display: "flex", justifyContent: "center" };
+const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "20px 20px 100px" };
+const section: React.CSSProperties = { background: "#fff", border: "1px solid #ecdcc4", borderRadius: 18, padding: 18, marginBottom: 16 };
 const sectionTitle: React.CSSProperties = { fontSize: 13, fontWeight: 900, color: "#1a1008", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.5 };
 const btnPrimary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 14, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 const btnDone: React.CSSProperties = { width: "100%", background: "#e6f5ee", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 14, padding: 14, fontSize: 14, fontWeight: 900, cursor: "default", fontFamily: "inherit" };
-const inputStyle: React.CSSProperties = { width: "100%", background: "#fff", border: "2px solid #e8c99a", borderRadius: 12, padding: 12, fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", resize: "vertical" };
+const inputStyle: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 12, padding: 12, fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", resize: "vertical" };
 
 type Props = {
   meetingId: number;
@@ -173,8 +173,8 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
           <div style={{ fontSize: 18, fontWeight: 900, flex: 1 }}>{t("complete_title", lang)}</div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", border: "2px solid #e8c99a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{peerEmoji}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14, marginBottom: 16 }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", border: "1px solid #ecdcc4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{peerEmoji}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 900 }}>{peerName}</div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{lang === "ja" ? "お出かけ完了？" : "Finished meeting?"}</div>
@@ -194,7 +194,7 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
                     key={n}
                     type="button"
                     onClick={() => setRating(n)}
-                    style={{ background: "none", border: "none", fontSize: 32, cursor: "pointer", color: (rating ?? 0) >= n ? "#f5c649" : "#e8c99a", padding: 0, lineHeight: 1 }}
+                    style={{ background: "none", border: "none", fontSize: 32, cursor: "pointer", color: (rating ?? 0) >= n ? "#f5c649" : "#f3e8d6", padding: 0, lineHeight: 1 }}
                     aria-label={`${n} stars`}
                   >★</button>
                 ))}
@@ -218,7 +218,7 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
         </div>
 
         {reviewDone && !peerReviewed && (
-          <div style={{ background: "#fff9f0", border: "2px dashed #e8c99a", borderRadius: 14, padding: 14, marginBottom: 14, textAlign: "center" }}>
+          <div style={{ background: "#fff", border: "2px dashed #f3e8d6", borderRadius: 14, padding: 14, marginBottom: 14, textAlign: "center" }}>
             <div style={{ fontSize: 24, marginBottom: 6 }}>⏳</div>
             <div style={{ fontSize: 13, fontWeight: 800, color: "#8a7560" }}>
               {t("waiting_for_peer_review", lang).replace("{name}", peerName)}

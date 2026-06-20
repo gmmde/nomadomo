@@ -4,7 +4,7 @@ export default function NotFound() {
   return (
     <div
       style={{
-        background: "#f5ead0",
+        background: "#fff8ec",
         minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -16,8 +16,8 @@ export default function NotFound() {
         style={{
           width: "100%",
           maxWidth: 390,
-          background: "#fff9f0",
-          border: "2px solid #e8c99a",
+          background: "#fff",
+          border: "1px solid #ecdcc4",
           borderRadius: 16,
           padding: 24,
           textAlign: "center",

@@ -41,7 +41,7 @@ const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" };
-const input: React.CSSProperties = { width: "100%", background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: "10px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "10px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const chip = (active: boolean, color = "#ad001c"): React.CSSProperties => ({
   background: active ? color : "#ffffffdd",
   border: `2px solid ${active ? color : "#f0d9b5"}`,
@@ -156,7 +156,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         </div>
 
         {/* Search */}
-        <div style={{ background: "#ffffffee", border: "2px solid #e8c99a", borderRadius: 16, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <div style={{ background: "#ffffffee", border: "1px solid #ecdcc4", borderRadius: 16, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <span style={{ color: "#ad001c", fontSize: 16 }}>🔍</span>
           <input
             value={query}
@@ -191,7 +191,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
 
         {/* Filters panel */}
         {filtersOpen && (
-          <div style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 14, padding: 12, marginBottom: 14 }}>
+          <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 12, marginBottom: 14 }}>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>モード</div>
             <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
               {([["all", "すべて", "#8a7560"], ["mate", "🤝 Free (無料)", "#ad001c"], ["guide", "💼 Pro (有料)", "#2e8b57"]] as const).map(([v, label, c]) => (
@@ -199,7 +199,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                   flex: 1,
                   background: modeFilter === v ? c : "#fff",
                   color: modeFilter === v ? "#fff" : "#8a7560",
-                  border: `2px solid ${modeFilter === v ? c : "#e8c99a"}`,
+                  border: `2px solid ${modeFilter === v ? c : "#f3e8d6"}`,
                   borderRadius: 14, padding: "6px 8px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit",
                 }}>{label}</button>
               ))}
@@ -232,7 +232,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
               <span style={{ color: "#8a7560", fontWeight: 800 }}>〜</span>
               <input type="number" min={16} max={99} placeholder="最大" value={ageMax} onChange={(e) => setAgeMax(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...input, padding: "8px 10px" }} />
             </div>
-            <button onClick={clearAll} style={{ width: "100%", background: "#fff", color: "#8a7560", border: "1.5px solid #e8c99a", borderRadius: 12, padding: 8, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={clearAll} style={{ width: "100%", background: "#fff", color: "#8a7560", border: "1px solid #ecdcc4", borderRadius: 12, padding: 8, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
               すべてリセット
             </button>
           </div>
@@ -240,7 +240,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
 
         {/* Results */}
         {filtered.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700, background: "#fff9f0", border: "2px dashed #e8c99a", borderRadius: 14 }}>
+          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700, background: "#fff", border: "2px dashed #f3e8d6", borderRadius: 14 }}>
             条件にマッチするガイドなし
           </div>
         ) : (
@@ -254,7 +254,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                   style={(() => { const s = modeCardStyle(g.mode); return { display: "block", textDecoration: "none", color: "inherit", background: s.bg, border: `2px solid ${s.border}`, borderRadius: 18, padding: 14 }; })()}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "2px solid #e8c99a", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
+                    <div style={{ width: 50, height: 50, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, border: "1px solid #ecdcc4", flexShrink: 0, overflow: "hidden" }}>{g.avatar_path && avatarUrls[g.avatar_path] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatar_path]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
                       <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700 }}>
@@ -279,7 +279,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                   )}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                     {[...g.tags, ...g.languages].slice(0, 6).map((t) => (
-                      <span key={t} style={{ background: "#ffefd5", border: "1px solid #e8c99a", borderRadius: 6, padding: "2px 6px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>
+                      <span key={t} style={{ background: "#ffefd5", border: "1px solid #f3e8d6", borderRadius: 6, padding: "2px 6px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>
                     ))}
                     <span style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginLeft: "auto" }}>
                       {g.tour_count === 0 ? "✨ 新規" : `★ ${g.rating.toFixed(1)}`}
@@ -306,9 +306,9 @@ export default function AllGuidesView(props: { guides: GuideRow[] }) {
 import BrandLogoFallback from "@/app/_components/brand-logo";
 function SuspenseFallback() {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#f5ead0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, zIndex: 1000 }}>
+    <div style={{ position: "fixed", inset: 0, background: "#fff8ec", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, zIndex: 1000 }}>
       <BrandLogoFallback variant="full" size={32} camelHeight={90} />
-      <div style={{ width: 26, height: 26, borderRadius: "50%", border: "3px solid #e8c99a", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite" }} />
+      <div style={{ width: 26, height: 26, borderRadius: "50%", border: "3px solid #f3e8d6", borderTopColor: "#ad001c", animation: "spin 0.9s linear infinite" }} />
     </div>
   );
 }

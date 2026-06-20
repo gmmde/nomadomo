@@ -8,8 +8,8 @@ type Mode = "free" | "paid";
 
 const input: React.CSSProperties = {
   width: "100%",
-  background: "#fff9f0",
-  border: "2px solid #e8c99a",
+  background: "#fff",
+  border: "1px solid #ecdcc4",
   borderRadius: 14,
   padding: "12px 14px",
   fontSize: 14,
@@ -73,8 +73,8 @@ export default function ModeAndRate({ initialMode = "free", initialRate = 3000 }
               key={o.value}
               onClick={() => setMode(o.value)}
               style={{
-                background: active ? `${o.color}15` : "#fff9f0",
-                border: `2px solid ${active ? o.color : "#e8c99a"}`,
+                background: active ? `${o.color}15` : "#fff",
+                border: `2px solid ${active ? o.color : "#f3e8d6"}`,
                 borderRadius: 14,
                 padding: "12px 14px",
                 cursor: "pointer",

@@ -75,7 +75,7 @@ export default async function RequestsPage() {
                 const tname = tMap.get(r.traveler_id) ?? `User (${r.traveler_id.slice(0, 8)})`;
                 const s = STATUS_LABEL[r.status] ?? { label: r.status, color: "#8a7560" };
                 return (
-                  <div key={r.id} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
+                  <div key={r.id} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                       <div style={{ fontSize: 14, fontWeight: 900 }}>From {tname}</div>
                       <div style={{ fontSize: 10, fontWeight: 900, color: s.color }}>{s.label}</div>
@@ -117,7 +117,7 @@ export default async function RequestsPage() {
                 const g = gMap.get(r.guide_user_id);
                 const s = STATUS_LABEL[r.status] ?? { label: r.status, color: "#8a7560" };
                 return (
-                  <div key={r.id} style={{ background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14 }}>
+                  <div key={r.id} style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                       <div style={{ fontSize: 14, fontWeight: 900 }}>To {g?.emoji ?? "🧑"} {g?.name ?? "Guide"}</div>
                       <div style={{ fontSize: 10, fontWeight: 900, color: s.color }}>{s.label}</div>
