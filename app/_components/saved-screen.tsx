@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { t, type Lang } from "../lib/i18n";
 
 type GuideCard = {
@@ -31,50 +30,44 @@ export default function SavedScreen({
   avatarUrls,
   onSelect,
   toggleSave,
-  modeCardStyle,
   lang,
 }: Props) {
+  const savedList = guides.filter((g) => savedIds.has(Number(g.id)));
   return (
-    <div className="screen-enter" style={{ minHeight: "100vh" }}>
-      <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
-        <div style={{ width: 36 }} />
-        <div className="font-display" style={{ fontSize: 16, fontWeight: 900, color: "#1a1008", flex: 1, textAlign: "center" }}>{t("saved_title", lang)}</div>
-        <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#ad001c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
+    <div className="screen-enter" style={{ minHeight: "100vh", background: "#fff8ec" }}>
+      {/* title (mock) */}
+      <div style={{ padding: "16px 22px 4px" }}>
+        <h1 className="font-display" style={{ margin: "0 0 2px", fontWeight: 900, fontSize: 26, color: "#2b1d1a" }}>{t("saved_title", lang)}</h1>
+        <p style={{ margin: 0, fontSize: 13, color: "#b03a2e", fontWeight: 700 }}>Saved · {savedList.length} guides</p>
       </div>
-      <div style={{ padding: "20px" }}>
+
+      <div style={{ padding: "14px 22px 0" }}>
         {!currentUserId ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-            {t("saved_login_required", lang)}
-          </div>
-        ) : savedIds.size === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-            {t("saved_empty", lang)}
-          </div>
+          <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("saved_login_required", lang)}</div>
+        ) : savedList.length === 0 ? (
+          <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("saved_empty", lang)}</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {guides.filter((g) => savedIds.has(Number(g.id))).map((g) => {
-              const s = modeCardStyle(g.mode);
+            {savedList.map((g) => {
+              const isFree = g.mode === "free";
+              const av = g.avatarPath ? avatarUrls[g.avatarPath] : null;
               return (
                 <div
                   key={g.id}
                   onClick={() => onSelect(g)}
-                  style={{ background: s.bg, border: `2px solid ${s.border}`, borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+                  style={{ display: "flex", gap: 13, alignItems: "center", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)", cursor: "pointer" }}
                 >
-                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", overflow: "hidden" }}>
-                    {g.avatarPath && avatarUrls[g.avatarPath]
-                      ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : g.emoji}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: 900 }}>{g.name}</div>
-                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600 }}>
-                      {g.uni}{g.mode !== "free" ? ` · ${g.rate}` : " · 🤝 Free"}
+                  <div style={{ width: 62, height: 62, borderRadius: 16, flex: "none", display: "grid", placeItems: "center", fontSize: 30, overflow: "hidden", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!av && g.emoji}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <span className="font-display" style={{ fontWeight: 700, fontSize: 15.5, color: "#2b1d1a" }}>{g.name}</span>
+                      <span style={{ fontSize: 9.5, fontWeight: 800, color: "#fff", padding: "2px 7px", borderRadius: 20, background: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "FREE" : "PRO"}</span>
                     </div>
+                    <p style={{ margin: "3px 0 0", fontSize: 11, color: "#b09a86" }}>{g.uni}{isFree ? " · 🤝 Free" : ` · ${g.rate}`}</p>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }}
-                    style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", padding: 4 }}
-                  >❤️</button>
+                  <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label={t("saved_title", lang)} style={{ border: "none", background: "transparent", cursor: "pointer", padding: 4, display: "grid", placeItems: "center" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#ad001c" stroke="#ad001c" strokeWidth={1.5}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                  </button>
                 </div>
               );
             })}

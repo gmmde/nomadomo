@@ -40,7 +40,6 @@ type Props = {
 };
 
 export default function InboxScreen({
-  goBack,
   currentUserId,
   inboxPeers,
   unreadByPeer,
@@ -53,27 +52,29 @@ export default function InboxScreen({
 }: Props) {
   const dateLocale = lang === "ja" ? "ja-JP" : "en-US";
   return (
-    <div className="screen-enter" style={{ minHeight: "100vh" }}>
-      <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
-        <button onClick={goBack} aria-label="戻る" style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, cursor: "pointer" }}>←</button>
-        <div className="font-display" style={{ fontSize: 16, fontWeight: 900, color: "#1a1008", flex: 1, textAlign: "center" }}>{t("inbox_title", lang)}</div>
-        <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 36, height: 36, color: "#ad001c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
+    <div className="screen-enter" style={{ minHeight: "100vh", background: "#fff8ec" }}>
+      {/* title (mock) */}
+      <div style={{ padding: "16px 22px 14px" }}>
+        <h1 className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 26, color: "#2b1d1a" }}>{t("inbox_title", lang)}</h1>
+        <p style={{ margin: "2px 0 0", fontSize: 13, color: "#b03a2e", fontWeight: 700 }}>Messages</p>
       </div>
-      <div style={{ padding: "20px" }}>
-        {currentUserId && (
+
+      {/* pending requests card (機能保持・新トークンで再スキン) */}
+      {currentUserId && (
+        <div style={{ padding: "0 22px 8px" }}>
           <Link
             href="/requests"
-            style={{ position: "relative", display: "block", background: pendingRequests.length > 0 ? "#ad001c" : "#fff", color: pendingRequests.length > 0 ? "#fff" : "#1a1008", border: pendingRequests.length > 0 ? "none" : "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 16, textDecoration: "none" }}
+            style={{ position: "relative", display: "block", background: pendingRequests.length > 0 ? "#ad001c" : "#fff", color: pendingRequests.length > 0 ? "#fff" : "#2b1d1a", border: pendingRequests.length > 0 ? "none" : "1px solid #f3e8d6", borderRadius: 18, padding: 14, textDecoration: "none", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}
           >
             {pendingRequests.length > 0 && (
-              <div style={{ position: "absolute", top: -8, right: -8, background: "#ad001c", color: "#fff", borderRadius: 12, minWidth: 24, height: 24, padding: "0 7px", fontSize: 12, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid #f5ead0", boxShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>
+              <div style={{ position: "absolute", top: -8, right: -8, background: "#ad001c", color: "#fff", borderRadius: 12, minWidth: 24, height: 24, padding: "0 7px", fontSize: 12, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid #fff8ec", boxShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>
                 {pendingRequests.length > 99 ? "99+" : pendingRequests.length}
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ fontSize: 28 }}>📨</div>
+              <div style={{ fontSize: 26 }}>📨</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 2 }}>
+                <div className="font-display" style={{ fontSize: 14, fontWeight: 800, marginBottom: 2 }}>
                   {pendingRequests.length > 0
                     ? `${t("inbox_pending_requests", lang)} (${pendingRequests.length})`
                     : t("inbox_view_all_requests", lang)}
@@ -84,60 +85,53 @@ export default function InboxScreen({
                   </div>
                 )}
               </div>
-              <div style={{ fontSize: 18, color: pendingRequests.length > 0 ? "#fff" : "#8a7560" }}>→</div>
+              <div style={{ fontSize: 18, color: pendingRequests.length > 0 ? "#fff" : "#b09a86" }}>→</div>
             </div>
           </Link>
-        )}
-        {!currentUserId ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-            {t("inbox_login_required", lang)}
-          </div>
-        ) : inboxPeers.length === 0 && pendingRequests.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700 }}>
-            {t("inbox_empty", lang)}
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {inboxPeers.map((p) => {
-              const unread = unreadByPeer[p.peerId] ?? 0;
-              return (
-                <div
-                  key={p.peerId}
-                  onClick={() => onOpenChat(p)}
-                  style={{ background: "#fff9f0", border: "2px solid #f0d9b5", borderRadius: 16, padding: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
-                >
-                  <div style={{ position: "relative" }}>
-                    <div
-                      onClick={(e) => { e.stopPropagation(); if (p.guideId) openGuideProfile(p.guideId); }}
-                      style={{ width: 48, height: 48, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, border: "2px solid #e8c99a", cursor: p.guideId ? "pointer" : "default", overflow: "hidden" }}
-                    >
-                      {(() => {
-                        const pg = p.guideId ? guides.find((x) => x.id === p.guideId) : null;
-                        return pg?.avatarPath && avatarUrls[pg.avatarPath]
-                          ? <img loading="lazy" decoding="async" src={avatarUrls[pg.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          : p.emoji;
-                      })()}
-                    </div>
-                    {unread > 0 && (
-                      <div style={{ position: "absolute", top: -4, right: -4, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 20, height: 20, padding: "0 5px", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff9f0" }}>
-                        {unread > 99 ? "99+" : unread}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: unread > 0 ? 900 : 700 }}>{p.name}</div>
-                    <div style={{ fontSize: 12, color: unread > 0 ? "#1a1008" : "#8a7560", fontWeight: unread > 0 ? 700 : 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}
-</div>
-                  </div>
-                  <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700 }}>
-                    {new Date(p.lastAt).toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" })}
+        </div>
+      )}
+
+      {!currentUserId ? (
+        <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("inbox_login_required", lang)}</div>
+      ) : inboxPeers.length === 0 && pendingRequests.length === 0 ? (
+        <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("inbox_empty", lang)}</div>
+      ) : (
+        <div>
+          {inboxPeers.map((p) => {
+            const unread = unreadByPeer[p.peerId] ?? 0;
+            const pg = p.guideId ? guides.find((x) => x.id === p.guideId) : null;
+            const av = pg?.avatarPath ? avatarUrls[pg.avatarPath] : null;
+            return (
+              <div
+                key={p.peerId}
+                onClick={() => onOpenChat(p)}
+                style={{ display: "flex", gap: 13, alignItems: "center", padding: "13px 22px", cursor: "pointer", borderBottom: "1px solid #f4ead7" }}
+              >
+                <div style={{ position: "relative", flex: "none" }}>
+                  <div
+                    onClick={(e) => { e.stopPropagation(); if (p.guideId) openGuideProfile(p.guideId); }}
+                    style={{ width: 56, height: 56, borderRadius: "50%", display: "grid", placeItems: "center", fontSize: 26, overflow: "hidden", cursor: p.guideId ? "pointer" : "default", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}
+                  >
+                    {!av && p.emoji}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span className="font-display" style={{ fontWeight: 700, fontSize: 15.5, color: "#2b1d1a" }}>{p.name}</span>
+                    <span style={{ fontSize: 11, color: "#b09a86" }}>{new Date(p.lastAt).toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" })}</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 3, gap: 8 }}>
+                    <span style={{ fontSize: 12.5, color: unread > 0 ? "#2b1d1a" : "#b09a86", fontWeight: unread > 0 ? 700 : 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.lastBody}</span>
+                    {unread > 0 && (
+                      <span style={{ flex: "none", minWidth: 20, height: 20, padding: "0 6px", borderRadius: 10, background: "#ad001c", color: "#fff", fontSize: 11, fontWeight: 700, display: "grid", placeItems: "center" }}>{unread > 99 ? "99+" : unread}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div style={{ height: 100 }} />
     </div>
   );
