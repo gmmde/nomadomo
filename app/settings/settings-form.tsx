@@ -21,12 +21,12 @@ type Initial = {
 };
 type BlockedUser = { user_id: string; name: string; emoji: string };
 
-const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
+const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center", background: "#fff8ec" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" };
-const sectionBox: React.CSSProperties = { background: "#fff9f0", border: "2px solid #e8c99a", borderRadius: 16, padding: 14, marginBottom: 14 };
-const sectionTitle: React.CSSProperties = { fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 10, textTransform: "uppercase" };
-const row: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #f0d9b5" };
-const label: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "#1a1008", flex: 1 };
+const sectionBox: React.CSSProperties = { background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 16, marginBottom: 16, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" };
+const sectionTitle: React.CSSProperties = { fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".05em" };
+const row: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: "1px solid #f4ead7" };
+const label: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "#2b1d1a", flex: 1 };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 14, fontSize: 15, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 const danger: React.CSSProperties = { width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: 12, fontSize: 13, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
@@ -163,9 +163,9 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
     <div style={wrap}>
       <div style={card} className="screen-enter">
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <button onClick={() => router.back()} aria-label="戻る" style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, cursor: "pointer" }}>←</button>
-          <div style={{ fontSize: 20, fontWeight: 900 }}>⚙️ {t("settings_title", lang)}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+          <button onClick={() => router.back()} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", color: "#2b1d1a", fontSize: 20, cursor: "pointer" }}>←</button>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{t("settings_title", lang)} <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Settings</span></div>
         </div>
 
         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 16 }}>
