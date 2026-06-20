@@ -502,5 +502,101 @@ public/
 
 ---
 
-最終 commit: `3580418` (2026-05-26)
-ファイル数: app/ 配下 ~50 files、合計 LOC ~6000
+## 2026-06-20: 本番直前の品質向上一括（Sentry / Push / 規約 / カスケード / RLS / Perf / a11y / 位置情報）
+
+### このセッションで完了 (main にすべて push 済)
+
+#### 監視・観測 (#137)
+- `@sentry/nextjs` 導入。`instrumentation.ts` / `instrumentation-client.ts` / `app/global-error.tsx` / `next.config.ts` の withSentryConfig。
+- DSN 未設定なら no-op で安全。Vercel に `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` を入れたら発火。
+
+#### Web Push 通知 (#131 push 部分)
+- DB: `push_subscriptions` テーブル + RLS、`user_settings.push_enabled` 列追加。
+- `public/sw.js` (caching せず push 専用)、`app/lib/push.ts`、`app/actions/push.ts`、`app/actions/notify.ts`。
+- Settings に「📲 プッシュ通知」トグル。メッセージ送信・リクエスト送信・accept 時に fire-and-forget で push。
+- iOS Safari は PWA インストール後しか push 届かない（Apple 仕様）。
+- **要 Vercel 環境変数**: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+- 既存の VAPID 鍵ペア（このセッションで生成）はコミットメッセージ `da1f3d3` 参照。
+
+#### カスケード削除監査 (#135)
+- 全 22 件の public.* → auth.users FK が CASCADE であることを実機テストで確認（rollback transaction）。
+- ストレージは FK を貼れないので、`process_scheduled_account_deletions` cron を更新して **auth.users 削除前に guide-images / chat-images の該当ユーザーパスを先に削除** するよう修正。
+
+#### RLS 監査 (#133)
+- `support_config` テーブルに RLS が無かったのを修正（admin email 漏洩リスクだった）。
+- `chat_requests` の旧 INSERT policy `chat_requests_insert_traveler` を削除（新 policy の block チェックを **バイパスする経路** だった）。
+- 4 つの trigger 関数の `search_path` 固定（SQL injection 緩和）。
+- cron 専用 3 関数と内部用 trigger 関数 5 個から anon・authenticated の EXECUTE 剥奪。
+- 残：Supabase Auth ダッシュボードで「Leaked password protection」を ON にするのは **手動**（SQL から触れない）。
+
+#### Realtime 再接続 (#136)
+- `page.tsx` と `meetings/[id]/complete/complete-form.tsx` に `realtimeTick` state を追加。
+- `document.visibilitychange === 'visible'` / `window.online` で bump → channel 名にチック含めて deps にも入れて、tab 復帰時に全 channel が tear-down → 再 subscribe される。
+
+#### パフォーマンス (#138)
+- DB: 40 個の RLS policy で `auth.uid()` を `(SELECT auth.uid())` でラップ（行ごと再評価を防止）。
+- 6 個の不足 FK index 追加 (bookings.guide_id, meetings.user_b_id, reports.reporter_id, reports.target_message_id, reviews.reviewer_id, saved_guides.guide_id)。
+- `support_config` に PRIMARY KEY (admin_email)、冗長な UNIQUE 削除。
+- `travelers` の冗長な SELECT policy 2 個削除。
+- フロント: 8 個の リスト系 `<img>` に `loading="lazy" decoding="async"` 追加。
+- Supabase advisor 警告 59 件 → 16 件（残りは INFO の unused index、本番運用が始まったら見直す）。
+
+#### アクセシビリティ (#139)
+- `←` 戻るボタン 4 箇所 + `×` クリア/削除ボタン 3 箇所に `aria-label` 追加。
+- avatar 画像の `alt=""` は装飾画像として spec 通り維持（名前は文字で隣に出てる）。
+- 色コントラスト、focus indicator、a11y 自動テストは別タスクで（#140 と一緒にやれ）。
+
+#### 位置情報自動表示 (#127)
+- `app/lib/geo.ts`: 12 エリアの代表座標 + Haversine 距離 + 200km 超は "Other"。
+- ホームのエリアピッカードロップダウン上部に「📍 現在地から自動選択」ボタン追加。
+- 非対応・拒否・タイムアウトはすべて null フォールスルー、エラー出ない。
+
+#### 利用規約・プラポリ・同意フロー (#124)
+- `/terms` と `/privacy` ページ（JA + EN、`useLang()` で切替）。冒頭に 18+ 警告バナー。
+- DB: `user_settings` に `terms_accepted_at`, `terms_version`, `privacy_accepted_at`, `privacy_version`, `age_confirmed_at` 追加。
+- `app/lib/legal.ts` で CURRENT_TERMS_VERSION / CURRENT_PRIVACY_VERSION 管理。bump で再同意要求。
+- signup フォームに **2 つの必須チェックボックス**（年齢確認 + 規約同意）追加。両方 OK まで送信ボタン disabled。
+- `app/_components/consent-modal.tsx`: 既存ユーザー向け強制同意モーダル（全画面オーバーレイ、signout 出口あり）。home で render。
+- **⚠️ 文章は弁護士チェック必須**。日本の「インターネット異性紹介事業規制法」の届出要否は確認推奨（β オープン前）。
+
+#### 細かなバグ修正
+- 未ログイン時 Profile タブに「Yuki Tanaka」（ダミーガイド）が表示されてた → `ownGuide` を `currentUserId` でガード、未ログイン時はサインイン CTA に置換。
+- ADMIN_EMAILS の typo: `nomadomo@gmail.com` → `nomadomojp@gmail.com`。
+- chat-request 送信完了画面に「ホームに戻る」ボタン追加（auto-redirect 廃止）。
+
+### 残タスク
+
+| # | タスク | 推定 |
+|---|---|---|
+| #125 | Stripe 手動同期 + 課金失敗リトライ | 2-3h |
+| #126 | KYC（本人確認・年齢確認 Stripe Identity 連携） | 1-2日 |
+| #140 | モバイル UI 実機テスト | **ユーザーしかできない** |
+| #145 | Local / Traveler サイト完全分離 | 巨大、アーキ変更 |
+| #147 | Claude Design による UI 再デザイン (`redesign-v2` branch) | claude.ai 承認待ち |
+
+### 未解決の運用課題
+
+1. **Vercel 環境変数の最終整理** — Sentry 4 個 + VAPID 3 個 が未設定だと一部機能 no-op。本番直前に必ず入れる。
+2. **Supabase ダッシュボード手動操作** — Leaked password protection を Auth Settings で ON にする。
+3. **Stripe Connect の本番モード** — 現在 test mode。本番モードに切り替える前に、特商法表記・税務体制を整える必要あり。
+
+### このセッションで発覚した運用上の注意
+
+- **Linux mount と Windows host の file sync 不整合が深刻化**。Edit / Write tool で書いた後 bash 側から見ると truncate されてることが多い。**Python heredoc で /tmp/HEAD コピー → 修正 → 書き戻し** の workaround を使うのが安定。
+- `.git/config` が一時的に bash 側から見えなくなる事故あり。Windows 側 (`C:\Users\tonoi\nomadomo\.git\config`) は intact。
+- npm install が ENOTEMPTY ループに陥ることがある。@sentry/nextjs を実物の tarball から手動展開して回避した（次セッションで `rm -rf node_modules && npm install` するのが clean）。
+
+---
+
+## 11. 引き継ぎ AI への追加注文 (2026-06-20 増補)
+
+- 既存のオネエ言葉・批判的トーンの嗜好は維持
+- **見積もりは盛ってない数字で出す**。前回「半日」って言ったタスクが 10 分で終わったり、逆もある。実装時間 vs テスト時間 vs 待ち時間 を分けて見積もる
+- Claude Design 連携は claude.ai の domain 承認が要る。手動で開いて popup 出すしか今のところ方法ない
+- `import-claude-design-from-url` (Vercel MCP) で Claude Design 出力を Vercel preview 化できる。redesign-v2 branch との連携設計はこれから
+- 残りのインフラ系タスク (#125, #126) は本番運用直前にやればいい。マッチング機能と β テスター集めが先
+
+---
+
+最終 commit (main): `3665b9d` (2026-06-20) — ToS / Privacy / consent flow
+ファイル数: app/ 配下 ~60 files、合計 LOC ~7500
