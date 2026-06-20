@@ -36,6 +36,11 @@ type Props = {
   lang: Lang;
   onContactSupport: () => void;
   supportPending: boolean;
+  metCount: number;
+  savedCount: number;
+  reviewCount: number;
+  recentLocals: Array<{ peerId: string; name: string; emoji: string; guideId?: string }>;
+  guides: Array<{ id: string; avatarPath: string | null }>;
 };
 
 export default function MyProfileScreen({
@@ -51,6 +56,11 @@ export default function MyProfileScreen({
   lang,
   onContactSupport,
   supportPending,
+  metCount,
+  savedCount,
+  reviewCount,
+  recentLocals,
+  guides,
 }: Props) {
   // 未ログイン: サインイン/ログイン CTA だけ表示する別画面
   if (!userEmail) {
@@ -161,14 +171,42 @@ export default function MyProfileScreen({
         </div>
       )}
 
+      {/* stats (mock): met / saved / reviews */}
+      <div style={{ display: "flex", margin: "18px 22px 0", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: "16px 0", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
+        {[{ num: metCount, label: lang === "ja" ? "出会った人" : "Met" }, { num: savedCount, label: lang === "ja" ? "保存" : "Saved" }, { num: reviewCount, label: lang === "ja" ? "レビュー" : "Reviews" }].map((st, i) => (
+          <div key={st.label} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? "1px solid #f3e8d6" : "none" }}>
+            <p className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 21, color: "#ad001c" }}>{st.num}</p>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9a8a7c", fontWeight: 600 }}>{st.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {recentLocals.length > 0 && (
+        <div style={{ padding: "20px 22px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>最近のローカル <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Recent locals</span></h2>
+            <Link href="/history" style={{ fontSize: 12.5, fontWeight: 700, color: "#ad001c", textDecoration: "none" }}>{lang === "ja" ? "すべて見る →" : "See all →"}</Link>
+          </div>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
+            {recentLocals.slice(0, 8).map((r) => {
+              const pg = r.guideId ? guides.find((x) => x.id === r.guideId) : null;
+              const av = pg?.avatarPath ? avatarUrls[pg.avatarPath] : null;
+              return (
+                <div key={r.peerId} onClick={() => r.guideId && openGuideProfile(r.guideId)} style={{ flex: "none", width: 86, textAlign: "center", cursor: r.guideId ? "pointer" : "default" }}>
+                  <div style={{ width: 86, height: 86, borderRadius: 18, display: "grid", placeItems: "center", fontSize: 38, overflow: "hidden", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!av && (r.emoji ?? "🧑")}</div>
+                  <p className="font-display" style={{ margin: "7px 0 0", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {userEmail && (
-        <div style={{ margin: "0 20px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ margin: "20px 20px 40px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>
             {t("logged_in_as", lang)}：{userEmail}
           </div>
-          <Link href="/history" style={{ display: "block", width: "100%", background: "#fff", color: "#2e8b57", border: "2px solid #2e8b57", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-            {lang === "ja" ? "マッチ履歴" : "Match history"}
-          </Link>
           <Link href="/bookings" style={{ display: "block", width: "100%", background: "#fff", color: "#ad001c", border: "2px solid #ad001c", borderRadius: 16, padding: 12, fontSize: 14, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
             {t("my_bookings", lang)}
           </Link>
