@@ -1155,7 +1155,7 @@ function HomeInner() {
 
   function renderBottomNav(active: NavKey | "profile" | "chat") {
     return (
-      <div className="bottom-nav-safe" style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#2e8b57f5", borderTop: "2px solid #1e6b40", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
+      <div className="bottom-nav-safe" style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#fffaf0f2", borderTop: "1px solid #f0e2cc", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
         {NAV_ITEMS.map((item) => {
           const isActive = item.key === active;
           const inboxCombined = totalUnread + pendingRequestCount + staleUnreviewedMeetings;
@@ -1168,10 +1168,10 @@ function HomeInner() {
               onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
             >
-              <div style={{ fontSize: 20, color: isActive ? "#fff" : "#a8d5b8" }}>{item.icon}</div>
-              <div style={{ fontSize: 10, color: isActive ? "#fff" : "#a8d5b8", fontWeight: 700 }}>{item.label}</div>
+              <div style={{ fontSize: 20, color: isActive ? "#ad001c" : "#b8a894" }}>{item.icon}</div>
+              <div style={{ fontSize: 10, color: isActive ? "#ad001c" : "#b8a894", fontWeight: 700 }}>{item.label}</div>
               {showBadge && (
-                <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2e8b57" }}>
+                <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fffaf0" }}>
                   {badgeCount > 99 ? "99+" : badgeCount}
                 </div>
               )}
@@ -1265,7 +1265,7 @@ function HomeInner() {
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.05) 100%)", zIndex: 2, pointerEvents: "none" }}/>
               <div style={{ position: "absolute", bottom: 16, left: 20, zIndex: 3 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#ffffffee", border: "1.5px solid #2e8b57", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 800, color: "#2e8b57", marginBottom: 8 }}>📍 Japan</div>
-                <div style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45)" }}>
+                <div className="font-display" style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.2, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45)" }}>
                   Meet a <span style={{ color: "#a8eabf" }}>real local</span>,<br/>not a tour guide
                 </div>
               </div>
@@ -1331,7 +1331,7 @@ function HomeInner() {
 
             {/* GUIDES (or Travelers in Local mode) */}
             <div data-tutorial="home-list" style={{ padding: "0 20px 4px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
-              <div style={{ fontSize: 14, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, whiteSpace: "nowrap" }}>{appMode === "local" ? `${t("travelers_nearby", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
+              <div className="font-display" style={{ fontSize: 14, fontWeight: 900, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, whiteSpace: "nowrap" }}>{appMode === "local" ? `${t("travelers_nearby", lang)} ✈️` : `${t("available_now", lang)} ✨`}</div>
               <Link href={appMode === "local" ? "/travelers/all" : "/guides/all"} style={{ fontSize: 11, color: "#2e8b57", fontWeight: 800, background: "#ffffffdd", padding: "4px 10px", borderRadius: 10, textDecoration: "none" }}>{t("see_all", lang)}</Link>
             </div>
             {/* Free / Pro / Area selector (Traveler モードのみ) */}
@@ -1453,7 +1453,7 @@ function HomeInner() {
                       </button>
                     )}
                     <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10, border: "2px solid #e8c99a", overflow: "hidden" }}>{g.avatarPath && avatarUrls[g.avatarPath] ? <img loading="lazy" decoding="async" src={avatarUrls[g.avatarPath]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : g.emoji}</div>
-                    <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
+                    <div className="font-display" style={{ fontSize: 15, fontWeight: 900, marginBottom: 2 }}>{g.name}</div>
                     <div style={{ fontSize: 11, color: "#8a7560", marginBottom: 8, fontWeight: 600 }}>{g.uni}</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
                       {[...g.tags, ...g.languages].map(t => <span key={t} style={{ background: "#ffefd5", border: "1.5px solid #e8c99a", borderRadius: 6, padding: "3px 7px", fontSize: 10, color: "#ad001c", fontWeight: 700 }}>{t}</span>)}

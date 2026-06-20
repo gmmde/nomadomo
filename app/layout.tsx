@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Nunito, Noto_Sans_JP, Zen_Maru_Gothic } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -7,6 +7,19 @@ import "./globals.css";
 const nunito = Nunito({
   subsets: ["latin"],
   weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-nunito",
+});
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-noto",
+});
+
+const zenMaru = Zen_Maru_Gothic({
+  subsets: ["latin"],
+  weight: ["500", "700", "900"],
+  variable: "--font-zenmaru",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nomadomo.vercel.app";
@@ -55,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${nunito.className} min-h-full flex flex-col`}>
+      <body className={`${nunito.variable} ${notoSansJP.variable} ${zenMaru.variable} min-h-full flex flex-col`}>
         {children}
         <Analytics />
         <SpeedInsights />
