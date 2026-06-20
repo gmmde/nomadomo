@@ -300,7 +300,7 @@ export default function ChatScreen({
                       <div style={{ width: 180, height: 180, borderRadius: 14, background: "#f0d9b5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#8a7560", fontWeight: 700 }}>...読み込み中</div>
                     )
                   ) : (
-                    <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff9f0", color: mine ? "#fff" : "#1a1008", fontSize: 13, fontWeight: 600, lineHeight: 1.6, border: !mine ? "2px solid #e8c99a" : "none", whiteSpace: "pre-wrap" }}>{m.body}</div>
+                    <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff", color: mine ? "#fff" : "#2b1d1a", fontSize: 13.5, fontWeight: 500, lineHeight: 1.6, border: !mine ? "1px solid #f0e3cf" : "none", boxShadow: !mine ? "0 4px 12px -10px rgba(120,50,20,.4)" : "none", whiteSpace: "pre-wrap" }}>{m.body}</div>
                   )}
                 </div>
               );
@@ -376,7 +376,7 @@ export default function ChatScreen({
           onClick={() => fileInputRef.current?.click()}
           disabled={!currentUserId || uploading}
           aria-label="画像を送る"
-          style={{ width: 40, height: 40, borderRadius: "50%", background: uploading ? "#bbb" : "#ffefd5", border: "2px solid #e8c99a", cursor: uploading ? "wait" : "pointer", fontSize: 18, fontFamily: "inherit", color: "#1a1008" }}
+          style={{ width: 44, height: 44, borderRadius: "50%", background: uploading ? "#d8c4ad" : "#fff", border: "1px solid #f0e3cf", cursor: uploading ? "wait" : "pointer", fontSize: 18, fontFamily: "inherit", color: "#2b1d1a", flex: "none" }}
         >
           {uploading ? "..." : "📷"}
         </button>
@@ -386,13 +386,14 @@ export default function ChatScreen({
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder={`Message ${chatPeer.name}...`}
           disabled={!currentUserId}
-          style={{ flex: 1, background: "#ffefd5", border: "2px solid #e8c99a", borderRadius: 24, padding: "10px 16px", fontSize: 13, color: "#1a1008", fontFamily: "inherit", fontWeight: 600, outline: "none" }}
+          style={{ flex: 1, minWidth: 0, background: "#f6efe2", border: "none", borderRadius: 22, padding: "13px 16px", fontSize: 13.5, color: "#2b1d1a", fontFamily: "inherit", fontWeight: 500, outline: "none" }}
         />
         <button
           onClick={sendMessage}
           disabled={!currentUserId || !input.trim()}
-          style={{ width: 40, height: 40, borderRadius: "50%", background: currentUserId ? "#ad001c" : "#bbb", border: "none", cursor: currentUserId ? "pointer" : "not-allowed", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}
-        >↑</button>
+          aria-label="送信"
+          style={{ width: 46, height: 46, borderRadius: "50%", background: currentUserId && input.trim() ? "#ad001c" : "#d8c4ad", border: "none", cursor: currentUserId ? "pointer" : "not-allowed", display: "grid", placeItems: "center", flex: "none", boxShadow: currentUserId && input.trim() ? "0 6px 14px -6px rgba(173,0,28,.6)" : "none" }}
+        ><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
       </div>
     </div>
   );
