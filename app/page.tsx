@@ -1199,7 +1199,7 @@ function HomeInner() {
 
             {/* header: area (left) + camel logo (center) + gear/avatar (right) */}
             <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 22px 2px" }}>
-              <img src="/logo-camel.png" alt="NomaDomo" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", height: 38, width: "auto", pointerEvents: "none" }} />
+              <img src="/logo-camel.png" alt="NomaDomo" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", height: 44, width: "auto", pointerEvents: "none" }} />
               <button onClick={() => setAreaPickerOpen(true)} style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "transparent", padding: "6px 4px", cursor: "pointer", fontFamily: "inherit" }}>
                 <span style={{ display: "grid", placeItems: "center", width: 30, height: 30, borderRadius: "50%", background: "#ffefd5" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
@@ -1356,7 +1356,8 @@ function HomeInner() {
                 {/* locals here (vertical) */}
                 <div style={{ padding: "14px 22px 0" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{homeAreaFilter ?? (lang === "ja" ? "日本全国" : "Japan")}のローカル <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Locals here</span></h2>
+                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{homeAreaFilter ?? "日本全国"}のローカル <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Locals here</span></h2>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#2e8b57", whiteSpace: "nowrap" }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "#2e8b57" }} />{visibleGuides.length}{lang === "ja" ? "人オンライン" : " online"}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                     <div style={{ display: "flex", background: "#f1e6d4", borderRadius: 13, padding: 3 }}>
@@ -1391,7 +1392,8 @@ function HomeInner() {
                           </div>
                           <div style={{ flex: "none", textAlign: "right" }}>
                             <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "Free" : g.rate}</span>
-                            {currentUserId && <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ marginTop: 4, border: "none", background: "transparent", fontSize: 16, cursor: "pointer", padding: 0, lineHeight: 1 }}>{savedIds.has(Number(g.id)) ? "❤️" : "🤍"}</button>}
+                            <span style={{ display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end", marginTop: 4, fontSize: 11, fontWeight: 700, color: "#2b1d1a" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>{g.mode === "paid" && g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
+                            {currentUserId && <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ marginTop: 3, border: "none", background: "transparent", fontSize: 15, cursor: "pointer", padding: 0, lineHeight: 1 }}>{savedIds.has(Number(g.id)) ? "❤️" : "🤍"}</button>}
                           </div>
                         </div>
                       );
