@@ -1198,11 +1198,11 @@ function HomeInner() {
           <div className="screen-enter" style={{ background: "#fff8ec", minHeight: "100vh", position: "relative", paddingBottom: 8 }}>
 
             {/* header: area (left) + camel logo (center) + gear/avatar (right) */}
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 22px 2px" }}>
-              <img src="/logo-camel.png" alt="NomaDomo" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", height: 44, width: "auto", pointerEvents: "none" }} />
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px 8px" }}>
+              <img src="/logo-camel.png" alt="NomaDomo" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", height: 52, width: "auto", pointerEvents: "none" }} />
               <button onClick={() => setAreaPickerOpen(true)} style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "transparent", padding: "6px 4px", cursor: "pointer", fontFamily: "inherit" }}>
-                <span style={{ display: "grid", placeItems: "center", width: 30, height: 30, borderRadius: "50%", background: "#ffefd5" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+                <span style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", flex: "none" }}>
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
                 </span>
                 <span style={{ textAlign: "left" }}>
                   <span style={{ display: "block", fontSize: 10, letterSpacing: ".04em", color: "#ad001c", fontWeight: 700, whiteSpace: "nowrap" }}>エリア · AREA</span>
