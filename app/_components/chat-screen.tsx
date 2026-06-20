@@ -238,13 +238,12 @@ export default function ChatScreen({
   const meetBtnBg = meeting.kind === "pending_awaiting_my_accept" ? "#2e8b57" : "#ad001c";
 
   return (
-    <div className="screen-enter" style={{ height: "100dvh", minHeight: "100svh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #f0e2cc" }}>
-        <button onClick={goBack} aria-label="戻る" style={{ background: "none", border: "none", color: "#ad001c", fontSize: 22, cursor: "pointer" }}>←</button>
-        <div
-          onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)}
-          style={{ width: 36, height: 36, borderRadius: "50%", background: "#fff7ec", border: "1.5px solid #f0e2cc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}
-        >
+    <div className="screen-enter" style={{ height: "100dvh", minHeight: "100svh", display: "flex", flexDirection: "column", overflow: "hidden", background: "#fff8ec" }}>
+      <div style={{ background: "#fff", borderBottom: "1px solid #f0e3cf", padding: "16px 18px 12px", display: "flex", alignItems: "center", gap: 12, flex: "none" }}>
+        <button onClick={goBack} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 38, height: 38, border: "none", background: "transparent", cursor: "pointer", flex: "none" }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)} style={{ width: 40, height: 40, borderRadius: "50%", flex: "none", background: "#ffefd5", display: "grid", placeItems: "center", fontSize: 19, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}>
           {(() => {
             const pg = chatPeer.guideId ? guides.find((x) => x.id === chatPeer.guideId) : null;
             return pg?.avatarPath && avatarUrls[pg.avatarPath]
@@ -252,12 +251,13 @@ export default function ChatScreen({
               : chatPeer.emoji;
           })()}
         </div>
-        <div style={{ flex: 1, paddingLeft: 8 }}>
-          <div className="font-display" style={{ fontSize: 15, fontWeight: 900, color: "#1a1008" }}>{chatPeer.name}</div>
-          <div style={{ fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{t("online_now", lang)}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 15.5, color: "#2b1d1a" }}>{chatPeer.name}</p>
+          <p style={{ margin: "1px 0 0", fontSize: 11, color: "#2e8b57", fontWeight: 600 }}>{t("online_now", lang)}</p>
         </div>
-        <Link href={`/report/${chatPeer.id}`} style={{ color: "#8a7560", fontSize: 16, textDecoration: "none", padding: 4 }}>🚩</Link>
-        <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 30, height: 30, color: "#ad001c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>
+        <button onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)} aria-label="プロフィール" style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", border: "none", cursor: chatPeer.guideId ? "pointer" : "default", flex: "none" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+        </button>
       </div>
 
       {/* 🚶 お出かけ中バナー (urgent 中は隠す) */}
@@ -363,7 +363,7 @@ export default function ChatScreen({
       {uploadErr && (
         <div style={{ padding: "6px 20px", background: "#fff3cd", borderTop: "1px solid #f5c649", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>📷 {uploadErr}</div>
       )}
-      <div style={{ padding: "12px 20px 24px", display: "flex", gap: 8, alignItems: "center", background: "#fff9f0", borderTop: "2px solid #e8c99a" }}>
+      <div style={{ padding: "12px 16px 24px", display: "flex", gap: 8, alignItems: "center", background: "#fff", borderTop: "1px solid #f0e3cf", flex: "none" }}>
         <input
           ref={fileInputRef}
           type="file"
