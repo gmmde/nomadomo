@@ -655,7 +655,7 @@ function HomeInner() {
   // Inbox: 過去メッセージから会話相手一覧 + guides/travelers から名前解決
   // 現 app_mode に合致するチャットのみ表示 (= 役割逆転で過去チャットが混ざるのを防ぐ)
   useEffect(() => {
-    if (screen !== "inbox" || !currentUserId) return;
+    if ((screen !== "inbox" && screen !== "myprofile") || !currentUserId) return;
     let cancelled = false;
     (async () => {
       // 現 mode で許可される peer id 集合を chat_requests から作る
