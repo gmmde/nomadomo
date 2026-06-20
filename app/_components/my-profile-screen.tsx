@@ -55,7 +55,7 @@ export default function MyProfileScreen({
   // 未ログイン: サインイン/ログイン CTA だけ表示する別画面
   if (!userEmail) {
     return (
-      <div className="screen-enter" style={{ minHeight: "100vh" }}>
+      <div className="screen-enter" style={{ minHeight: "100vh", background: "#fff8ec" }}>
         <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
           <div style={{ width: 36 }} />
           <div className="font-display" style={{ fontSize: 16, fontWeight: 900, color: "#1a1008", flex: 1, textAlign: "center" }}>{t("my_profile", lang)}</div>
@@ -88,16 +88,16 @@ export default function MyProfileScreen({
   }
 
   return (
-    <div className="screen-enter" style={{ minHeight: "100vh" }}>
-      <div style={{ background: "#fffaf0f2", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 9, borderBottom: "1px solid #f0e2cc" }}>
-        <div style={{ width: 36 }} />
-        <div className="font-display" style={{ fontSize: 16, fontWeight: 900, color: "#1a1008", flex: 1, textAlign: "center" }}>{t("my_profile", lang)}</div>
-        <Link href="/settings" aria-label="設定" style={{ width: 36, height: 36, color: "#ad001c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, textDecoration: "none" }}>⚙</Link>
+    <div className="screen-enter" style={{ minHeight: "100vh", background: "#fff8ec" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "14px 22px 0" }}>
+        <Link href="/settings" aria-label="設定" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", textDecoration: "none", boxShadow: "0 2px 8px rgba(120,60,20,.06)" }}>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={1.8}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+        </Link>
       </div>
-      <div style={{ padding: "28px 20px 16px", textAlign: "center" }}>
+      <div style={{ padding: "8px 20px 16px", textAlign: "center" }}>
         <div
           onClick={() => ownGuide && openGuideProfile(ownGuide.id)}
-          style={{ width: 90, height: 90, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, margin: "0 auto 14px", border: "3px solid #ad001c", cursor: ownGuide ? "pointer" : "default", overflow: "hidden" }}
+          style={{ width: 96, height: 96, borderRadius: "50%", background: "#ffefd5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 46, margin: "0 auto 12px", border: "3px solid #fff", boxShadow: "0 10px 24px -10px rgba(120,50,20,.4)", cursor: ownGuide ? "pointer" : "default", overflow: "hidden" }}
           title={ownGuide ? t("open_own_guide_profile", lang) : undefined}
         >
           {ownGuide?.avatarPath && avatarUrls[ownGuide.avatarPath]
@@ -106,7 +106,7 @@ export default function MyProfileScreen({
         </div>
         {travelerProfile ? (
           <>
-            <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{travelerProfile.name}</div>
+            <div className="font-display" style={{ fontSize: 23, fontWeight: 900, marginBottom: 4, color: "#2b1d1a" }}>{travelerProfile.name}</div>
             <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>
               {t("traveler_from", lang)} {travelerProfile.country}
               {ownGuide && <span style={{ marginLeft: 6, color: "#ad001c" }}>+ {ownGuide.name}</span>}
@@ -114,7 +114,7 @@ export default function MyProfileScreen({
           </>
         ) : ownGuide ? (
           <>
-            <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 4 }}>{ownGuide.name}</div>
+            <div className="font-display" style={{ fontSize: 23, fontWeight: 900, marginBottom: 4, color: "#2b1d1a" }}>{ownGuide.name}</div>
             <div style={{ fontSize: 13, color: "#8a7560", fontWeight: 600 }}>Guide · {ownGuide.uni}</div>
           </>
         ) : (
