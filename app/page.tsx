@@ -16,7 +16,6 @@ import { startSupportChat } from "./actions/support";
 import { notifyMessageSent } from "./actions/notify";
 import { detectArea } from "./lib/geo";
 import NameInputScreen from "./_components/name-input-screen";
-import BrandLogo from "./_components/brand-logo";
 import { getSortedAreas } from "./lib/areas";
 import MyProfileScreen from "./_components/my-profile-screen";
 import SavedScreen from "./_components/saved-screen";
@@ -1123,45 +1122,55 @@ function HomeInner() {
     : null;
 
   type NavKey = "home" | "inbox" | "saved" | "myprofile" | "requests";
-  const NAV_ITEMS_TRAVELER: Array<{ icon: string; label: string; key: NavKey }> = [
-    { icon: "🏠", label: t("nav_home", lang), key: "home" },
-    { icon: "💬", label: t("nav_messages", lang), key: "inbox" },
-    { icon: "🤍", label: t("nav_saved", lang), key: "saved" },
-    { icon: "😊", label: t("nav_profile", lang), key: "myprofile" },
+  const NAV_PATHS: Record<string, string> = {
+    home: "M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",
+    inbox: "M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 20.5l1.5-5.2A8.4 8.4 0 1 1 21 11.5z",
+    saved: "M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z",
+    myprofile: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.6-6 8-6s8 2 8 6",
+  };
+  const NAV_ITEMS_TRAVELER: Array<{ label: string; key: NavKey }> = [
+    { label: t("nav_home", lang), key: "home" },
+    { label: t("nav_messages", lang), key: "inbox" },
+    { label: t("nav_saved", lang), key: "saved" },
+    { label: t("nav_profile", lang), key: "myprofile" },
   ];
-  const NAV_ITEMS_LOCAL: Array<{ icon: string; label: string; key: NavKey }> = [
-    { icon: "🏠", label: t("nav_home", lang), key: "home" },
-    { icon: "💬", label: t("nav_messages", lang), key: "inbox" },
-    { icon: "🤍", label: t("nav_saved", lang), key: "saved" },
-    { icon: "😊", label: t("nav_profile", lang), key: "myprofile" },
+  const NAV_ITEMS_LOCAL: Array<{ label: string; key: NavKey }> = [
+    { label: t("nav_home", lang), key: "home" },
+    { label: t("nav_messages", lang), key: "inbox" },
+    { label: t("nav_saved", lang), key: "saved" },
+    { label: t("nav_profile", lang), key: "myprofile" },
   ];
   const NAV_ITEMS = appMode === "local" ? NAV_ITEMS_LOCAL : NAV_ITEMS_TRAVELER;
 
   function renderBottomNav(active: NavKey | "profile" | "chat") {
     return (
-      <div className="bottom-nav-safe" style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, background: "#fffaf0f2", borderTop: "1px solid #f0e2cc", padding: "10px 0 22px", display: "flex", justifyContent: "space-around", zIndex: 10 }}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.key === active;
-          const inboxCombined = totalUnread + pendingRequestCount + staleUnreviewedMeetings;
-          const showBadge = item.key === "inbox" && inboxCombined > 0;
-          const badgeCount = inboxCombined;
-          return (
-            <div
-              key={item.label}
-              data-tutorial={item.key === "inbox" ? "nav-messages" : undefined}
-              onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer", position: "relative" }}
-            >
-              <div style={{ fontSize: 20, color: isActive ? "#ad001c" : "#b8a894" }}>{item.icon}</div>
-              <div style={{ fontSize: 10, color: isActive ? "#ad001c" : "#b8a894", fontWeight: 700 }}>{item.label}</div>
-              {showBadge && (
-                <div style={{ position: "absolute", top: -2, right: -8, background: "#ad001c", color: "#fff", borderRadius: 10, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fffaf0" }}>
-                  {badgeCount > 99 ? "99+" : badgeCount}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="bottom-nav-safe" style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 390, zIndex: 30, padding: "0 14px 12px", pointerEvents: "none" }}>
+        <div style={{ pointerEvents: "auto", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,.94)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid #f0e3cf", borderRadius: 26, padding: "10px 12px", boxShadow: "0 12px 34px -12px rgba(120,50,20,.4)" }}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.key === active;
+            const inboxCombined = totalUnread + pendingRequestCount + staleUnreviewedMeetings;
+            const showBadge = item.key === "inbox" && inboxCombined > 0;
+            const badgeCount = inboxCombined;
+            const col = isActive ? "#ad001c" : "#b09a86";
+            return (
+              <button
+                key={item.label}
+                type="button"
+                data-tutorial={item.key === "inbox" ? "nav-messages" : undefined}
+                onClick={() => navTab(item.key as Exclude<NavKey, "requests">)}
+                style={{ flex: 1, border: "none", background: "transparent", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", padding: "4px 0", fontFamily: "inherit" }}
+              >
+                <span style={{ position: "relative", display: "grid", placeItems: "center" }}>
+                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={col} strokeWidth={isActive ? 2.2 : 1.9} strokeLinecap="round" strokeLinejoin="round"><path d={NAV_PATHS[item.key]}/></svg>
+                  {showBadge && (
+                    <span style={{ position: "absolute", top: -5, right: -8, minWidth: 16, height: 16, padding: "0 4px", borderRadius: 8, background: "#ad001c", color: "#fff", fontSize: 9.5, fontWeight: 700, display: "grid", placeItems: "center", border: "1.5px solid #fff" }}>{badgeCount > 99 ? "99+" : badgeCount}</span>
+                  )}
+                </span>
+                <span className="font-display" style={{ fontSize: 9.5, fontWeight: 700, color: col }}>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -1188,13 +1197,9 @@ function HomeInner() {
         {screen === "home" && (
           <div className="screen-enter" style={{ background: "#fff8ec", minHeight: "100vh", position: "relative", paddingBottom: 8 }}>
 
-            {/* slim brand bar (ロゴ維持) */}
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "9px 0 1px" }}>
-              <BrandLogo variant="row" size={17} />
-            </div>
-
-            {/* header: area + gear + avatar/login */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 22px 2px" }}>
+            {/* header: area (left) + camel logo (center) + gear/avatar (right) */}
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 22px 2px" }}>
+              <img src="/logo-camel.png" alt="NomaDomo" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", height: 38, width: "auto", pointerEvents: "none" }} />
               <button onClick={() => setAreaPickerOpen(true)} style={{ display: "flex", alignItems: "center", gap: 7, border: "none", background: "transparent", padding: "6px 4px", cursor: "pointer", fontFamily: "inherit" }}>
                 <span style={{ display: "grid", placeItems: "center", width: 30, height: 30, borderRadius: "50%", background: "#ffefd5" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
@@ -1244,17 +1249,17 @@ function HomeInner() {
               </div>
               <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 22px 6px" }}>
                 {[
-                  { f: "🍜 Food", icon: "🍜", ja: "食べ歩き", en: "Foodie" },
-                  { f: "🌙 Nightlife", icon: "🌙", ja: "夜遊び", en: "Nightlife" },
-                  { f: "🎭 Culture", icon: "⛩️", ja: "文化", en: "Culture" },
-                  { f: "🌿 Nature", icon: "🌿", ja: "自然", en: "Nature" },
-                  { f: "🎨 Art", icon: "🎨", ja: "アート", en: "Art" },
-                  { f: "🚲 Hidden spots", icon: "🚲", ja: "穴場", en: "Hidden" },
+                  { f: "🍜 Food", path: "M4 3v6a2 2 0 0 0 4 0V3M6 9v12M16 3c2 2 2 6 0 8v10", ja: "食べ歩き", en: "Foodie" },
+                  { f: "🌙 Nightlife", path: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z", ja: "夜遊び", en: "Nightlife" },
+                  { f: "🎭 Culture", path: "M3 9l9-5 9 5M5 9v9M9 9v9M12 9v9M15 9v9M19 9v9M3 20h18", ja: "文化", en: "Culture" },
+                  { f: "🌿 Nature", path: "M12 22V11M12 11C12 7 9 4 5 4c0 4 3 7 7 7zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z", ja: "自然", en: "Nature" },
+                  { f: "🎨 Art", path: "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.2 0-1.1.9-2 2-2h1.5A3.5 3.5 0 0 0 20 11c0-4.4-3.6-8-8-8z", ja: "アート", en: "Art" },
+                  { f: "🚲 Hidden spots", path: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16 8l-2.5 5.5L8 16l2.5-5.5z", ja: "穴場", en: "Hidden" },
                 ].map((v) => {
                   const on = activeFilter === v.f;
                   return (
                     <button key={v.f} onClick={() => setActiveFilter(on ? "All" : v.f)} style={{ flex: "none", width: 78, border: "none", background: "transparent", padding: "4px 2px", cursor: "pointer", textAlign: "center", fontFamily: "inherit" }}>
-                      <span style={{ display: "grid", placeItems: "center", width: 60, height: 60, margin: "0 auto 6px", borderRadius: 20, fontSize: 26, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e3cf", boxShadow: "0 3px 9px rgba(120,80,40,.08)" }}>{v.icon}</span>
+                      <span style={{ display: "grid", placeItems: "center", width: 60, height: 60, margin: "0 auto 6px", borderRadius: 20, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e3cf", boxShadow: "0 3px 9px rgba(120,80,40,.08)" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={on ? "#fff" : "#ad001c"} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round"><path d={v.path}/></svg></span>
                       <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap" }}>{v.ja}</span>
                       <span style={{ display: "block", fontSize: 9.5, color: "#b6a48f", whiteSpace: "nowrap" }}>{v.en}</span>
                     </button>
