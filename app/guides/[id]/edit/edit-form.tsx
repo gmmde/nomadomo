@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/app/lib/back-button";
 import { useActionState, useState } from "react";
 import {
   updateGuide, setGuidePaused,
@@ -61,13 +61,7 @@ const card: React.CSSProperties = {
   minHeight: "100vh",
   background: "#fff8ec",
 };
-const header: React.CSSProperties = {
-  background: "#ad001c",
-  padding: "18px 20px 16px",
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-};
+const header: React.CSSProperties = { background: "transparent", padding: "16px 18px 6px", display: "flex", alignItems: "center", gap: 12 };
 const input: React.CSSProperties = {
   width: "100%",
   background: "#fff",
@@ -189,11 +183,8 @@ export default function EditGuideForm({
     <div style={wrap}>
       <div style={card}>
         <div style={header}>
-          <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>
-            {t("form_edit_guide_title", lang)}
-          </div>
-          <div style={{ width: 22 }} />
+          <BackButton />
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>ガイド編集 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Edit guide</span></div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>

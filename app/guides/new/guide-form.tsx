@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/app/lib/back-button";
 import { useActionState, useState } from "react";
 import { createGuide, type GuideFormState } from "@/app/actions/guides";
 import ModeAndRate from "@/app/lib/mode-and-rate";
@@ -34,13 +34,7 @@ const cardStyle: React.CSSProperties = {
   minHeight: "100vh",
   background: "#fff8ec",
 };
-const headerStyle: React.CSSProperties = {
-  background: "#ad001c",
-  padding: "18px 20px 16px",
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-};
+const headerStyle: React.CSSProperties = { background: "transparent", padding: "16px 18px 6px", display: "flex", alignItems: "center", gap: 12 };
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "#fff",
@@ -135,11 +129,8 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
     <div style={wrapStyle}>
       <div style={cardStyle}>
         <div style={headerStyle}>
-          <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>
-            {t("form_register_guide_title", lang)}
-          </div>
-          <div style={{ width: 22 }} />
+          <BackButton />
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>ガイド登録 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Become a guide</span></div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>

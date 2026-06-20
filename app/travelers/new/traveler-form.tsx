@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/app/lib/back-button";
 import { useActionState, useState } from "react";
 import { createTraveler, type TravelerFormState } from "@/app/actions/travelers";
 import ImageUploader from "@/app/lib/image-uploader";
@@ -28,7 +28,7 @@ const COUNTRY_SUGGESTIONS = [
 
 const wrapStyle: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const cardStyle: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh" };
-const headerStyle: React.CSSProperties = { background: "#2e8b57", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 };
+const headerStyle: React.CSSProperties = { background: "transparent", padding: "16px 18px 6px", display: "flex", alignItems: "center", gap: 12 };
 const inputStyle: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const errStyle: React.CSSProperties = { fontSize: 11, color: "#ad001c", fontWeight: 800, marginTop: 4 };
@@ -82,9 +82,8 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
     <div style={wrapStyle}>
       <div style={cardStyle} className="screen-enter">
         <div style={headerStyle}>
-          <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("form_register_traveler_title", lang)}</div>
-          <div style={{ width: 22 }} />
+          <BackButton />
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>旅行者登録 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Traveler profile</span></div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import BackButton from "@/app/lib/back-button";
 import { useActionState } from "react";
 import { useState } from "react";
 import { updateTraveler, deleteTraveler, type TravelerFormState } from "@/app/actions/travelers";
@@ -40,7 +40,7 @@ type Initial = {
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh" };
-const header: React.CSSProperties = { background: "#2e8b57", padding: "18px 20px 16px", display: "flex", alignItems: "center", gap: 12 };
+const header: React.CSSProperties = { background: "transparent", padding: "16px 18px 6px", display: "flex", alignItems: "center", gap: 12 };
 const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
 const err: React.CSSProperties = { fontSize: 11, color: "#ad001c", fontWeight: 800, marginTop: 4 };
@@ -82,9 +82,8 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
     <div style={wrap}>
       <div style={card} className="screen-enter">
         <div style={header}>
-          <Link href="/" style={{ color: "#fff", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flex: 1, textAlign: "center" }}>{t("form_edit_traveler_title", lang)}</div>
-          <div style={{ width: 22 }} />
+          <BackButton />
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>旅行者編集 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Edit profile</span></div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
