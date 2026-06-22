@@ -1298,17 +1298,50 @@ function HomeInner() {
 
             {/* LOCAL DASHBOARD (Local モードのみ) */}
             {appMode === "local" && currentUserId && (
-              <div style={{ padding: "4px 22px 8px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <Link href="/requests" style={{ display: "block", background: pendingRequestCount > 0 ? "#ad001c" : "#fff", color: pendingRequestCount > 0 ? "#fff" : "#2b1d1a", border: `1px solid ${pendingRequestCount > 0 ? "#ad001c" : "#f0e3cf"}`, borderRadius: 16, padding: 14, textDecoration: "none", boxShadow: "0 6px 18px -10px rgba(120,50,20,.3)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, opacity: 0.85, marginBottom: 4 }}>{t("local_dashboard_requests", lang)}</div>
-                    <div className="font-display" style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{pendingRequestCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
-                  </Link>
-                  <Link href="/bookings" style={{ display: "block", background: "#fff", color: "#2b1d1a", border: "1px solid #f0e3cf", borderRadius: 16, padding: 14, textDecoration: "none", boxShadow: "0 6px 18px -10px rgba(120,50,20,.3)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#9a8a7c", marginBottom: 4 }}>{t("local_dashboard_bookings", lang)}</div>
-                    <div className="font-display" style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, color: "#2e8b57" }}>{upcomingBookingsCount}<span style={{ fontSize: 12, marginLeft: 4, opacity: 0.7 }}>{t("items_unit", lang)}</span></div>
-                  </Link>
+              <div style={{ padding: "8px 22px 8px" }}>
+                <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{lang === "ja" ? "ダッシュボード" : "Dashboard"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}> Dashboard</span>}</h2>
+
+                {/* stats: met / reviews / bookings */}
+                <div style={{ display: "flex", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: "14px 8px", boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)", marginBottom: 10 }}>
+                  {([
+                    [profileMetCount, lang === "ja" ? "出会った人" : "Met"],
+                    [profileReviewCount, lang === "ja" ? "レビュー" : "Reviews"],
+                    [upcomingBookingsCount, lang === "ja" ? "予約" : "Bookings"],
+                  ] as const).map(([n, label], i) => (
+                    <div key={label} style={{ flex: 1, textAlign: "center", borderLeft: i === 0 ? "none" : "1px solid #f4ead7" }}>
+                      <div className="font-display" style={{ fontSize: 24, fontWeight: 900, color: "#2b1d1a", lineHeight: 1 }}>{n}</div>
+                      <div style={{ fontSize: 10.5, color: "#9a8a7c", fontWeight: 700, marginTop: 4 }}>{label}</div>
+                    </div>
+                  ))}
                 </div>
+
+                {/* incoming requests (prominent) */}
+                <Link href="/requests" style={{ display: "flex", alignItems: "center", gap: 12, background: pendingRequestCount > 0 ? "#ad001c" : "#fff", color: pendingRequestCount > 0 ? "#fff" : "#2b1d1a", border: `1px solid ${pendingRequestCount > 0 ? "#ad001c" : "#f0e3cf"}`, borderRadius: 16, padding: "13px 16px", textDecoration: "none", boxShadow: "0 6px 18px -12px rgba(120,50,20,.35)" }}>
+                  <span style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: 12, background: pendingRequestCount > 0 ? "rgba(255,255,255,.18)" : "#ffefd5", flex: "none", fontSize: 18 }}>📨</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="font-display" style={{ fontWeight: 800, fontSize: 14.5 }}>{lang === "ja" ? "受信リクエスト" : "Incoming requests"}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.85 }}>{pendingRequestCount > 0 ? (lang === "ja" ? "返事を待ってる人がいるわ" : "People are waiting for you") : (lang === "ja" ? "新着なし" : "All caught up")}</div>
+                  </div>
+                  <span className="font-display" style={{ fontSize: 22, fontWeight: 900 }}>{pendingRequestCount}</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={pendingRequestCount > 0 ? "#fff" : "#cbb9a4"} strokeWidth={2.2}><path d="M9 6l6 6-6 6" /></svg>
+                </Link>
+
+                {/* preview of newest pending requests */}
+                {pendingRequests.length > 0 && (
+                  <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {pendingRequests.slice(0, 2).map((r) => (
+                      <Link key={r.id} href="/requests" style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 14, padding: "9px 12px", textDecoration: "none", color: "inherit" }}>
+                        <span style={{ display: "grid", placeItems: "center", width: 32, height: 32, borderRadius: 10, background: "#ffefd5", flex: "none", fontSize: 16 }}>{r.senderEmoji}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="font-display" style={{ fontWeight: 700, fontSize: 13, color: "#2b1d1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.senderName}</div>
+                          <div style={{ fontSize: 11, color: "#9a8a7c", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.message || (lang === "ja" ? "メッセージなし" : "No message")}</div>
+                        </div>
+                        <span style={{ fontSize: 10.5, fontWeight: 800, color: "#ad001c", flex: "none" }}>{lang === "ja" ? "応答 →" : "Respond →"}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
                 {ownGuide ? (
                   <Link href={`/?guide=${ownGuide.id}`} style={{ display: "block", marginTop: 10, background: "#e8f4ec", color: "#2e8b57", border: "1px solid #2e8b57", borderRadius: 14, padding: 12, textDecoration: "none", fontSize: 12, fontWeight: 800, textAlign: "center" }}>{t("own_guide_open", lang)} ({ownGuide.name})</Link>
                 ) : (
