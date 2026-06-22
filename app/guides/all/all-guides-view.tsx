@@ -253,7 +253,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="font-display" style={{ fontSize: 15.5, fontWeight: 800, color: "#2b1d1a" }}>{g.name}</div>
                       <div style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 600 }}>
-                        {g.university}{age != null ? ` · ${age}歳` : ""}{g.gender === "male" ? " · ♂" : g.gender === "female" ? " · ♀" : ""}
+                        {g.university}{age != null ? ` · ${age}${lang === "ja" ? "歳" : ""}` : ""}{g.gender === "male" ? " · ♂" : g.gender === "female" ? " · ♀" : ""}
                       </div>
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
