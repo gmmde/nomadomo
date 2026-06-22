@@ -62,27 +62,8 @@ const card: React.CSSProperties = {
   background: "#fff8ec",
 };
 const header: React.CSSProperties = { background: "transparent", padding: "16px 18px 6px", display: "flex", alignItems: "center", gap: 12 };
-const input: React.CSSProperties = {
-  width: "100%",
-  background: "#fff",
-  border: "1px solid #ecdcc4",
-  borderRadius: 14,
-  padding: "12px 14px",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "#1a1008",
-  outline: "none",
-  fontFamily: "inherit",
-  boxSizing: "border-box",
-};
-const label: React.CSSProperties = {
-  display: "block",
-  fontSize: 12,
-  fontWeight: 800,
-  color: "#8a7560",
-  marginBottom: 6,
-  textTransform: "uppercase",
-};
+const input: React.CSSProperties = { width: "100%", background: "#fff8ec", border: "1px solid #ecdcc4", borderRadius: 13, padding: "13px 15px", fontSize: 14.5, fontWeight: 600, color: "#2b1d1a", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const label: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#ad001c", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" };
 const err: React.CSSProperties = {
   fontSize: 11,
   color: "#ad001c",
@@ -100,18 +81,7 @@ const chip = (a: boolean): React.CSSProperties => ({
   cursor: "pointer",
   fontFamily: "inherit",
 });
-const primary: React.CSSProperties = {
-  width: "100%",
-  background: "#ad001c",
-  color: "#fff",
-  border: "none",
-  borderRadius: 16,
-  padding: 16,
-  fontSize: 16,
-  fontWeight: 900,
-  cursor: "pointer",
-  fontFamily: "inherit",
-};
+const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 15, fontSize: 15.5, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 10px 22px -12px rgba(173,0,28,.7)" };
 const danger: React.CSSProperties = {
   width: "100%",
   background: "#fff",

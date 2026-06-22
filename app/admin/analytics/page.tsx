@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import BackButton from "@/app/lib/back-button";
 import { createClient } from "@/app/lib/supabase/server";
 
 export const metadata = { title: "Analytics dashboard - NomaDomo" };
@@ -69,8 +69,8 @@ export default async function AnalyticsPage() {
     <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center" }}>
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, padding: "20px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <Link href="/" style={{ color: "#ad001c", fontSize: 22, textDecoration: "none" }}>←</Link>
-          <div style={{ fontSize: 18, fontWeight: 900 }}>📊 Analytics dashboard</div>
+          <BackButton />
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>分析 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Analytics</span></div>
         </div>
 
         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 16 }}>

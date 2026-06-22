@@ -70,7 +70,7 @@ export default async function BookingsPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "32px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <BackButton />
-          <div style={{ fontSize: 20, fontWeight: 900 }}>Bookings</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>予約 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Bookings</span></div>
         </div>
 
         {/* 自分が申し込んだ予約 */}

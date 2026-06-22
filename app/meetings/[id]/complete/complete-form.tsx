@@ -170,7 +170,7 @@ export default function CompleteForm({ meetingId, peerName, peerEmoji, peerId, m
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <BackButton />
-          <div style={{ fontSize: 18, fontWeight: 900, flex: 1 }}>{t("complete_title", lang)}</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a", flex: 1 }}>{t("complete_title", lang)}</div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14, marginBottom: 16 }}>

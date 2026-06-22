@@ -29,7 +29,7 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <BackButton />
-          <div style={{ fontSize: 20, fontWeight: 900 }}>Report</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>通報 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Report</span></div>
         </div>
 
         <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
