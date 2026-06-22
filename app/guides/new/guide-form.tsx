@@ -109,6 +109,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
           </div>
 
           <form action={action}>
+            <input type="hidden" name="lang" value={lang} />
           <EnglishNotice />
           {(state?.error || (state?.errors && Object.keys(state.errors).length > 0)) && (
             <div style={{ background: "#ad001c20", border: "2px solid #ad001c", borderRadius: 12, padding: 14, marginBottom: 16, color: "#ad001c", fontWeight: 700 }}>

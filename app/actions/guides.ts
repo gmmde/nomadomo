@@ -67,17 +67,17 @@ function parseGuideFields(formData: FormData) {
       : null;
 
   const errors: GuideFormErrors = {};
-  if (name.length < 2) errors.name = "名前は2文字以上にして";
+  if (name.length < 2) errors.name = (formData.get("lang") === "ja" ? "名前は2文字以上にして" : "Name must be at least 2 characters");
 
-  if (bio.length < 10) errors.bio = "自己紹介は10文字以上書いてちょうだい";
+  if (bio.length < 10) errors.bio = (formData.get("lang") === "ja" ? "自己紹介は10文字以上書いてちょうだい" : "Bio must be at least 10 characters");
   if (mode !== "free") {
     if (!rateRaw || !Number.isFinite(rate) || rate <= 0)
-      errors.rate_per_day = "料金は正の数値で (1日あたり)";
+      errors.rate_per_day = (formData.get("lang") === "ja" ? "料金は正の数値で (1日あたり)" : "Rate must be a positive number (per day)");
   }
-  if (tags.length === 0) errors.tags = "タグを1つ以上選んで";
-  if (languages.length === 0) errors.languages = "言語を1つ以上選んで";
-  if (birthYearRaw && !birth_year) errors.birth_year = "西暦 (例: 2002) で";
-  if (areas.length === 0) errors.areas = "活動域を1つ以上選んで";
+  if (tags.length === 0) errors.tags = (formData.get("lang") === "ja" ? "タグを1つ以上選んで" : "Pick at least one tag");
+  if (languages.length === 0) errors.languages = (formData.get("lang") === "ja" ? "言語を1つ以上選んで" : "Pick at least one language");
+  if (birthYearRaw && !birth_year) errors.birth_year = (formData.get("lang") === "ja" ? "西暦 (例: 2002) で" : "Use a year (e.g. 2002)");
+  if (areas.length === 0) errors.areas = (formData.get("lang") === "ja" ? "活動域を1つ以上選んで" : "Pick at least one area");
 
   return {
     fields: {
@@ -149,7 +149,7 @@ export async function createGuide(
   });
   if (error) {
     if (error.code === "23505") {
-      return { error: "既にガイドプロファイルがあるわよ（1ユーザー1つだけ）" };
+      return { error: (formData.get("lang") === "ja" ? "既にガイドプロファイルがあるわよ（1ユーザー1つだけ）" : "You already have a guide profile (one per user)") };
     }
     return { error: error.message };
   }
@@ -170,7 +170,7 @@ export async function updateGuide(
 
   const idRaw = String(formData.get("id") ?? "");
   const id = Number(idRaw);
-  if (!Number.isFinite(id) || id <= 0) return { error: "不正なID" };
+  if (!Number.isFinite(id) || id <= 0) return { error: (formData.get("lang") === "ja" ? "不正なID" : "Invalid ID") };
 
   // display_name (user_settings) を最優先で formData.name に注入
   // (フォームの name 入力が disabled だと空で送られるためバリデーション前に補う必要がある)
@@ -194,8 +194,8 @@ export async function updateGuide(
     .eq("id", id)
     .maybeSingle();
   if (selErr) return { error: selErr.message };
-  if (!existing) return { error: "ガイドが見つからない" };
-  if (existing.user_id !== user.id) return { error: "編集権限がないわよ" };
+  if (!existing) return { error: (formData.get("lang") === "ja" ? "ガイドが見つからない" : "Guide not found") };
+  if (existing.user_id !== user.id) return { error: (formData.get("lang") === "ja" ? "編集権限がないわよ" : "You don't have permission to edit") };
 
   const oldPaths = (existing.image_paths as string[] | null) ?? [];
   const newPaths = fields.image_paths;

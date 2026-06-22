@@ -87,6 +87,7 @@ export default function RequestForm({ guideUserId, guideName, guideEmoji, guideU
         </div>
 
         <form action={action}>
+            <input type="hidden" name="lang" value={lang} />
           <input type="hidden" name="guide_user_id" value={guideUserId} />
 
           {!simple && (

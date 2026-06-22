@@ -21,10 +21,10 @@ export async function submitReport(
   const reason = String(formData.get("reason") ?? "").trim();
   const targetMessageIdRaw = String(formData.get("target_message_id") ?? "").trim();
 
-  if (!targetUserId) return { error: "対象ユーザー ID が無いわよ" };
-  if (targetUserId === user.id) return { error: "自分は通報できないわ" };
-  if (reason.length < 5) return { error: "理由を5文字以上書いて" };
-  if (reason.length > 500) return { error: "理由は500文字以内で" };
+  if (!targetUserId) return { error: (formData.get("lang") === "ja" ? "対象ユーザー ID が無いわよ" : "Missing target user ID") };
+  if (targetUserId === user.id) return { error: (formData.get("lang") === "ja" ? "自分は通報できないわ" : "You can't report yourself") };
+  if (reason.length < 5) return { error: (formData.get("lang") === "ja" ? "理由を5文字以上書いて" : "Reason must be at least 5 characters") };
+  if (reason.length > 500) return { error: (formData.get("lang") === "ja" ? "理由は500文字以内で" : "Reason must be 500 characters or fewer") };
 
   const insert: Record<string, unknown> = {
     reporter_id: user.id,

@@ -5,11 +5,12 @@ import Bi from "@/app/_components/bi";
 import Link from "next/link";
 import { useActionState } from "react";
 import { submitReport, type ReportFormState } from "@/app/actions/reports";
+import { useLang } from "@/app/lib/i18n";
 
 const wrap: React.CSSProperties = { background: "#fff8ec", minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "32px 24px" };
 const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
-const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
+const label: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#ad001c", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
 type Props = {
@@ -24,6 +25,7 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
     submitReport,
     undefined,
   );
+  const [lang] = useLang();
 
   return (
     <div style={wrap}>
@@ -52,6 +54,7 @@ export default function ReportForm({ targetUserId, targetName, targetEmoji, targ
           </div>
         ) : (
           <form action={action}>
+            <input type="hidden" name="lang" value={lang} />
             <input type="hidden" name="target_user_id" value={targetUserId} />
             {targetMessageId && <input type="hidden" name="target_message_id" value={targetMessageId} />}
 

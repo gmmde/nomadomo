@@ -41,10 +41,10 @@ function parseTravelerFields(formData: FormData) {
   const trip_period = String(formData.get("trip_period") ?? "").trim().slice(0, 100) || null;
 
   const errors: TravelerFormErrors = {};
-  if (name.length < 2) errors.name = "名前は2文字以上にして";
-  if (country.length < 2) errors.country = "出身国を入力して";
-  if (interests.length === 0) errors.interests = "興味を1つ以上選んで";
-  if (bio.length > 2000) errors.bio = "自己紹介は2000文字以内で";
+  if (name.length < 2) errors.name = (formData.get("lang") === "ja" ? "名前は2文字以上にして" : "Name must be at least 2 characters");
+  if (country.length < 2) errors.country = (formData.get("lang") === "ja" ? "出身国を入力して" : "Enter your country");
+  if (interests.length === 0) errors.interests = (formData.get("lang") === "ja" ? "興味を1つ以上選んで" : "Pick at least one interest");
+  if (bio.length > 2000) errors.bio = (formData.get("lang") === "ja" ? "自己紹介は2000文字以内で" : "Bio must be 2000 characters or fewer");
 
   return { fields: { name, country, interests, bio: bio || null, image_paths, avatar_path, emoji, gender, gender_other, birth_year, nationality, occupation, hobbies, available_slots, languages, trip_period }, errors };
 }
@@ -90,7 +90,7 @@ export async function createTraveler(
   });
   if (error) {
     if (error.code === "23505") {
-      return { error: "既に旅行者プロファイルがあるわよ（1ユーザー1つだけ）" };
+      return { error: (formData.get("lang") === "ja" ? "既に旅行者プロファイルがあるわよ（1ユーザー1つだけ）" : "You already have a traveler profile (one per user)") };
     }
     return { error: error.message };
   }

@@ -20,8 +20,8 @@ export async function createChatRequest(
   if (!user) redirect("/login");
 
   const guideUserId = String(formData.get("guide_user_id") ?? "").trim();
-  if (!guideUserId) return { error: "ガイドが指定されてない" };
-  if (guideUserId === user.id) return { error: "自分自身にはリクエストできない" };
+  if (!guideUserId) return { error: (formData.get("lang") === "ja" ? "ガイドが指定されてない" : "No guide specified") };
+  if (guideUserId === user.id) return { error: (formData.get("lang") === "ja" ? "自分自身にはリクエストできない" : "You can't request yourself") };
 
   const dateRaw = String(formData.get("preferred_date") ?? "").trim();
   const place = String(formData.get("preferred_place") ?? "").trim();
@@ -30,14 +30,14 @@ export async function createChatRequest(
   let dateIso: string | null = null;
   if (dateRaw) {
     const date = new Date(dateRaw);
-    if (isNaN(date.getTime())) return { error: "日時の形式がおかしい" };
-    if (date.getTime() <= Date.now()) return { error: "未来の日時にして" };
+    if (isNaN(date.getTime())) return { error: (formData.get("lang") === "ja" ? "日時の形式がおかしい" : "Invalid date format") };
+    if (date.getTime() <= Date.now()) return { error: (formData.get("lang") === "ja" ? "未来の日時にして" : "Pick a future date") };
     dateIso = date.toISOString();
   }
 
-  if (place.length > 200) return { error: "場所は200文字以内で" };
-  if (message.length > 1000) return { error: "メッセージは1000文字以内で" };
-  if (!dateIso && !place && !message) return { error: "日時・場所・メッセージのうち最低1つは入れて" };
+  if (place.length > 200) return { error: (formData.get("lang") === "ja" ? "場所は200文字以内で" : "Place must be 200 characters or fewer") };
+  if (message.length > 1000) return { error: (formData.get("lang") === "ja" ? "メッセージは1000文字以内で" : "Message must be 1000 characters or fewer") };
+  if (!dateIso && !place && !message) return { error: (formData.get("lang") === "ja" ? "日時・場所・メッセージのうち最低1つは入れて" : "Enter at least one of date, place, or message") };
 
   // 既に pending or accepted のリクエストがあるかチェック
   const { data: existing } = await supabase
@@ -51,8 +51,8 @@ export async function createChatRequest(
     const s = existing[0].status;
     return {
       error: s === "accepted"
-        ? "既に承認済みリクエストがあるわよ。Inbox からチャット開いて"
-        : "既に申請中のリクエストがあるわよ。返事待ち",
+        ? (formData.get("lang") === "ja" ? "既に承認済みリクエストがあるわよ。Inbox からチャット開いて" : "You already have an accepted request. Open the chat from your Inbox.")
+        : (formData.get("lang") === "ja" ? "既に申請中のリクエストがあるわよ。返事待ち" : "You already have a pending request. Awaiting a reply."),
     };
   }
 
