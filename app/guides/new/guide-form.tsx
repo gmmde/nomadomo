@@ -35,27 +35,8 @@ const cardStyle: React.CSSProperties = {
   background: "#fff8ec",
 };
 const headerStyle: React.CSSProperties = { background: "transparent", padding: "16px 18px 6px", display: "flex", alignItems: "center", gap: 12 };
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  background: "#fff",
-  border: "1px solid #ecdcc4",
-  borderRadius: 14,
-  padding: "12px 14px",
-  fontSize: 14,
-  fontWeight: 600,
-  color: "#1a1008",
-  outline: "none",
-  fontFamily: "inherit",
-  boxSizing: "border-box",
-};
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 12,
-  fontWeight: 800,
-  color: "#8a7560",
-  marginBottom: 6,
-  textTransform: "uppercase",
-};
+const inputStyle: React.CSSProperties = { width: "100%", background: "#fff8ec", border: "1px solid #ecdcc4", borderRadius: 13, padding: "13px 15px", fontSize: 14.5, fontWeight: 600, color: "#2b1d1a", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#ad001c", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" };
 const errStyle: React.CSSProperties = {
   fontSize: 11,
   color: "#ad001c",
@@ -73,18 +54,7 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   cursor: "pointer",
   fontFamily: "inherit",
 });
-const btnPrimary: React.CSSProperties = {
-  width: "100%",
-  background: "#ad001c",
-  color: "#fff",
-  border: "none",
-  borderRadius: 16,
-  padding: 16,
-  fontSize: 16,
-  fontWeight: 900,
-  cursor: "pointer",
-  fontFamily: "inherit",
-};
+const btnPrimary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 15, fontSize: 15.5, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 10px 22px -12px rgba(173,0,28,.7)" };
 
 type Prefill = {
   name: string;
@@ -134,7 +104,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
-          <div style={{ fontSize: 12, color: "#8a7560", fontWeight: 700, marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 600, marginBottom: 18 }}>
             {t("logged_in_as", lang)}：{userEmail}
           </div>
 
@@ -148,6 +118,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
               </div>
             </div>
           )}
+            <Section title="基本情報 · Basics">
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>
@@ -195,11 +166,15 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
               {state?.errors?.bio && <div style={errStyle}>{state.errors.bio}</div>}
             </div>
 
+            </Section>
+            <Section title="提供スタイル · Your offer">
             {/* Mode selector */}
             <ModeAndRate state={state} initialMode="free" initialRate={3000} />
             {state?.errors?.mode && <div style={errStyle}>{state.errors.mode}</div>}
             {state?.errors?.rate_per_day && <div style={errStyle}>{state.errors.rate_per_day}</div>}
 
+            </Section>
+            <Section title="あなたについて · About you">
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="gender">{t("form_gender", lang)}</label>
@@ -270,6 +245,8 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
               {state?.errors?.birth_year && <div style={errStyle}>{state.errors.birth_year}</div>}
             </div>
 
+            </Section>
+            <Section title="活動内容 · What you offer">
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_hobbies", lang)}</label>
@@ -338,6 +315,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
               {state?.errors?.languages && <div style={errStyle}>{state.errors.languages}</div>}
             </div>
 
+            </Section>
             {state?.error && (
               <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
                 {state.error}
@@ -349,6 +327,17 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
             </button>
           </form>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ margin: "0 0 9px 2px", fontSize: 11, fontWeight: 700, letterSpacing: ".05em", color: "#ad001c", textTransform: "uppercase" }}>{title}</p>
+      <div style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 16, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
+        {children}
       </div>
     </div>
   );
