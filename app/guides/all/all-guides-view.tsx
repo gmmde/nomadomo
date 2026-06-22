@@ -32,11 +32,11 @@ type SortKey = "recommended" | "newest" | "price_asc" | "price_desc";
 
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"];
 const LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"];
-const GENDER_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: "", label: "指定なし" },
-  { value: "male", label: "男性" },
-  { value: "female", label: "女性" },
-  { value: "non-binary", label: "ノンバイナリー" },
+const GENDER_OPTIONS: Array<{ value: string; ja: string; en: string }> = [
+  { value: "", ja: "指定なし", en: "Any" },
+  { value: "male", ja: "男性", en: "Male" },
+  { value: "female", ja: "女性", en: "Female" },
+  { value: "non-binary", ja: "ノンバイナリー", en: "Non-binary" },
 ];
 
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
@@ -145,7 +145,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>ガイド一覧 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>All guides</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "ガイド一覧" : "All guides"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> All guides</span>}</div>
           <div style={{ flex: 1 }}/>
           <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 700 }}>{filtered.length} / {guides.length}</div>
         </div>
@@ -156,11 +156,11 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="名前・大学・タグ・bio から検索"
+            placeholder={lang === "ja" ? "名前・大学・タグ・bio から検索" : "Search name, school, tags, bio"}
             style={{ background: "none", border: "none", outline: "none", fontSize: 13, fontWeight: 600, flex: 1, fontFamily: "inherit", color: "#1a1008" }}
           />
           {query && (
-            <button aria-label="クリア" onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "#8a7560", fontSize: 16, cursor: "pointer" }}>×</button>
+            <button aria-label={lang === "ja" ? "クリア" : "Clear"} onClick={() => setQuery("")} style={{ background: "none", border: "none", color: "#8a7560", fontSize: 16, cursor: "pointer" }}>×</button>
           )}
         </div>
 
@@ -171,16 +171,16 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             onChange={(e) => setSort(e.target.value as SortKey)}
             style={{ ...input, width: "auto", flex: 1, padding: "8px 10px" }}
           >
-            <option value="recommended">⭐ おすすめ順</option>
-            <option value="newest">🆕 新着順</option>
-            <option value="price_asc">💰 値段が安い順</option>
-            <option value="price_desc">💰 値段が高い順</option>
+            <option value="recommended">{lang === "ja" ? "⭐ おすすめ順" : "⭐ Recommended"}</option>
+            <option value="newest">{lang === "ja" ? "🆕 新着順" : "🆕 Newest"}</option>
+            <option value="price_asc">{lang === "ja" ? "💰 値段が安い順" : "💰 Price: low → high"}</option>
+            <option value="price_desc">{lang === "ja" ? "💰 値段が高い順" : "💰 Price: high → low"}</option>
           </select>
           <button
             onClick={() => setFiltersOpen((v) => !v)}
             style={{ background: filtersOpen ? "#ad001c" : "#fff", color: filtersOpen ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
           >
-            🎛 絞り込み{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length})` : ""}
+            {lang === "ja" ? "🎛 絞り込み" : "🎛 Filters"}{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length})` : ""}
           </button>
         </div>
 
@@ -189,7 +189,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
           <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 12, marginBottom: 14 }}>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>モード</div>
             <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-              {([["all", "すべて", "#8a7560"], ["mate", "🤝 Free (無料)", "#ad001c"], ["guide", "💼 Pro (有料)", "#2e8b57"]] as const).map(([v, label, c]) => (
+              {([["all", lang === "ja" ? "すべて" : "All", "#8a7560"], ["mate", lang === "ja" ? "🤝 Free (無料)" : "🤝 Free", "#ad001c"], ["guide", lang === "ja" ? "💼 Pro (有料)" : "💼 Pro", "#2e8b57"]] as const).map(([v, label, c]) => (
                 <button key={v} onClick={() => setModeFilter(v)} style={{
                   flex: 1,
                   background: modeFilter === v ? c : "#fff",
@@ -219,16 +219,16 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             </div>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>性別</div>
             <select value={gender} onChange={(e) => setGender(e.target.value)} style={{ ...input, padding: "8px 10px", marginBottom: 12 }}>
-              {GENDER_OPTIONS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+              {GENDER_OPTIONS.map((g) => <option key={g.value} value={g.value}>{lang === "ja" ? g.ja : g.en}</option>)}
             </select>
             <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>年齢</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
-              <input type="number" min={16} max={99} placeholder="最小" value={ageMin} onChange={(e) => setAgeMin(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...input, padding: "8px 10px" }} />
+              <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最小" : "Min"} value={ageMin} onChange={(e) => setAgeMin(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...input, padding: "8px 10px" }} />
               <span style={{ color: "#8a7560", fontWeight: 800 }}>〜</span>
-              <input type="number" min={16} max={99} placeholder="最大" value={ageMax} onChange={(e) => setAgeMax(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...input, padding: "8px 10px" }} />
+              <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最大" : "Max"} value={ageMax} onChange={(e) => setAgeMax(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...input, padding: "8px 10px" }} />
             </div>
             <button onClick={clearAll} style={{ width: "100%", background: "#fff", color: "#8a7560", border: "1px solid #ecdcc4", borderRadius: 12, padding: 8, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-              すべてリセット
+              {lang === "ja" ? "すべてリセット" : "Reset all"}
             </button>
           </div>
         )}
@@ -236,7 +236,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         {/* Results */}
         {filtered.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center", color: "#8a7560", fontWeight: 700, background: "#fff", border: "2px dashed #f3e8d6", borderRadius: 14 }}>
-            条件にマッチするガイドなし
+            {lang === "ja" ? "条件にマッチするガイドなし" : "No guides match"}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -259,7 +259,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                     <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                       <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".04em", padding: "3px 9px", borderRadius: 999, background: g.mode === "free" ? "#e6f5ee" : "#fceaec", color: g.mode === "free" ? "#2e8b57" : "#ad001c" }}>{g.mode === "free" ? "FREE" : "PRO"}</span>
                       {g.mode === "free" ? (
-                        <span style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 700 }}>無料</span>
+                        <span style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 700 }}>{lang === "ja" ? "無料" : "Free"}</span>
                       ) : (
                         <span style={{ fontSize: 13, color: "#2b1d1a", fontWeight: 900 }}>¥{(g.rate_per_day ?? 0).toLocaleString()}<span style={{ fontSize: 9, color: "#9a8a7c", fontWeight: 700, marginLeft: 1 }}>/day</span></span>
                       )}

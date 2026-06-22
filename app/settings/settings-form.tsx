@@ -175,12 +175,12 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 2px 14px" }}>
           <button onClick={() => router.back()} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", cursor: "pointer", flex: "none" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></button>
-          <h1 className="font-display" style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>設定 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Settings</span></h1>
+          <h1 className="font-display" style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "設定" : "Settings"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> Settings</span>}</h1>
         </div>
         <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 600, padding: "0 4px 14px" }}>{userEmail}</div>
 
         {/* アカウント */}
-        <Group title="アカウント · Account">
+        <Group title={lang === "ja" ? "アカウント" : "Account"}>
           <Row d={IC.profile} jp="プロフィール編集" en="Edit profile" chevron onClick={() => router.push("/travelers/edit")} />
           <Row d={IC.globe} jp="言語" en="Language" right={<Val>{langVal}</Val>} chevron onClick={() => onLangChange(language === "ja" ? "en" : "ja")} />
           <Row d={IC.swap} jp="アプリモード" en="Traveler / Local" right={<Val>{modeVal}</Val>} chevron onClick={() => setAppMode(appMode === "local" ? "traveler" : "local")} />
@@ -188,7 +188,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         </Group>
 
         {/* 通知 */}
-        <Group title="通知 · Notifications">
+        <Group title={lang === "ja" ? "通知" : "Notifications"}>
           <Row d={IC.bell} jp="プッシュ通知" en="Push notifications" sub={!pushSupported ? (lang === "ja" ? "このブラウザ非対応" : "Not supported in this browser") : undefined}
                right={<Toggle on={pushOn} onChange={(v) => { if (!pushPending && pushSupported) onTogglePush(v); }} />} />
           {pushErr && <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, padding: "0 16px 8px 63px" }}>{pushErr}</div>}
@@ -197,12 +197,12 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         </Group>
 
         {/* 予約・支払い */}
-        <Group title="予約・支払い · Booking & payments">
+        <Group title={lang === "ja" ? "予約・支払い" : "Booking & payments"}>
           <Row d={IC.card} jp="支払い方法" en="Payment methods" right={<Val>Visa ···42</Val>} chevron last onClick={() => alert(lang === "ja" ? "支払い方法の管理は準備中よ" : "Payment methods management is coming soon")} />
         </Group>
 
         {/* プライバシー */}
-        <Group title="プライバシー · Privacy">
+        <Group title={lang === "ja" ? "プライバシー" : "Privacy"}>
           <Row d={IC.eye} jp="未ログイン訪問者にプロフィールを表示" en="Show my profile to logged-out visitors" last={blocked.length === 0} right={<Toggle on={showAnon} onChange={setShowAnon} />} />
           {blocked.length > 0 && blocked.map((b, idx) => (
             <div key={b.user_id} style={{ display: "flex", alignItems: "center", gap: 13, padding: "12px 16px", borderBottom: idx === blocked.length - 1 ? "none" : "1px solid #f4ead7" }}>
@@ -224,7 +224,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
         </button>
 
         {/* サポート */}
-        <Group title="サポート · Support">
+        <Group title={lang === "ja" ? "サポート" : "Support"}>
           <Row d={IC.chat} jp="開発者に連絡" en="Contact the developer" sub={supportPending ? "..." : undefined} chevron onClick={() => { if (!supportPending) onContactSupport(); }} />
           <Row d={IC.help} jp="ヘルプセンター" en="Help center" chevron onClick={() => alert(lang === "ja" ? "ヘルプセンターは準備中よ" : "Help center is coming soon")} />
           <Row d={IC.doc} jp="利用規約" en="Terms of service" chevron onClick={() => router.push("/terms")} />
@@ -317,12 +317,15 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 function Row({ d, jp, en, sub, danger = false, onClick, right, chevron = false, last = false }: {
   d: string; jp: string; en: string; sub?: string; danger?: boolean; onClick?: () => void; right?: React.ReactNode; chevron?: boolean; last?: boolean;
 }) {
+  const [lang] = useLang();
+  const primary = lang === "ja" ? jp : en;
+  const secondary = lang === "ja" ? en : jp;
   return (
     <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 16px", borderBottom: last ? "none" : "1px solid #f4ead7", cursor: onClick ? "pointer" : "default" }}>
       <Tile d={d} danger={danger} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="font-display" style={{ fontWeight: 700, fontSize: 14, color: danger ? "#ad001c" : "#2b1d1a", lineHeight: 1.2 }}>{jp}</div>
-        <div style={{ fontSize: 11, color: "#a8978a", marginTop: 1 }}>{en}</div>
+        <div className="font-display" style={{ fontWeight: 700, fontSize: 14, color: danger ? "#ad001c" : "#2b1d1a", lineHeight: 1.2 }}>{primary}</div>
+        <div style={{ fontSize: 11, color: "#a8978a", marginTop: 1 }}>{secondary}</div>
         {sub && <div style={{ fontSize: 10, color: "#c0392b", fontWeight: 700, marginTop: 2 }}>{sub}</div>}
       </div>
       {right}
