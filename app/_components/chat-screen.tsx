@@ -297,7 +297,7 @@ export default function ChatScreen({
                         style={{ maxWidth: "100%", borderRadius: 14, border: !mine ? "2px solid #e8c99a" : "2px solid #ad001c", cursor: "pointer", display: "block" }}
                       />
                     ) : (
-                      <div style={{ width: 180, height: 180, borderRadius: 14, background: "#f0d9b5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#8a7560", fontWeight: 700 }}>...読み込み中</div>
+                      <div style={{ width: 180, height: 180, borderRadius: 14, background: "#f0d9b5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#8a7560", fontWeight: 700 }}>{lang === "ja" ? "…読み込み中" : "Loading…"}</div>
                     )
                   ) : (
                     <div style={{ padding: "11px 15px", borderRadius: mine ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: mine ? "#ad001c" : "#fff", color: mine ? "#fff" : "#2b1d1a", fontSize: 13.5, fontWeight: 500, lineHeight: 1.6, border: !mine ? "1px solid #f0e3cf" : "none", boxShadow: !mine ? "0 4px 12px -10px rgba(120,50,20,.4)" : "none", whiteSpace: "pre-wrap" }}>{m.body}</div>

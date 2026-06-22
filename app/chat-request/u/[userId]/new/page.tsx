@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import RequestForm from "@/app/chat-request/[guideId]/new/request-form";
 
-export const metadata = { title: "メッセージリクエスト - NomaDomo" };
+export const metadata = { title: "Message request - NomaDomo" };
 
 type Props = { params: Promise<{ userId: string }> };
 

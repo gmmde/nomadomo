@@ -187,7 +187,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         {/* Filters panel */}
         {filtersOpen && (
           <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 12, marginBottom: 14 }}>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>モード</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "モード" : "Mode"}</div>
             <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
               {([["all", lang === "ja" ? "すべて" : "All", "#8a7560"], ["mate", lang === "ja" ? "🤝 Free (無料)" : "🤝 Free", "#ad001c"], ["guide", lang === "ja" ? "💼 Pro (有料)" : "💼 Pro", "#2e8b57"]] as const).map(([v, label, c]) => (
                 <button key={v} onClick={() => setModeFilter(v)} style={{
@@ -199,29 +199,29 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                 }}>{label}</button>
               ))}
             </div>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>活動域</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動域" : "Areas"}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
               {sortedAreas.map((a) => (
                 <button key={a.value} onClick={() => toggleArr(areas, setAreas, a.value)} style={chip(areas.includes(a.value), "#2e8b57")}>📍 {a.label}</button>
               ))}
             </div>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>タグ</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
               {TAG_OPTIONS.map((t) => (
                 <button key={t} onClick={() => toggleArr(tags, setTags, t)} style={chip(tags.includes(t))}>{t}</button>
               ))}
             </div>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>言語</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
               {LANG_OPTIONS.map((l) => (
                 <button key={l} onClick={() => toggleArr(langs, setLangs, l)} style={chip(langs.includes(l), "#2e8b57")}>{l}</button>
               ))}
             </div>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>性別</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
             <select value={gender} onChange={(e) => setGender(e.target.value)} style={{ ...input, padding: "8px 10px", marginBottom: 12 }}>
               {GENDER_OPTIONS.map((g) => <option key={g.value} value={g.value}>{lang === "ja" ? g.ja : g.en}</option>)}
             </select>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>年齢</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "年齢" : "Age"}</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
               <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最小" : "Min"} value={ageMin} onChange={(e) => setAgeMin(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...input, padding: "8px 10px" }} />
               <span style={{ color: "#8a7560", fontWeight: 800 }}>〜</span>

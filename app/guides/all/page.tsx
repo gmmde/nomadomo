@@ -1,7 +1,7 @@
 import { createClient } from "@/app/lib/supabase/server";
 import AllGuidesView, { type GuideRow } from "./all-guides-view";
 
-export const metadata = { title: "ガイド一覧 - NomaDomo" };
+export const metadata = { title: "All guides - NomaDomo" };
 export const dynamic = "force-dynamic";
 
 export default async function AllGuidesPage() {

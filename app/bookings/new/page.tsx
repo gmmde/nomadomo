@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import BookingForm from "./booking-form";
 
-export const metadata = { title: "予約申込 - NomaDomo" };
+export const metadata = { title: "Book a guide - NomaDomo" };
 
 type Props = {
   searchParams: Promise<{ guide?: string }>;

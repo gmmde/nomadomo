@@ -83,7 +83,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
       <div style={cardStyle} className="screen-enter">
         <div style={headerStyle}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>旅行者登録 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Traveler profile</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "旅行者登録" : "Traveler profile"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> Traveler profile</span>}</div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
@@ -111,7 +111,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
 
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="name">{t("form_name", lang)}</label>
-              <input id="name" name="name" required value={lockedDisplayName ?? name} onChange={(e) => { if (!lockedDisplayName) setName(e.target.value); }} placeholder="例: John Smith"  disabled={!!lockedDisplayName} style={{ ...inputStyle, opacity: lockedDisplayName ? 0.7 : 1, cursor: lockedDisplayName ? "not-allowed" : "text" }} />
+              <input id="name" name="name" required value={lockedDisplayName ?? name} onChange={(e) => { if (!lockedDisplayName) setName(e.target.value); }} placeholder={lang === "ja" ? "例: John Smith" : "e.g. John Smith"}  disabled={!!lockedDisplayName} style={{ ...inputStyle, opacity: lockedDisplayName ? 0.7 : 1, cursor: lockedDisplayName ? "not-allowed" : "text" }} />
               {lockedDisplayName && (
                 <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 4 }}>
                   🔒 {lang === "ja" ? "アカウント登録名 (変更不可)" : "Your account name (cannot be changed)"}
@@ -121,8 +121,8 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="country">出身国</label>
-              <input id="country" name="country" required list="country-list" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} placeholder="例: Japan" />
+              <label style={labelStyle} htmlFor="country">{lang === "ja" ? "出身国" : "Country"}</label>
+              <input id="country" name="country" required list="country-list" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: Japan" : "e.g. Japan"} />
               <datalist id="country-list">
                 {COUNTRY_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
               </datalist>
@@ -130,7 +130,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="bio">自己紹介 (任意)</label>
+              <label style={labelStyle} htmlFor="bio">{lang === "ja" ? "自己紹介 (任意)" : "Bio (optional)"}</label>
               <textarea
                 id="bio"
                 name="bio"
@@ -139,7 +139,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 style={{ ...inputStyle, resize: "vertical", minHeight: 90 }}
-                placeholder="どこから来た？何が好き？ガイドに知っておいてほしいこと"
+                placeholder={lang === "ja" ? "どこから来た？何が好き？ガイドに知っておいてほしいこと" : "Where are you from? What do you love? Anything guides should know."}
               />
               {state?.errors?.bio && <div style={errStyle}>{state.errors.bio}</div>}
             </div>
@@ -168,26 +168,26 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
 
             {/* Birth year */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="birth_year">生まれ年 (任意)</label>
-              <input id="birth_year" name="birth_year" type="number" min={1900} max={new Date().getFullYear()} step={1} value={birthYear} onChange={(e) => setBirthYear(e.target.value)} style={inputStyle} placeholder="例: 1995" />
+              <label style={labelStyle} htmlFor="birth_year">{lang === "ja" ? "生まれ年 (任意)" : "Birth year (optional)"}</label>
+              <input id="birth_year" name="birth_year" type="number" min={1900} max={new Date().getFullYear()} step={1} value={birthYear} onChange={(e) => setBirthYear(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: 1995" : "e.g. 1995"} />
             </div>
 
             {/* Nationality (already covered by country, but keep extra) */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="nationality">国籍 (任意・country と別管理)</label>
-              <input id="nationality" name="nationality" type="text" maxLength={80} value={nationality} onChange={(e) => setNationality(e.target.value)} style={inputStyle} placeholder="例: アメリカ" />
+              <label style={labelStyle} htmlFor="nationality">{lang === "ja" ? "国籍 (任意)" : "Nationality (optional)"}</label>
+              <input id="nationality" name="nationality" type="text" maxLength={80} value={nationality} onChange={(e) => setNationality(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: アメリカ" : "e.g. USA"} />
             </div>
 
             {/* Occupation */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="occupation">{t("form_occupation", lang)}</label>
-              <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={inputStyle} placeholder="例: ソフトウェアエンジニア" />
+              <input id="occupation" name="occupation" type="text" maxLength={80} value={occupation} onChange={(e) => setOccupation(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: ソフトウェアエンジニア" : "e.g. Software engineer"} />
             </div>
 
             {/* Trip period */}
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle} htmlFor="trip_period">滞在期間 (任意)</label>
-              <input id="trip_period" name="trip_period" type="text" maxLength={100} value={tripPeriod} onChange={(e) => setTripPeriod(e.target.value)} style={inputStyle} placeholder="例: 2026/06/01-2026/06/10" />
+              <label style={labelStyle} htmlFor="trip_period">{lang === "ja" ? "滞在期間 (任意)" : "Trip period (optional)"}</label>
+              <input id="trip_period" name="trip_period" type="text" maxLength={100} value={tripPeriod} onChange={(e) => setTripPeriod(e.target.value)} style={inputStyle} placeholder={lang === "ja" ? "例: 2026/06/01-2026/06/10" : "e.g. 2026/06/01-2026/06/10"} />
             </div>
 
             </Section>
@@ -205,7 +205,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>興味（複数選択可）</label>
+              <label style={labelStyle}>{lang === "ja" ? "興味（複数選択可）" : "Interests (select any)"}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {INTEREST_OPTIONS.map((t) => (
                   <button key={t} type="button" onClick={() => toggle(t)} style={chipStyle(interests.includes(t))} aria-pressed={interests.includes(t)}>

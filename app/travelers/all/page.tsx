@@ -4,7 +4,7 @@ import Link from "next/link";
 import { createClient } from "@/app/lib/supabase/server";
 import BackButton from "@/app/lib/back-button";
 
-export const metadata = { title: "旅行者一覧 - NomaDomo" };
+export const metadata = { title: "Travelers - NomaDomo" };
 export const dynamic = "force-dynamic";
 
 export default async function AllTravelersPage() {

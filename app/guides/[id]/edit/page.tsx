@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import EditGuideForm from "./edit-form";
 
-export const metadata = { title: "ガイド編集 - NomaDomo" };
+export const metadata = { title: "Edit guide profile - NomaDomo" };
 
 type Props = { params: Promise<{ id: string }> };
 

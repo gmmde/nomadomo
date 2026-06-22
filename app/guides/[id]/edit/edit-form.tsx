@@ -154,7 +154,7 @@ export default function EditGuideForm({
       <div style={card}>
         <div style={header}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>ガイド編集 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Edit guide</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "ガイド編集" : "Edit guide"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> Edit guide</span>}</div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>

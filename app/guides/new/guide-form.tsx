@@ -100,7 +100,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
       <div style={cardStyle}>
         <div style={headerStyle}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>ガイド登録 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Become a guide</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "ガイド登録" : "Become a guide"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> Become a guide</span>}</div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>

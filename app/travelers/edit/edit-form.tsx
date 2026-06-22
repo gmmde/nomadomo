@@ -83,7 +83,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
       <div style={card} className="screen-enter">
         <div style={header}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>旅行者編集 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Edit profile</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "旅行者編集" : "Edit profile"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> Edit profile</span>}</div>
         </div>
 
         <div style={{ padding: "20px 20px 100px" }}>
@@ -162,7 +162,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="birth_year">{t("form_birth_year", lang)}</label>
-              <input id="birth_year" name="birth_year" type="number" min={1900} max={new Date().getFullYear()} step={1} value={birthYear} onChange={(e) => setBirthYear(e.target.value)} style={input} placeholder="例: 1995" />
+              <input id="birth_year" name="birth_year" type="number" min={1900} max={new Date().getFullYear()} step={1} value={birthYear} onChange={(e) => setBirthYear(e.target.value)} style={input} placeholder={lang === "ja" ? "例: 1995" : "e.g. 1995"} />
             </div>
 
             <div style={{ marginBottom: 16 }}>
@@ -177,7 +177,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
 
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="trip_period">{lang === "ja" ? "滞在期間 (任意)" : "Trip period (optional)"}</label>
-              <input id="trip_period" name="trip_period" type="text" maxLength={100} value={tripPeriod} onChange={(e) => setTripPeriod(e.target.value)} style={input} placeholder="例: 2026/06/01-2026/06/10" />
+              <input id="trip_period" name="trip_period" type="text" maxLength={100} value={tripPeriod} onChange={(e) => setTripPeriod(e.target.value)} style={input} placeholder={lang === "ja" ? "例: 2026/06/01-2026/06/10" : "e.g. 2026/06/01-2026/06/10"} />
             </div>
 
             </Section>

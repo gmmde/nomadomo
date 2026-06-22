@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/app/lib/supabase/server";
 import EditTravelerForm from "./edit-form";
 
-export const metadata = { title: "旅行者編集 - NomaDomo" };
+export const metadata = { title: "Edit traveler profile - NomaDomo" };
 
 export default async function EditTravelerPage() {
   const supabase = await createClient();
