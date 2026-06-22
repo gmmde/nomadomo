@@ -118,7 +118,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
               </div>
             </div>
           )}
-            <Section title="基本情報 · Basics">
+            <Section title={lang === "ja" ? "基本情報" : "Basics"}>
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>
@@ -167,14 +167,14 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
             </div>
 
             </Section>
-            <Section title="提供スタイル · Your offer">
+            <Section title={lang === "ja" ? "提供スタイル" : "Your offer"}>
             {/* Mode selector */}
             <ModeAndRate state={state} initialMode="free" initialRate={3000} />
             {state?.errors?.mode && <div style={errStyle}>{state.errors.mode}</div>}
             {state?.errors?.rate_per_day && <div style={errStyle}>{state.errors.rate_per_day}</div>}
 
             </Section>
-            <Section title="あなたについて · About you">
+            <Section title={lang === "ja" ? "あなたについて" : "About you"}>
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="gender">{t("form_gender", lang)}</label>
@@ -246,7 +246,7 @@ export default function GuideForm({ userEmail, prefill, lockedDisplayName }: { u
             </div>
 
             </Section>
-            <Section title="活動内容 · What you offer">
+            <Section title={lang === "ja" ? "活動内容" : "What you offer"}>
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_hobbies", lang)}</label>

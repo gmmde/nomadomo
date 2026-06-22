@@ -101,7 +101,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
               </div>
             </div>
           )}
-            <Section title="基本情報 · Basics">
+            <Section title={lang === "ja" ? "基本情報" : "Basics"}>
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_photos", lang)}</label>
@@ -145,7 +145,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
             </div>
 
             </Section>
-            <Section title="あなたについて · About you">
+            <Section title={lang === "ja" ? "あなたについて" : "About you"}>
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
@@ -180,7 +180,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
             </div>
 
             </Section>
-            <Section title="興味・予定 · Interests & availability">
+            <Section title={lang === "ja" ? "興味・予定" : "Interests & availability"}>
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_hobbies", lang)}</label>
               <HobbiesTags initial={initial.hobbies} />

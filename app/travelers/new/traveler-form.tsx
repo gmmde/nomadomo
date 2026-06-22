@@ -101,7 +101,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
               </div>
             </div>
           )}
-            <Section title="基本情報 · Basics">
+            <Section title={lang === "ja" ? "基本情報" : "Basics"}>
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_photos", lang)}</label>
@@ -150,7 +150,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
             </div>
 
             </Section>
-            <Section title="あなたについて · About you">
+            <Section title={lang === "ja" ? "あなたについて" : "About you"}>
             {/* Gender */}
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle} htmlFor="gender">{t("form_gender", lang)}</label>
@@ -190,7 +190,7 @@ export default function TravelerForm({ userEmail, prefill, lockedDisplayName }: 
             </div>
 
             </Section>
-            <Section title="興味・予定 · Interests & availability">
+            <Section title={lang === "ja" ? "興味・予定" : "Interests & availability"}>
             {/* Hobbies */}
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>{t("form_hobbies", lang)}</label>

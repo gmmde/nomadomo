@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { createClient } from "@/app/lib/supabase/client";
+import { useLang } from "@/app/lib/i18n";
 import { useSignedUrls } from "@/app/lib/use-signed-urls";
 
 const EMOJI_OPTIONS = ["🧑", "🍜", "⛩", "🎨", "🌙", "🚲", "🏯", "☕", "📷", "🍶"] as const;
@@ -15,6 +16,7 @@ type Props = {
 
 export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath = null }: Props) {
   const [emoji, setEmoji] = useState(initialEmoji);
+  const [lang] = useLang();
   const [avatarPath, setAvatarPath] = useState<string | null>(initialAvatarPath);
   const [pendingFileUrl, setPendingFileUrl] = useState<string | null>(null); // data URL for crop
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -31,11 +33,11 @@ export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath 
   function handleFile(file: File | null) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setError("画像ファイルだけアップロードできるわよ");
+      setError(lang === "ja" ? "画像ファイルだけアップロードできるわよ" : "Images only");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError("1枚あたり 5MB までよ");
+      setError(lang === "ja" ? "1枚あたり 5MB までよ" : "Max 5MB per image");
       return;
     }
     setError(null);
@@ -71,10 +73,10 @@ export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath 
     setUploading(true);
     try {
       const blob = await getCroppedBlob();
-      if (!blob) throw new Error("クロップに失敗");
+      if (!blob) throw new Error(lang === "ja" ? "クロップに失敗" : "Crop failed");
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("ログインが必要");
+      if (!user) throw new Error(lang === "ja" ? "ログインが必要" : "Login required");
       const filename = `${user.id}/avatar-${Date.now()}.jpg`;
       const { error: upErr } = await supabase.storage.from(BUCKET).upload(filename, blob, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
       if (upErr) throw upErr;
@@ -86,7 +88,7 @@ export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath 
       setPendingFileUrl(null);
       setEmoji(""); // emoji を空にして画像優先
     } catch (e) {
-      setError(e instanceof Error ? e.message : "アップロード失敗");
+      setError(e instanceof Error ? e.message : (lang === "ja" ? "アップロード失敗" : "Upload failed"));
     } finally {
       setUploading(false);
     }
@@ -130,15 +132,15 @@ export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath 
             />
           </div>
           <div style={{ marginTop: 12, marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: "#fff", fontWeight: 700, marginBottom: 4 }}>ズーム</div>
+            <div style={{ fontSize: 11, color: "#fff", fontWeight: 700, marginBottom: 4 }}>{lang === "ja" ? "ズーム" : "Zoom"}</div>
             <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} style={{ width: "100%" }} />
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" onClick={() => setPendingFileUrl(null)} disabled={uploading} style={{ flex: 1, background: "#fff", color: "#1a1008", border: "none", borderRadius: 14, padding: 12, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
-              キャンセル
+              {lang === "ja" ? "キャンセル" : "Cancel"}
             </button>
             <button type="button" onClick={commitCrop} disabled={uploading} style={{ flex: 2, background: "#ad001c", color: "#fff", border: "none", borderRadius: 14, padding: 12, fontSize: 14, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", opacity: uploading ? 0.6 : 1 }}>
-              {uploading ? "アップロード中…" : "OK・保存"}
+              {uploading ? (lang === "ja" ? "アップロード中…" : "Uploading…") : (lang === "ja" ? "OK・保存" : "Save")}
             </button>
           </div>
         </div>
@@ -172,7 +174,7 @@ export default function AvatarPicker({ initialEmoji = "🧑", initialAvatarPath 
       {/* Emoji fallback */}
       {!avatarPath && (
         <div>
-          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 800, marginBottom: 6 }}>または絵文字を選ぶ</div>
+          <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 800, marginBottom: 6 }}>{lang === "ja" ? "または絵文字を選ぶ" : "Or pick an emoji"}</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {EMOJI_OPTIONS.map((e) => (
               <button

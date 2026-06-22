@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/app/lib/supabase/client";
 import { useSignedUrls } from "@/app/lib/use-signed-urls";
+import { useLang } from "@/app/lib/i18n";
 
 type Props = {
   initial?: string[];
@@ -19,6 +20,7 @@ export default function ImageUploader({
 }: Props) {
   const supabase = createClient();
   const [paths, setPaths] = useState<string[]>(initial);
+  const [lang] = useLang();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const signed = useSignedUrls(paths, bucket);
@@ -29,7 +31,7 @@ export default function ImageUploader({
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      setError("ログインが必要よ");
+      setError(lang === "ja" ? "ログインが必要よ" : "Login required");
       return;
     }
     setUploading(true);
@@ -41,11 +43,11 @@ export default function ImageUploader({
         break;
       }
       if (!file.type.startsWith("image/")) {
-        setError("画像ファイルだけアップロードできるわよ");
+        setError(lang === "ja" ? "画像ファイルだけアップロードできるわよ" : "Images only");
         continue;
       }
       if (file.size > 5 * 1024 * 1024) {
-        setError("1枚あたり 5MB までよ");
+        setError(lang === "ja" ? "1枚あたり 5MB までよ" : "Max 5MB per image");
         continue;
       }
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -86,7 +88,7 @@ export default function ImageUploader({
               type="button"
               onClick={() => removePath(p)}
               style={{ position: "absolute", top: -6, right: -6, background: "#ad001c", color: "#fff", border: "2px solid #fff", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", fontWeight: 900, padding: 0, lineHeight: 1 }}
-              aria-label="削除"
+              aria-label={lang === "ja" ? "削除" : "Remove"}
             >
               ×
             </button>

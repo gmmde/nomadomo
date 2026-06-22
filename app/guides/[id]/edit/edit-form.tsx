@@ -197,7 +197,7 @@ export default function EditGuideForm({
           )}
             <input type="hidden" name="id" value={initial.id} />
 
-            <Section title="基本情報 · Basics">
+            <Section title={lang === "ja" ? "基本情報" : "Basics"}>
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_photos", lang)}</label>
@@ -241,13 +241,13 @@ export default function EditGuideForm({
             </div>
 
             </Section>
-            <Section title="提供スタイル · Your offer">
+            <Section title={lang === "ja" ? "提供スタイル" : "Your offer"}>
             <ModeAndRate state={state} initialMode={initial.mode} initialRate={initial.rate_per_day ?? 3000} />
             {state?.errors?.mode && <div style={err}>{state.errors.mode}</div>}
             {state?.errors?.rate_per_day && <div style={err}>{state.errors.rate_per_day}</div>}
 
             </Section>
-            <Section title="あなたについて · About you">
+            <Section title={lang === "ja" ? "あなたについて" : "About you"}>
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
@@ -296,7 +296,7 @@ export default function EditGuideForm({
             </div>
 
             </Section>
-            <Section title="活動内容 · What you offer">
+            <Section title={lang === "ja" ? "活動内容" : "What you offer"}>
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_hobbies", lang)}</label>
               <HobbiesTags initial={initial.hobbies} />

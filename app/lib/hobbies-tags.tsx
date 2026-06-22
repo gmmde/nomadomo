@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "@/app/lib/i18n";
 
 type Props = {
   initial?: string[];
@@ -9,6 +10,7 @@ type Props = {
 export default function HobbiesTags({ initial = [] }: Props) {
   const [tags, setTags] = useState<string[]>(initial);
   const [draft, setDraft] = useState("");
+  const [lang] = useLang();
 
   function add() {
     const v = draft.trim();
@@ -40,7 +42,7 @@ export default function HobbiesTags({ initial = [] }: Props) {
           {tags.map((t) => (
             <div key={t} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #ad001c", color: "#ad001c", borderRadius: 16, padding: "4px 8px 4px 12px", fontSize: 12, fontWeight: 800 }}>
               {t}
-              <button type="button" onClick={() => remove(t)} aria-label="削除" style={{ background: "#ad001c", border: "none", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
+              <button type="button" onClick={() => remove(t)} aria-label={lang === "ja" ? "削除" : "Remove"} style={{ background: "#ad001c", border: "none", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button>
             </div>
           ))}
         </div>
@@ -51,11 +53,11 @@ export default function HobbiesTags({ initial = [] }: Props) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="例: ラーメン, バスケ, K-POP"
+          placeholder={lang === "ja" ? "例: ラーメン, バスケ, K-POP" : "e.g. ramen, basketball, K-POP"}
           maxLength={30}
           style={{ flex: 1, background: "#fff", border: "1px solid #ecdcc4", borderRadius: 10, padding: "8px 10px", fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none" }}
         />
-        <button type="button" onClick={add} style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>+ 追加</button>
+        <button type="button" onClick={add} style={{ background: "#ad001c", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "+ 追加" : "+ Add"}</button>
       </div>
       <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginTop: 4 }}>
         Enter or , で追加。最大 20 個
