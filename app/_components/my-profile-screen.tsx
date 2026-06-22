@@ -184,7 +184,7 @@ export default function MyProfileScreen({
       {recentLocals.length > 0 && (
         <div style={{ padding: "20px 22px 0" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>最近のローカル <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Recent locals</span></h2>
+            <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "最近のローカル " : "Recent locals"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Recent locals</span>}</h2>
             <Link href="/history" style={{ fontSize: 12.5, fontWeight: 700, color: "#ad001c", textDecoration: "none" }}>{lang === "ja" ? "すべて見る →" : "See all →"}</Link>
           </div>
           <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>

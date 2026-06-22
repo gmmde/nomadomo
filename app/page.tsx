@@ -1240,7 +1240,7 @@ function HomeInner() {
             {/* greeting + hero */}
             <div style={{ padding: "12px 22px 4px" }}>
               <p style={{ margin: 0, fontSize: 13, color: "#9a8a7c", fontWeight: 500 }}>{lang === "ja" ? `こんにちは、${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "ゲスト")} さん 👋` : `Hi, ${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "there")} 👋`}</p>
-              <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</h1>
+              <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</>) : (<>Meet a real<br/><span style={{ color: "#ad001c" }}>local</span>.</>)}</h1>
               <p style={{ margin: "6px 0 0", fontSize: 13, color: "#b03a2e", fontWeight: 700 }}>Meet a real local in Japan — not a tour.</p>
             </div>
 
@@ -1259,7 +1259,7 @@ function HomeInner() {
             {/* categories */}
             <div style={{ padding: "12px 0 4px" }}>
               <div style={{ padding: "0 22px 10px" }}>
-                <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />体験から探す <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Explore by vibe</span></h2>
+                <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "体験から探す " : "Explore by vibe"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Explore by vibe</span>}</h2>
               </div>
               <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 22px 6px" }}>
                 {[
@@ -1274,8 +1274,8 @@ function HomeInner() {
                   return (
                     <button key={v.f} onClick={() => setActiveFilter(on ? "All" : v.f)} style={{ flex: "none", width: 78, border: "none", background: "transparent", padding: "4px 2px", cursor: "pointer", textAlign: "center", fontFamily: "inherit" }}>
                       <span style={{ display: "grid", placeItems: "center", width: 60, height: 60, margin: "0 auto 6px", borderRadius: 20, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e3cf", boxShadow: "0 3px 9px rgba(120,80,40,.08)" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={on ? "#fff" : "#ad001c"} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round"><path d={v.path}/></svg></span>
-                      <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap" }}>{v.ja}</span>
-                      <span style={{ display: "block", fontSize: 9.5, color: "#b6a48f", whiteSpace: "nowrap" }}>{v.en}</span>
+                      <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap" }}>{lang === "ja" ? v.ja : v.en}</span>
+                      <span style={{ display: "block", fontSize: 9.5, color: "#b6a48f", whiteSpace: "nowrap" }}>{lang === "ja" ? v.en : ""}</span>
                     </button>
                   );
                 })}
@@ -1323,8 +1323,8 @@ function HomeInner() {
                 {/* featured guides (horizontal) */}
                 <div style={{ padding: "12px 0 4px" }}>
                   <div data-tutorial="home-list" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 22px 12px" }}>
-                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -2 }} />おすすめガイド <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>For you</span></h2>
-                    <Link href="/guides/all" style={{ fontSize: 12.5, fontWeight: 700, color: "#ad001c", textDecoration: "none" }}>すべて見る →</Link>
+                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -2 }} />{lang === "ja" ? "おすすめガイド " : "For you"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>For you</span>}</h2>
+                    <Link href="/guides/all" style={{ fontSize: 12.5, fontWeight: 700, color: "#ad001c", textDecoration: "none" }}>{lang === "ja" ? "すべて見る →" : "See all →"}</Link>
                   </div>
                   <div style={{ display: "flex", gap: 16, overflowX: "auto", padding: "2px 22px 10px" }}>
                     {visibleGuides.slice(0, 6).map((g) => {
@@ -1335,7 +1335,7 @@ function HomeInner() {
                           <div style={{ position: "relative", height: 176, display: "grid", placeItems: "center", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: isFree ? "linear-gradient(150deg,#9fd39a,#2e6b46)" : "linear-gradient(150deg,#ffb56b,#b8341f)" }) }}>
                             {!av && <span style={{ fontSize: 62, filter: "drop-shadow(0 3px 6px rgba(0,0,0,.2))" }}>{g.emoji}</span>}
                             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 42%, rgba(20,8,5,.62) 100%)" }} />
-                            <span style={{ position: "absolute", top: 12, left: 12, fontSize: 11, fontWeight: 800, color: "#fff", padding: "4px 10px", borderRadius: 30, background: isFree ? "#2e8b57" : "#ad001c", boxShadow: "0 2px 6px rgba(0,0,0,.2)" }}>{isFree ? "無料 Mate" : "Pro ガイド"}</span>
+                            <span style={{ position: "absolute", top: 12, left: 12, fontSize: 11, fontWeight: 800, color: "#fff", padding: "4px 10px", borderRadius: 30, background: isFree ? "#2e8b57" : "#ad001c", boxShadow: "0 2px 6px rgba(0,0,0,.2)" }}>{isFree ? (lang === "ja" ? "無料 Mate" : "Free Mate") : (lang === "ja" ? "Pro ガイド" : "Pro Guide")}</span>
                             <span style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.92)", padding: "4px 9px", borderRadius: 30 }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>
                               <span style={{ fontSize: 12, fontWeight: 700, color: "#2b1d1a" }}>{g.mode === "paid" && g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
@@ -1349,7 +1349,7 @@ function HomeInner() {
                             {isTrustedLocal(g.stars, g.tour_count) && (
                               <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginBottom: 9, background: "#e8f4ec", padding: "4px 9px", borderRadius: 8 }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" strokeWidth={2.4}><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
-                                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2e8b57" }}>信頼できる local · Trusted</span>
+                                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2e8b57" }}>{lang === "ja" ? "信頼できる local · Trusted" : "Trusted local"}</span>
                               </div>
                             )}
                             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 11 }}>
@@ -1357,7 +1357,7 @@ function HomeInner() {
                             </div>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <span className="font-display" style={{ fontWeight: 700, fontSize: 14, color: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "🤝 Free" : g.rate}</span>
-                              <span className="font-display" style={{ background: "#ad001c", color: "#fff", fontWeight: 700, fontSize: 12.5, padding: "8px 16px", borderRadius: 12, boxShadow: "0 6px 14px -6px rgba(173,0,28,.7)" }}>会う Meet</span>
+                              <span className="font-display" style={{ background: "#ad001c", color: "#fff", fontWeight: 700, fontSize: 12.5, padding: "8px 16px", borderRadius: 12, boxShadow: "0 6px 14px -6px rgba(173,0,28,.7)" }}>{lang === "ja" ? "会う Meet" : "Meet"}</span>
                             </div>
                           </div>
                         </div>
@@ -1370,7 +1370,7 @@ function HomeInner() {
                 {/* locals here (vertical) */}
                 <div style={{ padding: "14px 22px 0" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{homeAreaFilter ?? "日本全国"}のローカル <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Locals here</span></h2>
+                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{lang === "ja" ? `${homeAreaFilter ?? "日本全国"}のローカル ` : (homeAreaFilter ? `Locals — ${homeAreaFilter}` : "Locals across Japan")}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Locals here</span>}</h2>
                     <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#2e8b57", whiteSpace: "nowrap" }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "#2e8b57" }} />{visibleGuides.length}{lang === "ja" ? "人オンライン" : " online"}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -1382,7 +1382,7 @@ function HomeInner() {
                       })}
                     </div>
                     <button onClick={() => setHomeInstant((x) => !x)} style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto", border: "none", background: "transparent", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: homeInstant ? "#2e8b57" : "#9a8a7c", whiteSpace: "nowrap" }}>今すぐ予約可</span>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: homeInstant ? "#2e8b57" : "#9a8a7c", whiteSpace: "nowrap" }}>{lang === "ja" ? "今すぐ予約可" : "Instant book"}</span>
                       <span style={{ width: 38, height: 22, borderRadius: 11, background: homeInstant ? "#2e8b57" : "#e3d2bb", position: "relative", transition: "background .15s" }}><span style={{ position: "absolute", top: 2, left: homeInstant ? 18 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} /></span>
                     </button>
                   </div>
@@ -1412,7 +1412,7 @@ function HomeInner() {
                         </div>
                       );
                     })}
-                    {!loading && visibleGuides.length === 0 && <div style={{ textAlign: "center", padding: "30px 10px", color: "#b09a86", fontSize: 13, fontWeight: 600 }}>条件に合うローカルがいません<br/><span style={{ fontSize: 11 }}>No locals match these filters</span></div>}
+                    {!loading && visibleGuides.length === 0 && <div style={{ textAlign: "center", padding: "30px 10px", color: "#b09a86", fontSize: 13, fontWeight: 600 }}>{lang === "ja" ? "条件に合うローカルがいません" : "No locals match these filters"}{lang === "ja" && <><br/><span style={{ fontSize: 11 }}>No locals match these filters</span></>}</div>}
                   </div>
                 </div>
               </>
@@ -1425,8 +1425,8 @@ function HomeInner() {
               <div onClick={() => setAreaPickerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(28,17,16,.4)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
                 <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 390, background: "#fff8ec", borderRadius: "28px 28px 0 0", padding: "14px 20px 30px", maxHeight: "72vh", overflowY: "auto" }}>
                   <div style={{ width: 40, height: 5, borderRadius: 3, background: "#e3d2bb", margin: "0 auto 14px" }} />
-                  <h2 className="font-display" style={{ margin: "0 0 4px", fontWeight: 900, fontSize: 20, color: "#2b1d1a" }}>エリアを選ぶ</h2>
-                  <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "#b03a2e", fontWeight: 700 }}>Choose your area · across Japan</p>
+                  <h2 className="font-display" style={{ margin: "0 0 4px", fontWeight: 900, fontSize: 20, color: "#2b1d1a" }}>{lang === "ja" ? "エリアを選ぶ" : "Choose your area"}</h2>
+                  <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "#b03a2e", fontWeight: 700 }}>{lang === "ja" ? "Choose your area · across Japan" : "Across Japan"}</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <button onClick={autoDetectArea} disabled={geoBusy} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #f0e3cf", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 700, color: geoBusy ? "#b09a86" : "#2e8b57", cursor: geoBusy ? "wait" : "pointer", fontFamily: "inherit" }}>📍 {geoBusy ? (lang === "ja" ? "検出中…" : "Detecting…") : (lang === "ja" ? "現在地から自動選択" : "Use my location")}</button>
                     <button onClick={() => { setHomeAreaFilter(null); setAreaPickerOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: homeAreaFilter === null ? "#e8f4ec" : "#fff", border: `1px solid ${homeAreaFilter === null ? "#2e8b57" : "#f0e3cf"}`, borderRadius: 14, padding: "12px 14px", cursor: "pointer", fontFamily: "inherit" }}><span className="font-display" style={{ fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "日本全国" : "All Japan"}</span></button>
@@ -1508,7 +1508,7 @@ function HomeInner() {
                   <h1 className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 26, color: "#2b1d1a" }}>{selectedGuide.name}</h1>
                   <p style={{ margin: "4px 0 0", fontSize: 13, color: "#8a7a6c" }}>🎓 {guideTr.showing === "translated" ? (guideTr.translations.university ?? selectedGuide.uni) : selectedGuide.uni}{selectedGuide.areas[0] ? ` · ${selectedGuide.areas[0]}` : ""}{age2 != null ? ` · ${age2}${lang === "ja" ? "歳" : ""}` : ""}</p>
                 </div>
-                <span style={{ flex: "none", fontSize: 11, fontWeight: 800, color: "#fff", padding: "5px 12px", borderRadius: 20, background: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "無料 Mate" : "Pro ガイド"}</span>
+                <span style={{ flex: "none", fontSize: 11, fontWeight: 800, color: "#fff", padding: "5px 12px", borderRadius: 20, background: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? (lang === "ja" ? "無料 Mate" : "Free Mate") : (lang === "ja" ? "Pro ガイド" : "Pro Guide")}</span>
               </div>
 
               {selectedGuide.paused && (
@@ -1570,7 +1570,7 @@ function HomeInner() {
 
               {selectedGuide.hobbies.length > 0 && (
                 <div style={{ marginTop: 22 }}>
-                  <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>得意なこと <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>What we&rsquo;ll do</span></h2>
+                  <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "得意なこと " : "What we’ll do"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>What we&rsquo;ll do</span>}</h2>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {selectedGuide.hobbies.map((h) => (<span key={h} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 14, padding: "8px 13px", fontSize: 12.5, color: "#5a4d43", fontWeight: 700 }}>{h}</span>))}
                   </div>
@@ -1578,7 +1578,7 @@ function HomeInner() {
               )}
               {selectedGuide.availableSlots.length > 0 && (
                 <div style={{ marginTop: 18 }}>
-                  <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>会える時間 <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Availability</span></h2>
+                  <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "会える時間 " : "Availability"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Availability</span>}</h2>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {selectedGuide.availableSlots.slice(0, 12).map((sl) => (<span key={sl} style={{ background: "#e8f4ec", border: "1px solid #cdebd9", borderRadius: 14, padding: "6px 12px", fontSize: 11.5, color: "#2e8b57", fontWeight: 700 }}>{formatSlotShort(sl)}</span>))}
                   </div>
@@ -1587,7 +1587,7 @@ function HomeInner() {
 
               {selectedGuide.user_id && (
                 <div style={{ marginTop: 22 }}>
-                  <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>レビュー <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Reviews</span></h2>
+                  <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "レビュー " : "Reviews"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Reviews</span>}</h2>
                   <ReviewsSection reviewedUserId={selectedGuide.user_id} lang={lang} />
                 </div>
               )}
