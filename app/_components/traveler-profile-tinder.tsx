@@ -139,12 +139,12 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
           )}
 
           <div style={{ position: "absolute", top: 12, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 14px", zIndex: 4 }}>
-            <Link href="/" style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", textDecoration: "none", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>←</Link>
+            <Link href="/" style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", textDecoration: "none", display: "grid", placeItems: "center", boxShadow: "0 4px 12px -4px rgba(0,0,0,.3)" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></Link>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               {!isDemo && currentUserId && traveler.user_id !== currentUserId && (
 <ProfileActionsMenu targetUserId={traveler.user_id} targetName={traveler.name} />
               )}
-              {isOwn && <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(0,0,0,0.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, textDecoration: "none" }}>⚙</Link>}
+              {isOwn && <Link href="/settings" aria-label={t("settings_aria", lang)} style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", color: "#2b1d1a", display: "grid", placeItems: "center", fontSize: 17, textDecoration: "none", boxShadow: "0 4px 12px -4px rgba(0,0,0,.3)" }}>⚙</Link>}
             </div>
           </div>
 
@@ -214,7 +214,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
           <div style={{ margin: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             {interestTags.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>{t("hobbies_section", lang)}</div>
+                <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" }}>{t("hobbies_section", lang)}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {interestTags.map((h) => (
                     <span key={h} style={{ background: "#ffefd5", border: "1.5px solid #ad001c", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#ad001c", fontWeight: 700 }}>{h}</span>
@@ -224,7 +224,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
             )}
             {traveler.available_slots.length > 0 && (
               <div>
-                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 6, textTransform: "uppercase" }}>{t("available_section", lang)}</div>
+                <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" }}>{t("available_section", lang)}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {traveler.available_slots.slice(0, 12).map((s) => (
                     <span key={s} style={{ background: "#e6f5ee", border: "1.5px solid #2e8b57", borderRadius: 14, padding: "4px 10px", fontSize: 11, color: "#2e8b57", fontWeight: 700 }}>{formatSlotShort(s)}</span>
@@ -237,7 +237,7 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
 
         {traveler.user_id && (
           <div style={{ margin: "0 20px 16px" }}>
-            <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 900, marginBottom: 8, textTransform: "uppercase" }}>⭐ {t("reviews_tab", lang)}</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: ".05em" }}>⭐ {t("reviews_tab", lang)}</div>
             <ReviewsSection reviewedUserId={traveler.user_id} lang={lang} />
           </div>
         )}
