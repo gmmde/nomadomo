@@ -9,7 +9,7 @@ import { useLang, t } from "@/app/lib/i18n";
 const wrap: React.CSSProperties = { minHeight: "100vh", display: "flex", justifyContent: "center" };
 const card: React.CSSProperties = { width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" };
 const input: React.CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
-const label: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 800, color: "#8a7560", marginBottom: 6, textTransform: "uppercase" };
+const label: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#ad001c", marginBottom: 7, textTransform: "uppercase", letterSpacing: ".05em" };
 const primary: React.CSSProperties = { width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 16, fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" };
 
 function defaultDateTime(): string {
@@ -71,7 +71,7 @@ export default function RequestForm({ guideUserId, guideName, guideEmoji, guideU
       <div style={card} className="screen-enter">
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <BackButton />
-          <div style={{ fontSize: 18, fontWeight: 900 }}>{t("req_form_title", lang)}</div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{t("req_form_title", lang)}</div>
         </div>
 
         <div style={{ background: "#fff", border: "1px solid #ecdcc4", borderRadius: 16, padding: 14, marginBottom: 18, display: "flex", alignItems: "center", gap: 12 }}>
