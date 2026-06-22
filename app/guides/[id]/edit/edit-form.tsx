@@ -197,6 +197,7 @@ export default function EditGuideForm({
           )}
             <input type="hidden" name="id" value={initial.id} />
 
+            <Section title="基本情報 · Basics">
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_photos", lang)}</label>
@@ -239,10 +240,14 @@ export default function EditGuideForm({
               {state?.errors?.bio && <div style={err}>{state.errors.bio}</div>}
             </div>
 
+            </Section>
+            <Section title="提供スタイル · Your offer">
             <ModeAndRate state={state} initialMode={initial.mode} initialRate={initial.rate_per_day ?? 3000} />
             {state?.errors?.mode && <div style={err}>{state.errors.mode}</div>}
             {state?.errors?.rate_per_day && <div style={err}>{state.errors.rate_per_day}</div>}
 
+            </Section>
+            <Section title="あなたについて · About you">
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
@@ -290,6 +295,8 @@ export default function EditGuideForm({
               />
             </div>
 
+            </Section>
+            <Section title="活動内容 · What you offer">
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_hobbies", lang)}</label>
               <HobbiesTags initial={initial.hobbies} />
@@ -337,6 +344,7 @@ export default function EditGuideForm({
               {state?.errors?.languages && <div style={err}>{state.errors.languages}</div>}
             </div>
 
+            </Section>
             {state?.error && (
               <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
                 {state.error}
@@ -355,6 +363,17 @@ export default function EditGuideForm({
             </button>
           </form>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ margin: "0 0 9px 2px", fontSize: 11, fontWeight: 700, letterSpacing: ".05em", color: "#ad001c", textTransform: "uppercase" }}>{title}</p>
+      <div style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 16, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
+        {children}
       </div>
     </div>
   );

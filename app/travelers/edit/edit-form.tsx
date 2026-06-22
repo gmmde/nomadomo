@@ -101,6 +101,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
               </div>
             </div>
           )}
+            <Section title="基本情報 · Basics">
             {/* Photos */}
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_photos", lang)}</label>
@@ -119,13 +120,13 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="country">出身国</label>
+              <label style={label} htmlFor="country">{lang === "ja" ? "出身国" : "Country"}</label>
               <input id="country" name="country" required value={country} onChange={(e) => setCountry(e.target.value)} style={input} />
               {state?.errors?.country && <div style={err}>{state.errors.country}</div>}
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="bio">自己紹介 (任意)</label>
+              <label style={label} htmlFor="bio">{lang === "ja" ? "自己紹介 (任意)" : "Bio (optional)"}</label>
               <textarea
                 id="bio"
                 name="bio"
@@ -143,6 +144,8 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
               <AvatarPicker initialEmoji={initial.emoji ?? "🧑"} initialAvatarPath={initial.avatar_path} />
             </div>
 
+            </Section>
+            <Section title="あなたについて · About you">
             <div style={{ marginBottom: 16 }}>
               <label style={label} htmlFor="gender">{t("form_gender", lang)}</label>
               <select id="gender" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} style={input}>
@@ -172,10 +175,12 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={label} htmlFor="trip_period">滞在期間 (任意)</label>
+              <label style={label} htmlFor="trip_period">{lang === "ja" ? "滞在期間 (任意)" : "Trip period (optional)"}</label>
               <input id="trip_period" name="trip_period" type="text" maxLength={100} value={tripPeriod} onChange={(e) => setTripPeriod(e.target.value)} style={input} placeholder="例: 2026/06/01-2026/06/10" />
             </div>
 
+            </Section>
+            <Section title="興味・予定 · Interests & availability">
             <div style={{ marginBottom: 18 }}>
               <label style={label}>{t("form_hobbies", lang)}</label>
               <HobbiesTags initial={initial.hobbies} />
@@ -187,7 +192,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={label}>興味（複数選択可）</label>
+              <label style={label}>{lang === "ja" ? "興味（複数選択可）" : "Interests (select any)"}</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {INTEREST_OPTIONS.map((t) => (
                   <button key={t} type="button" onClick={() => toggle(t)} style={chip(interests.includes(t))}>
@@ -199,6 +204,7 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
               {state?.errors?.interests && <div style={err}>{state.errors.interests}</div>}
             </div>
 
+            </Section>
             {state?.error && (
               <div style={{ background: "#ad001c20", border: "1.5px solid #ad001c", borderRadius: 12, padding: 12, marginBottom: 16, color: "#ad001c", fontSize: 13, fontWeight: 700 }}>
                 {state.error}
@@ -216,6 +222,17 @@ export default function EditTravelerForm({ userEmail, initial, lockedDisplayName
             </button>
           </form>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ margin: "0 0 9px 2px", fontSize: 11, fontWeight: 700, letterSpacing: ".05em", color: "#ad001c", textTransform: "uppercase" }}>{title}</p>
+      <div style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: 16, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
+        {children}
       </div>
     </div>
   );
