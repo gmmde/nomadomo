@@ -773,6 +773,21 @@ function HomeInner() {
         return;
       }
 
+      // 公開済みレビューから guide ごとの実評価(平均)と件数を集計
+      // (guides.rating カラムはレビュー投稿時に更新されないため、読み取り時に算出)
+      const { data: revRows } = await supabase
+        .from("reviews")
+        .select("reviewed_user_id, rating")
+        .not("released_at", "is", null);
+      const revAgg = new Map<string, { sum: number; n: number }>();
+      for (const r of (revRows ?? []) as Array<{ reviewed_user_id: string | null; rating: number }>) {
+        if (!r.reviewed_user_id) continue;
+        const a = revAgg.get(r.reviewed_user_id) ?? { sum: 0, n: 0 };
+        a.sum += Number(r.rating) || 0;
+        a.n += 1;
+        revAgg.set(r.reviewed_user_id, a);
+      }
+
       const mapped: Guide[] = (data ?? []).map((g) => ({
         id: g.id,
         name: g.name,
@@ -797,9 +812,9 @@ function HomeInner() {
         mode: (((g.mode as string) === "free" ? "free" : "paid") as "free" | "paid"),
         stripeOnboarded: Boolean((g as { stripe_onboarded?: boolean }).stripe_onboarded),
         paused: Boolean((g as { paused?: boolean }).paused),
-        stars: Number(g.rating).toFixed(1),
+        stars: (() => { const a = g.user_id ? revAgg.get(g.user_id as string) : undefined; return a && a.n > 0 ? (a.sum / a.n).toFixed(1) : "0.0"; })(),
         bio: g.bio ?? "",
-        tour_count: g.tour_count ?? 0,
+        tour_count: (() => { const a = g.user_id ? revAgg.get(g.user_id as string) : undefined; return a ? a.n : 0; })(),
         image_paths: (g.image_paths as string[]) ?? [],
       }));
 
@@ -1240,8 +1255,7 @@ function HomeInner() {
             {/* greeting + hero */}
             <div style={{ padding: "12px 22px 4px" }}>
               <p style={{ margin: 0, fontSize: 13, color: "#9a8a7c", fontWeight: 500 }}>{lang === "ja" ? `こんにちは、${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "ゲスト")} さん 👋` : `Hi, ${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "there")} 👋`}</p>
-              <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</>) : (<>Meet a real<br/><span style={{ color: "#ad001c" }}>local</span>.</>)}</h1>
-              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#b03a2e", fontWeight: 700 }}>Meet a real local in Japan — not a tour.</p>
+              <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</>) : (<>Meet a real <span style={{ color: "#ad001c" }}>local</span>,<br/>not a tour guide.</>)}</h1>
             </div>
 
             {/* search */}
@@ -1338,7 +1352,7 @@ function HomeInner() {
                             <span style={{ position: "absolute", top: 12, left: 12, fontSize: 11, fontWeight: 800, color: "#fff", padding: "4px 10px", borderRadius: 30, background: isFree ? "#2e8b57" : "#ad001c", boxShadow: "0 2px 6px rgba(0,0,0,.2)" }}>{isFree ? (lang === "ja" ? "無料 Mate" : "Free Mate") : (lang === "ja" ? "Pro ガイド" : "Pro Guide")}</span>
                             <span style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.92)", padding: "4px 9px", borderRadius: 30 }}>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>
-                              <span style={{ fontSize: 12, fontWeight: 700, color: "#2b1d1a" }}>{g.mode === "paid" && g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: "#2b1d1a" }}>{g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
                             </span>
                             <div style={{ position: "absolute", left: 14, bottom: 11, right: 14 }}>
                               <p className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 18, color: "#fff" }}>{g.name}</p>
@@ -1406,7 +1420,7 @@ function HomeInner() {
                           </div>
                           <div style={{ flex: "none", textAlign: "right" }}>
                             <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "Free" : g.rate}</span>
-                            <span style={{ display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end", marginTop: 4, fontSize: 11, fontWeight: 700, color: "#2b1d1a" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>{g.mode === "paid" && g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
+                            <span style={{ display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end", marginTop: 4, fontSize: 11, fontWeight: 700, color: "#2b1d1a" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>{g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
                             {currentUserId && <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ marginTop: 3, border: "none", background: "transparent", fontSize: 15, cursor: "pointer", padding: 0, lineHeight: 1 }}>{savedIds.has(Number(g.id)) ? "❤️" : "🤍"}</button>}
                           </div>
                         </div>

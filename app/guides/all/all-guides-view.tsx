@@ -275,7 +275,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
                       <span key={t} style={{ background: "#fff5e9", border: "1px solid #f3e8d6", borderRadius: 999, padding: "3px 9px", fontSize: 10, color: "#b03a2e", fontWeight: 700 }}>{t}</span>
                     ))}
                     <span style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginLeft: "auto" }}>
-                      {g.tour_count === 0 ? "✨ 新規" : `★ ${g.rating.toFixed(1)}`}
+                      {g.tour_count === 0 ? (lang === "ja" ? "✨ 新規" : "✨ New") : `★ ${g.rating.toFixed(1)}`}
                     </span>
                   </div>
                 </Link>
