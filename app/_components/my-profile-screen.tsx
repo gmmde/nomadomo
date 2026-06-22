@@ -100,7 +100,7 @@ export default function MyProfileScreen({
   return (
     <div className="screen-enter" style={{ minHeight: "100vh", background: "#fff8ec" }}>
       <div style={{ display: "flex", justifyContent: "flex-end", padding: "14px 22px 0" }}>
-        <Link href="/settings" aria-label="設定" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", textDecoration: "none", boxShadow: "0 2px 8px rgba(120,60,20,.06)" }}>
+        <Link href="/settings" aria-label={lang === "ja" ? "設定" : "Settings"} style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", textDecoration: "none", boxShadow: "0 2px 8px rgba(120,60,20,.06)" }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={1.8}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
         </Link>
       </div>

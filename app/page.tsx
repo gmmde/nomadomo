@@ -1234,18 +1234,18 @@ function HomeInner() {
                   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
                 </span>
                 <span style={{ textAlign: "left" }}>
-                  <span style={{ display: "block", fontSize: 10, letterSpacing: ".04em", color: "#ad001c", fontWeight: 700, whiteSpace: "nowrap" }}>エリア · AREA</span>
+                  <span style={{ display: "block", fontSize: 10, letterSpacing: ".04em", color: "#ad001c", fontWeight: 700, whiteSpace: "nowrap" }}>{lang === "ja" ? "エリア · AREA" : "AREA"}</span>
                   <span className="font-display" style={{ display: "flex", alignItems: "center", gap: 4, fontWeight: 700, fontSize: 16, color: "#2b1d1a", whiteSpace: "nowrap" }}>{homeAreaFilter ?? (lang === "ja" ? "日本全国" : "All Japan")}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.5}><path d="M6 9l6 6 6-6"/></svg>
                   </span>
                 </span>
               </button>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <Link href="/settings" aria-label="設定" data-tutorial="settings-gear" style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", boxShadow: "0 2px 8px rgba(120,60,20,.06)", textDecoration: "none" }}>
+                <Link href="/settings" aria-label={lang === "ja" ? "設定" : "Settings"} data-tutorial="settings-gear" style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", boxShadow: "0 2px 8px rgba(120,60,20,.06)", textDecoration: "none" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={1.8}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
                 </Link>
                 {userEmail ? (
-                  <button onClick={() => setScreen("myprofile")} aria-label="マイページ" style={{ border: "none", padding: 0, background: "#ffefd5", cursor: "pointer", width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", fontSize: 22, boxShadow: "0 2px 8px rgba(120,60,20,.12)" }}>😊</button>
+                  <button onClick={() => setScreen("myprofile")} aria-label={lang === "ja" ? "マイページ" : "My page"} style={{ border: "none", padding: 0, background: "#ffefd5", cursor: "pointer", width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", fontSize: 22, boxShadow: "0 2px 8px rgba(120,60,20,.12)" }}>😊</button>
                 ) : (
                   <Link href="/login" style={{ background: "#ad001c", color: "#fff", borderRadius: 18, padding: "8px 14px", fontSize: 11, fontWeight: 800, textDecoration: "none" }}>{t("login", lang)}</Link>
                 )}
@@ -1421,7 +1421,7 @@ function HomeInner() {
                           <div style={{ flex: "none", textAlign: "right" }}>
                             <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 13, color: isFree ? "#2e8b57" : "#ad001c" }}>{isFree ? "Free" : g.rate}</span>
                             <span style={{ display: "flex", alignItems: "center", gap: 3, justifyContent: "flex-end", marginTop: 4, fontSize: 11, fontWeight: 700, color: "#2b1d1a" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="#f5a623"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4 7.3 13.6 2.2 9l6.9-.7z"/></svg>{g.tour_count === 0 ? t("rating_new", lang) : g.stars}</span>
-                            {currentUserId && <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label="お気に入り" style={{ marginTop: 3, border: "none", background: "transparent", fontSize: 15, cursor: "pointer", padding: 0, lineHeight: 1 }}>{savedIds.has(Number(g.id)) ? "❤️" : "🤍"}</button>}
+                            {currentUserId && <button onClick={(e) => { e.stopPropagation(); toggleSave(Number(g.id)); }} aria-label={lang === "ja" ? "お気に入り" : "Save"} style={{ marginTop: 3, border: "none", background: "transparent", fontSize: 15, cursor: "pointer", padding: 0, lineHeight: 1 }}>{savedIds.has(Number(g.id)) ? "❤️" : "🤍"}</button>}
                           </div>
                         </div>
                       );
@@ -1501,13 +1501,13 @@ function HomeInner() {
               )}
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(20,8,5,.4) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0) 58%, #fff8ec 100%)", pointerEvents: "none", zIndex: 1 }} />
               <div style={{ position: "absolute", top: 14, left: 14, right: 14, display: "flex", justifyContent: "space-between", zIndex: 4 }}>
-                <button onClick={goBack} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", color: "#2b1d1a", border: "none", fontSize: 20, cursor: "pointer" }}>←</button>
+                <button onClick={goBack} aria-label={lang === "ja" ? "戻る" : "Back"} style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", color: "#2b1d1a", border: "none", fontSize: 20, cursor: "pointer" }}>←</button>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   {!isOwn && !isDemo && selectedGuide.user_id && (
                     <ProfileActionsMenu targetUserId={selectedGuide.user_id} targetName={selectedGuide.name} />
                   )}
                   {currentUserId && (
-                    <button onClick={() => toggleSave(Number(selectedGuide.id))} aria-label="お気に入り" style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", border: "none", cursor: "pointer" }}>
+                    <button onClick={() => toggleSave(Number(selectedGuide.id))} aria-label={lang === "ja" ? "お気に入り" : "Save"} style={{ display: "grid", placeItems: "center", width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", border: "none", cursor: "pointer" }}>
                       <svg width="19" height="19" viewBox="0 0 24 24" fill={savedIds.has(Number(selectedGuide.id)) ? "#ad001c" : "none"} stroke="#ad001c" strokeWidth={1.8}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
                   )}

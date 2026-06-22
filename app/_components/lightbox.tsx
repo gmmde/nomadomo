@@ -1,11 +1,14 @@
 "use client";
 
+import { useLang } from "@/app/lib/i18n";
+
 type Props = {
   url: string | null;
   onClose: () => void;
 };
 
 export default function Lightbox({ url, onClose }: Props) {
+  const [lang] = useLang();
   if (!url) return null;
   return (
     <div
@@ -17,7 +20,7 @@ export default function Lightbox({ url, onClose }: Props) {
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
         style={{ position: "absolute", top: 18, right: 18, background: "rgba(255,255,255,0.18)", color: "#fff", border: "2px solid rgba(255,255,255,0.4)", borderRadius: "50%", width: 36, height: 36, fontSize: 18, cursor: "pointer", fontWeight: 900 }}
-        aria-label="閉じる"
+        aria-label={lang === "ja" ? "閉じる" : "Close"}
       >
         ×
       </button>

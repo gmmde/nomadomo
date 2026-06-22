@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Bi from "@/app/_components/bi";
 import BackButton from "@/app/lib/back-button";
 import Link from "next/link";
 import { createClient } from "@/app/lib/supabase/server";
@@ -70,7 +71,7 @@ export default async function BookingsPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", background: "#fff8ec", padding: "32px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>予約 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Bookings</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}><Bi ja="予約" en="Bookings" sub="Bookings" /></div>
         </div>
 
         {/* 自分が申し込んだ予約 */}

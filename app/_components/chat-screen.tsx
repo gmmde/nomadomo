@@ -151,7 +151,7 @@ export default function ChatScreen({
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !currentUserId || !chatPeer.id) return;
-    if (!file.type.startsWith("image/")) { setUploadErr("画像ファイルだけ選んでね"); return; }
+    if (!file.type.startsWith("image/")) { setUploadErr(lang === "ja" ? "画像ファイルだけ選んでね" : "Images only"); return; }
     setUploadErr(null);
     setUploading(true);
     try {
@@ -240,7 +240,7 @@ export default function ChatScreen({
   return (
     <div className="screen-enter" style={{ height: "100dvh", minHeight: "100svh", display: "flex", flexDirection: "column", overflow: "hidden", background: "#fff8ec" }}>
       <div style={{ background: "#fff", borderBottom: "1px solid #f0e3cf", padding: "16px 18px 12px", display: "flex", alignItems: "center", gap: 12, flex: "none" }}>
-        <button onClick={goBack} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 38, height: 38, border: "none", background: "transparent", cursor: "pointer", flex: "none" }}>
+        <button onClick={goBack} aria-label={lang === "ja" ? "戻る" : "Back"} style={{ display: "grid", placeItems: "center", width: 38, height: 38, border: "none", background: "transparent", cursor: "pointer", flex: "none" }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
         <div onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)} style={{ width: 40, height: 40, borderRadius: "50%", flex: "none", background: "#ffefd5", display: "grid", placeItems: "center", fontSize: 19, cursor: chatPeer.guideId ? "pointer" : "default", overflow: "hidden" }}>
@@ -255,7 +255,7 @@ export default function ChatScreen({
           <p className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 15.5, color: "#2b1d1a" }}>{chatPeer.name}</p>
           <p style={{ margin: "1px 0 0", fontSize: 11, color: "#2e8b57", fontWeight: 600 }}>{t("online_now", lang)}</p>
         </div>
-        <button onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)} aria-label="プロフィール" style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", border: "none", cursor: chatPeer.guideId ? "pointer" : "default", flex: "none" }}>
+        <button onClick={() => chatPeer.guideId && openGuideProfile(chatPeer.guideId)} aria-label={lang === "ja" ? "プロフィール" : "Profile"} style={{ display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: "50%", background: "#ffefd5", border: "none", cursor: chatPeer.guideId ? "pointer" : "default", flex: "none" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
         </button>
       </div>
@@ -376,7 +376,7 @@ export default function ChatScreen({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={!currentUserId || uploading}
-          aria-label="画像を送る"
+          aria-label={lang === "ja" ? "画像を送る" : "Send image"}
           style={{ width: 42, height: 42, borderRadius: "50%", background: "transparent", border: "none", cursor: uploading ? "wait" : "pointer", fontSize: 18, fontFamily: "inherit", color: "#2b1d1a", flex: "none" }}
         >
           {uploading ? "..." : "📷"}
@@ -392,7 +392,7 @@ export default function ChatScreen({
         <button
           onClick={sendMessage}
           disabled={!currentUserId || !input.trim()}
-          aria-label="送信"
+          aria-label={lang === "ja" ? "送信" : "Send"}
           style={{ width: 46, height: 46, borderRadius: "50%", background: currentUserId && input.trim() ? "#ad001c" : "#d8c4ad", border: "none", cursor: currentUserId ? "pointer" : "not-allowed", display: "grid", placeItems: "center", flex: "none", boxShadow: currentUserId && input.trim() ? "0 6px 14px -6px rgba(173,0,28,.6)" : "none" }}
         ><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
         </div>

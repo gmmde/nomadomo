@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Bi from "@/app/_components/bi";
 import BackButton from "@/app/lib/back-button";
 import { createClient } from "@/app/lib/supabase/server";
 
@@ -91,7 +92,7 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", padding: "20px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>マッチ履歴 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Match history</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}><Bi ja="マッチ履歴" en="Match history" sub="Match history" /></div>
         </div>
 
         {rows.length === 0 ? (
@@ -113,21 +114,21 @@ function HistoryView({ rows }: { rows: HistoryRow[] }) {
                   </div>
                   {r.myReview ? (
                     <div style={{ background: "#fff8ec", border: "1px solid #f3e8d6", borderRadius: 12, padding: 10, marginBottom: 6 }}>
-                      <div style={{ fontSize: 10, color: "#ad001c", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".04em" }}>あなたのレビュー</div>
+                      <div style={{ fontSize: 10, color: "#ad001c", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".04em" }}><Bi ja="あなたのレビュー" en="Your review" /></div>
                       <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.myReview.rating)}<span style={{ color: "#f3e8d6" }}>{"★".repeat(5 - r.myReview.rating)}</span></div>
                       {r.myReview.comment && <div style={{ fontSize: 12, color: "#1a1008", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.myReview.comment}</div>}
                     </div>
                   ) : (
-                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic", padding: "4px 0" }}>レビュー未投稿</div>
+                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic", padding: "4px 0" }}><Bi ja="レビュー未投稿" en="No review yet" /></div>
                   )}
                   {r.peerReview ? (
                     <div style={{ background: "#fff8ec", border: "1px solid #f3e8d6", borderRadius: 12, padding: 10 }}>
-                      <div style={{ fontSize: 10, color: "#ad001c", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".04em" }}>{r.peerReview.reviewerName} からのレビュー</div>
+                      <div style={{ fontSize: 10, color: "#ad001c", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".04em" }}>{r.peerReview.reviewerName} <Bi ja="からのレビュー" en="’s review" /></div>
                       <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>{"★".repeat(r.peerReview.rating)}<span style={{ color: "#f3e8d6" }}>{"★".repeat(5 - r.peerReview.rating)}</span></div>
                       {r.peerReview.comment && <div style={{ fontSize: 12, color: "#1a1008", marginTop: 4, whiteSpace: "pre-wrap" }}>{r.peerReview.comment}</div>}
                     </div>
                   ) : (
-                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic", padding: "4px 0" }}>相手のレビュー未公開</div>
+                    <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, fontStyle: "italic", padding: "4px 0" }}><Bi ja="相手のレビュー未公開" en="Their review not released yet" /></div>
                   )}
                 </div>
               );

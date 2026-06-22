@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useLang } from "@/app/lib/i18n";
 import { useRouter } from "next/navigation";
 import { cancelAccountDeletion } from "../actions/account";
 import { signout } from "../actions/auth";
@@ -22,6 +23,7 @@ const card: React.CSSProperties = {
 };
 
 export default function AccountDeletionPrompt({ scheduledAt }: Props) {
+  const [lang] = useLang();
   const [pending, startTransition] = useTransition();
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
@@ -51,7 +53,7 @@ export default function AccountDeletionPrompt({ scheduledAt }: Props) {
           アカウント削除予定
         </div>
         <div style={{ fontSize: 13, color: "#5a4a18", lineHeight: 1.6, marginBottom: 16 }}>
-          このアカウントは <strong style={{ color: "#ad001c" }}>あと {daysLeft} 日</strong> で完全に削除されるわよ。<br /><br />
+          {lang === "ja" ? <>このアカウントは <strong style={{ color: "#ad001c" }}>あと {daysLeft} 日</strong> で完全に削除されるわよ。<br /><br /></> : <>This account will be <strong style={{ color: "#ad001c" }}>permanently deleted in {daysLeft} days</strong>.<br /><br /></>}
           「削除を取り消す」を押すと普段通り使えるようになる。<br />
           このままログアウトすれば予定通り削除されるわよ。
         </div>
@@ -64,7 +66,7 @@ export default function AccountDeletionPrompt({ scheduledAt }: Props) {
           disabled={pending}
           style={{ width: "100%", background: "#2e8b57", color: "#fff", border: "none", borderRadius: 14, padding: 14, fontSize: 14, fontWeight: 900, cursor: pending ? "not-allowed" : "pointer", fontFamily: "inherit", marginBottom: 8, opacity: pending ? 0.6 : 1 }}
         >
-          ✅ {pending ? "..." : "削除を取り消して使い続ける"}
+          ✅ {pending ? "..." : (lang === "ja" ? "削除を取り消して使い続ける" : "Cancel deletion & keep my account")}
         </button>
         <button
           type="button"

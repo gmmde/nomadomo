@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Bi from "@/app/_components/bi";
 import Link from "next/link";
 import { createClient } from "@/app/lib/supabase/server";
 import BackButton from "@/app/lib/back-button";
@@ -29,7 +30,7 @@ export default async function AllTravelersPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, minHeight: "100vh", padding: "16px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>旅行者一覧 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Travelers</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}><Bi ja="旅行者一覧" en="Travelers" sub="Travelers" /></div>
           <div style={{ flex: 1 }}/>
           <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 700 }}>{rows.length}</div>
         </div>

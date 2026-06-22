@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Bi from "@/app/_components/bi";
 import BackButton from "@/app/lib/back-button";
 import { createClient } from "@/app/lib/supabase/server";
 
@@ -70,7 +71,7 @@ export default async function AnalyticsPage() {
       <div className="screen-enter" style={{ width: "100%", maxWidth: 390, padding: "20px 16px 80px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <BackButton />
-          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>分析 <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}>Analytics</span></div>
+          <div className="font-display" style={{ fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}><Bi ja="分析" en="Analytics" sub="Analytics" /></div>
         </div>
 
         <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginBottom: 16 }}>
