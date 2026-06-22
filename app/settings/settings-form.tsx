@@ -174,7 +174,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
       <div style={card} className="screen-enter">
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 2px 14px" }}>
-          <button onClick={() => router.back()} aria-label="戻る" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", cursor: "pointer", flex: "none" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></button>
+          <button onClick={() => router.back()} aria-label={lang === "ja" ? "戻る" : "Back"} style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", background: "#fff", border: "1px solid #f0e3cf", cursor: "pointer", flex: "none" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></button>
           <h1 className="font-display" style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#2b1d1a" }}>{lang === "ja" ? "設定" : "Settings"}{lang === "ja" && <span style={{ fontSize: 12, color: "#b6a48f", fontWeight: 500 }}> Settings</span>}</h1>
         </div>
         <div style={{ fontSize: 11, color: "#b6a48f", fontWeight: 600, padding: "0 4px 14px" }}>{userEmail}</div>
