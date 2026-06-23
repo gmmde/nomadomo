@@ -1,28 +1,31 @@
 "use client";
 import { useState, useEffect, useMemo, useRef, Suspense } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "./lib/supabase/client";
 import { useSignedUrls } from "./lib/use-signed-urls";
 import Splash from "./_components/splash";
-import Lightbox from "./_components/lightbox";
-import ModePicker from "./_components/mode-picker";
-import ChatScreen from "./_components/chat-screen";
-import TutorialOverlay from "./_components/tutorial-overlay";
-import ConsentModal from "./_components/consent-modal";
-import ProfileActionsMenu from "./_components/profile-actions-menu";
-import AccountDeletionPrompt from "./_components/account-deletion-prompt";
 import { startSupportChat } from "./actions/support";
 import { notifyMessageSent } from "./actions/notify";
 import { detectArea } from "./lib/geo";
-import NameInputScreen from "./_components/name-input-screen";
 import { getSortedAreas } from "./lib/areas";
-import MyProfileScreen from "./_components/my-profile-screen";
-import SavedScreen from "./_components/saved-screen";
-import InboxScreen from "./_components/inbox-screen";
-import ReviewsSection from "./_components/reviews-section";
 import { useLang, t } from "./lib/i18n";
 import { useTranslate } from "./lib/use-translate";
+
+// 初期表示に不要な重いコンポーネントは遅延読み込み (初回JSバンドルからStripe.js等を除外)
+const Lightbox = dynamic(() => import("./_components/lightbox"), { ssr: false });
+const ModePicker = dynamic(() => import("./_components/mode-picker"), { ssr: false });
+const ChatScreen = dynamic(() => import("./_components/chat-screen"), { ssr: false });
+const TutorialOverlay = dynamic(() => import("./_components/tutorial-overlay"), { ssr: false });
+const ConsentModal = dynamic(() => import("./_components/consent-modal"), { ssr: false });
+const ProfileActionsMenu = dynamic(() => import("./_components/profile-actions-menu"), { ssr: false });
+const AccountDeletionPrompt = dynamic(() => import("./_components/account-deletion-prompt"), { ssr: false });
+const NameInputScreen = dynamic(() => import("./_components/name-input-screen"), { ssr: false });
+const MyProfileScreen = dynamic(() => import("./_components/my-profile-screen"), { ssr: false });
+const SavedScreen = dynamic(() => import("./_components/saved-screen"), { ssr: false });
+const InboxScreen = dynamic(() => import("./_components/inbox-screen"), { ssr: false });
+const ReviewsSection = dynamic(() => import("./_components/reviews-section"), { ssr: false });
 
 type Guide = {
   id: string;
