@@ -79,15 +79,21 @@ export async function proposeMeet(formData: FormData): Promise<MeetingActionResu
   if (!peerId) return { error: "peer_id missing" };
   if (peerId === user.id) return { error: "Cannot meet yourself" };
 
-  // 役割確認: 自分が traveler である chat_requests があるか (= 旅行者として申し込んでる)
-  const { data: cr } = await supabase
+  // 役割確認: 自分が traveler である accepted chat_requests があるか。
+  // 同じ相手に accepted が複数有り得るので maybeSingle は使わず limit(1) で判定する
+  // (maybeSingle は 2 行以上でエラーになり、role 判定が誤って失敗していた)
+  const { data: crs } = await supabase
     .from("chat_requests")
-    .select("traveler_id, guide_user_id, status")
+    .select("traveler_id")
     .eq("traveler_id", user.id)
     .eq("guide_user_id", peerId)
-    .in("status", ["accepted"])
-    .maybeSingle();
-  if (!cr) {
+    .eq("status", "accepted")
+    .limit(1);
+  if (!crs || crs.length === 0) {
+    if (paymentIntentId) {
+      try { await stripe.paymentIntents.cancel(paymentIntentId); }
+      catch (e) { console.error("[proposeMeet] orphan PI cancel failed", e); }
+    }
     return { error: "Only travelers (whose chat-request the guide accepted) can propose Meet." };
   }
 
@@ -136,7 +142,13 @@ export async function proposeMeet(formData: FormData): Promise<MeetingActionResu
     .insert(insertRow)
     .select("id")
     .maybeSingle();
-  if (error) return { error: error.message };
+  if (error) {
+    if (paymentIntentId) {
+      try { await stripe.paymentIntents.cancel(paymentIntentId); }
+      catch (e2) { console.error("[proposeMeet] orphan PI cancel failed", e2); }
+    }
+    return { error: error.message };
+  }
 
   revalidatePath("/");
   return { success: true, meetingId: inserted?.id as number };
