@@ -254,12 +254,15 @@ export async function cancelMeet(formData: FormData): Promise<MeetingActionResul
   if (m.user_a_id !== user.id && m.user_b_id !== user.id) return { error: "not a participant" };
   if (m.status !== "pending_b") return { error: "Can only cancel pending meetings" };
 
+  let stripeReleased = false;
   if (m.payment_intent_id) {
     try {
       await stripe.paymentIntents.cancel(m.payment_intent_id as string);
+      stripeReleased = true;
     } catch (e) {
       console.error("[cancelMeet] Stripe cancel failed:", e);
-      // DB 側だけでも canceled にして UX を回復させる
+      // DB 側だけでも canceled にして UX を回復させる。
+      // payment_released_at は NULL のまま → reconcile-payments cron が後で解放する。
     }
   }
 
@@ -270,6 +273,7 @@ export async function cancelMeet(formData: FormData): Promise<MeetingActionResul
       status: "canceled",
       payment_status: m.payment_intent_id ? "canceled" : null,
       payment_canceled_at: m.payment_intent_id ? now : null,
+      payment_released_at: stripeReleased ? now : null,
     })
     .eq("id", id);
   if (error) return { error: error.message };
