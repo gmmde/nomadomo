@@ -173,6 +173,14 @@ function HomeInner() {
   const setScreen = navigateTo;
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Service Worker を起動時に登録/更新。新 SW は activate 時に古いキャッシュ(stale shell)を
+  // 一掃するので、過去の「Kyoto」等の古い画面に固まったユーザーが自動復帰する。
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+    }
+  }, []);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");

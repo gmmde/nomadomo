@@ -12,7 +12,19 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  // 過去バージョンの SW がキャッシュした古いシェル(stale build)を一掃する。
+  // これが無いと「Kyoto」等の古い画面に固まったユーザーが復帰できない。
+  event.waitUntil(
+    (async () => {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      } catch (e) {
+        // ignore
+      }
+      await self.clients.claim();
+    })()
+  );
 });
 
 self.addEventListener("push", (event) => {
