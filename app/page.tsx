@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo, useRef, Suspense } from "react";
+import type { CSSProperties } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -128,6 +129,20 @@ const filterKeyword: Record<string, string> = {
   "🎵 Music": "Music",
 };
 
+const FILTER_DAY_OPTIONS: Array<{ code: string; ja: string; en: string }> = [
+  { code: "mon", ja: "月", en: "Mon" }, { code: "tue", ja: "火", en: "Tue" }, { code: "wed", ja: "水", en: "Wed" }, { code: "thu", ja: "木", en: "Thu" }, { code: "fri", ja: "金", en: "Fri" }, { code: "sat", ja: "土", en: "Sat" }, { code: "sun", ja: "日", en: "Sun" },
+];
+const FILTER_TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"];
+const FILTER_LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"];
+const FILTER_GENDER_OPTIONS: Array<{ value: string; ja: string; en: string }> = [
+  { value: "", ja: "指定なし", en: "Any" },
+  { value: "male", ja: "男性", en: "Male" },
+  { value: "female", ja: "女性", en: "Female" },
+  { value: "non-binary", ja: "ノンバイナリー", en: "Non-binary" },
+];
+const fchip = (active: boolean, color = "#ad001c"): CSSProperties => ({ background: active ? color : "#ffffffdd", border: `2px solid ${active ? color : "#f0d9b5"}`, color: active ? "#fff" : "#8a7560", borderRadius: 18, padding: "5px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" });
+const finput: CSSProperties = { width: "100%", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: "10px 14px", fontSize: 14, fontWeight: 600, color: "#1a1008", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+
 
 // mode に応じたカード背景色 + 枠色
 
@@ -194,20 +209,22 @@ function HomeInner() {
   const [exploreCat, setExploreCat] = useState<string | null>(null);
   const [exploreSort, setExploreSort] = useState<"new" | "name">("new");
   const [exploreGender, setExploreGender] = useState("");
-  const [exploreStudent, setExploreStudent] = useState(false);
   const [exploreTags, setExploreTags] = useState<string[]>([]);
   const [exploreDays, setExploreDays] = useState<string[]>([]);
   const [exploreLangs, setExploreLangs] = useState<string[]>([]);
+  const [exploreAgeMin, setExploreAgeMin] = useState<number | "">("");
+  const [exploreAgeMax, setExploreAgeMax] = useState<number | "">("");
   const [travelerFiltersOpen, setTravelerFiltersOpen] = useState(false);
   const [guideFiltersOpen, setGuideFiltersOpen] = useState(false);
   const [guideGender, setGuideGender] = useState("");
-  const [guideStudent, setGuideStudent] = useState(false);
   const [guideTags, setGuideTags] = useState<string[]>([]);
   const [guideDays, setGuideDays] = useState<string[]>([]);
   const [guideLangs, setGuideLangs] = useState<string[]>([]);
+  const [guideAreas, setGuideAreas] = useState<string[]>([]);
+  const [guideAgeMin, setGuideAgeMin] = useState<number | "">("");
+  const [guideAgeMax, setGuideAgeMax] = useState<number | "">("");
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
   const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
-  const [homeInstant, setHomeInstant] = useState(false);
   const [areaPickerOpen, setAreaPickerOpen] = useState(false);
   const [geoBusy, setGeoBusy] = useState(false);
   // 「📍 現在地で自動選択」: ボタン押下で navigator.geolocation を起動
@@ -299,7 +316,6 @@ function HomeInner() {
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChecked, setTutorialChecked] = useState(false);
   const [travelersList, setTravelersList] = useState<TravelerRow[]>([]);
-  const [upcomingBookingsCount, setUpcomingBookingsCount] = useState(0);
   const [lang] = useLang();
   const guideTr = useTranslate();
 
@@ -469,20 +485,6 @@ function HomeInner() {
     // ホームに飛ばす
     navTab("home");
   }
-
-  // Local モード時: 受信予約 (pending + accepted) の件数
-  useEffect(() => {
-    if (appMode !== "local" || !currentUserId) {
-      setUpcomingBookingsCount(0);
-      return;
-    }
-    supabase
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("guide_user_id", currentUserId)
-      .in("status", ["pending", "accepted"])
-      .then(({ count }) => setUpcomingBookingsCount(count ?? 0));
-  }, [supabase, appMode, currentUserId]);
 
   // Local モード時: traveler 一覧を取得
   useEffect(() => {
@@ -1147,11 +1149,12 @@ function HomeInner() {
     // area filter
     if (homeAreaFilter) active = active.filter((g) => g.areas.includes(homeAreaFilter));
     // 詳細フィルタ (🎛)
-    if (guideGender) active = active.filter((g) => g.gender === guideGender);
-    if (guideStudent) active = active.filter((g) => /student|学生/i.test(g.occupation ?? ""));
-    if (guideTags.length > 0) active = active.filter((g) => { const tg = [...g.tags, ...g.hobbies, ...g.languages].map((x) => x.toLowerCase()); return guideTags.every((t) => tg.includes(t.toLowerCase())); });
+    if (guideAreas.length > 0) active = active.filter((g) => guideAreas.some((a) => g.areas.includes(a)));
+    if (guideTags.length > 0) active = active.filter((g) => guideTags.every((t) => g.tags.includes(t)));
+    if (guideLangs.length > 0) active = active.filter((g) => guideLangs.every((l) => g.languages.includes(l)));
     if (guideDays.length > 0) active = active.filter((g) => (g.availableSlots ?? []).some((sl) => guideDays.includes(sl.split(":")[0])));
-    if (guideLangs.length > 0) active = active.filter((g) => guideLangs.every((l) => (g.languages ?? []).includes(l)));
+    if (guideGender) active = active.filter((g) => g.gender === guideGender);
+    if (guideAgeMin !== "" || guideAgeMax !== "") active = active.filter((g) => { const a = g.birthYear ? new Date().getFullYear() - g.birthYear : null; if (a == null) return false; if (guideAgeMin !== "" && a < (guideAgeMin as number)) return false; if (guideAgeMax !== "" && a > (guideAgeMax as number)) return false; return true; });
     // tag filter (既存)
     if (activeFilter === "All") return active;
     const kw = filterKeyword[activeFilter] ?? "";
@@ -1164,11 +1167,11 @@ function HomeInner() {
     let rs = travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id));
     if (q) rs = rs.filter((tv) => [tv.name, tv.country, tv.occupation ?? "", tv.nationality ?? "", tv.bio, ...(tv.interests ?? []), ...(tv.hobbies ?? [])].join(" ").toLowerCase().includes(q));
     if (catKw) rs = rs.filter((tv) => [...(tv.interests ?? []), ...(tv.hobbies ?? []), tv.bio].join(" ").toLowerCase().includes(catKw));
-    if (exploreGender) rs = rs.filter((tv) => tv.gender === exploreGender);
-    if (exploreStudent) rs = rs.filter((tv) => /student|学生/i.test(tv.occupation ?? ""));
-    if (exploreTags.length > 0) rs = rs.filter((tv) => { const tg = [...(tv.interests ?? []), ...(tv.hobbies ?? [])].map((x) => x.toLowerCase()); return exploreTags.every((t) => tg.includes(t.toLowerCase())); });
-    if (exploreDays.length > 0) rs = rs.filter((tv) => (tv.available_slots ?? []).some((sl) => exploreDays.includes(sl.split(":")[0])));
+    if (exploreTags.length > 0) rs = rs.filter((tv) => { const tg = [...(tv.interests ?? []), ...(tv.hobbies ?? [])]; return exploreTags.every((t) => tg.includes(t)); });
     if (exploreLangs.length > 0) rs = rs.filter((tv) => exploreLangs.every((l) => (tv.languages ?? []).includes(l)));
+    if (exploreDays.length > 0) rs = rs.filter((tv) => (tv.available_slots ?? []).some((sl) => exploreDays.includes(sl.split(":")[0])));
+    if (exploreGender) rs = rs.filter((tv) => tv.gender === exploreGender);
+    if (exploreAgeMin !== "" || exploreAgeMax !== "") rs = rs.filter((tv) => { const a = tv.birth_year ? new Date().getFullYear() - tv.birth_year : null; if (a == null) return false; if (exploreAgeMin !== "" && a < (exploreAgeMin as number)) return false; if (exploreAgeMax !== "" && a > (exploreAgeMax as number)) return false; return true; });
     return [...rs].sort((a, b) => (exploreSort === "name" ? a.name.localeCompare(b.name, lang === "ja" ? "ja" : "en") : b.id - a.id));
   })();
 
@@ -1354,44 +1357,46 @@ function HomeInner() {
                   <input value={exploreQ} onChange={(e) => setExploreQ(e.target.value)} placeholder={lang === "ja" ? "名前・大学・タグで検索" : "Search guides"} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
                   {exploreQ && <button onClick={() => setExploreQ("")} aria-label={lang === "ja" ? "クリア" : "Clear"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#b09a86", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>}
                 </div>
-                {(() => { const n = guideTags.length + guideDays.length + guideLangs.length + (guideGender ? 1 : 0) + (guideStudent ? 1 : 0); return (
+                {(() => { const n = guideTags.length + guideDays.length + guideLangs.length + guideAreas.length + (guideGender ? 1 : 0) + (guideAgeMin !== "" || guideAgeMax !== "" ? 1 : 0) + (homeModeFilter !== "all" ? 1 : 0); return (
                   <button onClick={() => setGuideFiltersOpen((v) => !v)} style={{ flex: "none", background: guideFiltersOpen || n > 0 ? "#ad001c" : "#fff", color: guideFiltersOpen || n > 0 ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "9px 13px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🎛{n > 0 ? ` ${n}` : ""}</button>
                 ); })()}
               </div>
 
               {guideFiltersOpen && (
-                <div style={{ marginTop: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 16, padding: 14 }}>
-                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
-                  <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
-                    {([["", lang === "ja" ? "指定なし" : "Any"], ["male", "♂"], ["female", "♀"], ["other", lang === "ja" ? "その他" : "Other"]] as const).map(([v, l]) => (
-                      <button key={v || "any"} onClick={() => setGuideGender(v)} style={{ border: guideGender === v ? "none" : "1px solid #e8d8c0", background: guideGender === v ? "#ad001c" : "#fff", color: guideGender === v ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
+                <div style={{ marginTop: 10, background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 12 }}>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "モード" : "Mode"}</div>
+                  <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+                    {([["all", lang === "ja" ? "すべて" : "All", "#8a7560"], ["free", lang === "ja" ? "🤝 Free (無料)" : "🤝 Free", "#ad001c"], ["paid", lang === "ja" ? "💼 Pro (有料)" : "💼 Pro", "#2e8b57"]] as const).map(([v, label, c]) => (
+                      <button key={v} onClick={() => setHomeModeFilter(v)} style={{ flex: 1, background: homeModeFilter === v ? c : "#fff", color: homeModeFilter === v ? "#fff" : "#8a7560", border: `2px solid ${homeModeFilter === v ? c : "#f3e8d6"}`, borderRadius: 14, padding: "6px 8px", fontSize: 11, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>{label}</button>
                     ))}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 800, color: "#2b1d1a" }}>{lang === "ja" ? "学生のみ" : "Students only"}</span>
-                    <button onClick={() => setGuideStudent((v) => !v)} aria-label={lang === "ja" ? "学生のみ切替" : "Toggle students only"} style={{ width: 42, height: 24, borderRadius: 12, border: "none", background: guideStudent ? "#2e8b57" : "#e3d2bb", position: "relative", cursor: "pointer", padding: 0 }}><span style={{ position: "absolute", top: 2, left: guideStudent ? 20 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left .15s" }} /></button>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動域" : "Areas"}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                    {getSortedAreas(lang).map((a) => (<button key={a.value} onClick={() => setGuideAreas(guideAreas.includes(a.value) ? guideAreas.filter((x) => x !== a.value) : [...guideAreas, a.value])} style={fchip(guideAreas.includes(a.value), "#2e8b57")}>📍 {a.label}</button>))}
                   </div>
-                  {(() => { const opts = [...new Set(guides.flatMap((gg) => [...(gg.tags ?? []), ...(gg.hobbies ?? [])]))].slice(0, 20); return opts.length > 0 ? (
-                    <>
-                      <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                        {opts.map((tg) => { const on = guideTags.includes(tg); return (<button key={tg} onClick={() => setGuideTags(on ? guideTags.filter((x) => x !== tg) : [...guideTags, tg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{tg}</button>); })}
-                      </div>
-                    </>
-                  ) : null; })()}
-                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "会える曜日" : "Available days"}</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                    {([["mon", "月"], ["tue", "火"], ["wed", "水"], ["thu", "木"], ["fri", "金"], ["sat", "土"], ["sun", "日"]] as const).map(([code, jaL]) => { const on = guideDays.includes(code); return (<button key={code} onClick={() => setGuideDays(on ? guideDays.filter((x) => x !== code) : [...guideDays, code])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#2e8b57" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minWidth: 34 }}>{lang === "ja" ? jaL : code.charAt(0).toUpperCase() + code.slice(1)}</button>); })}
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動可能日" : "Available days"}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                    {FILTER_DAY_OPTIONS.map((d) => (<button key={d.code} onClick={() => setGuideDays(guideDays.includes(d.code) ? guideDays.filter((x) => x !== d.code) : [...guideDays, d.code])} style={fchip(guideDays.includes(d.code), "#2e8b57")}>{lang === "ja" ? d.ja : d.en}</button>))}
                   </div>
-                  {(() => { const opts = [...new Set(guides.flatMap((gg) => gg.languages ?? []))].slice(0, 14); return opts.length > 0 ? (
-                    <>
-                      <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
-                        {opts.map((lg) => { const on = guideLangs.includes(lg); return (<button key={lg} onClick={() => setGuideLangs(on ? guideLangs.filter((x) => x !== lg) : [...guideLangs, lg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{lg}</button>); })}
-                      </div>
-                    </>
-                  ) : null; })()}
-                  <button onClick={() => { setGuideGender(""); setGuideStudent(false); setGuideTags([]); setGuideDays([]); setGuideLangs([]); }} style={{ marginTop: 6, width: "100%", background: "transparent", border: "1px solid #e8d8c0", color: "#9a8a7c", borderRadius: 12, padding: 9, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "条件をクリア" : "Clear filters"}</button>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                    {FILTER_TAG_OPTIONS.map((tg) => (<button key={tg} onClick={() => setGuideTags(guideTags.includes(tg) ? guideTags.filter((x) => x !== tg) : [...guideTags, tg])} style={fchip(guideTags.includes(tg))}>{tg}</button>))}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                    {FILTER_LANG_OPTIONS.map((l) => (<button key={l} onClick={() => setGuideLangs(guideLangs.includes(l) ? guideLangs.filter((x) => x !== l) : [...guideLangs, l])} style={fchip(guideLangs.includes(l), "#2e8b57")}>{l}</button>))}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
+                  <select value={guideGender} onChange={(e) => setGuideGender(e.target.value)} style={{ ...finput, padding: "8px 10px", marginBottom: 12 }}>
+                    {FILTER_GENDER_OPTIONS.map((g) => <option key={g.value} value={g.value}>{lang === "ja" ? g.ja : g.en}</option>)}
+                  </select>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "年齢" : "Age"}</div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+                    <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最小" : "Min"} value={guideAgeMin} onChange={(e) => setGuideAgeMin(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...finput, padding: "8px 10px" }} />
+                    <span style={{ color: "#8a7560", fontWeight: 800 }}>〜</span>
+                    <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最大" : "Max"} value={guideAgeMax} onChange={(e) => setGuideAgeMax(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...finput, padding: "8px 10px" }} />
+                  </div>
+                  <button onClick={() => { setHomeModeFilter("all"); setGuideAreas([]); setGuideDays([]); setGuideTags([]); setGuideLangs([]); setGuideGender(""); setGuideAgeMin(""); setGuideAgeMax(""); }} style={{ width: "100%", background: "#fff", color: "#8a7560", border: "1px solid #ecdcc4", borderRadius: 12, padding: 8, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "すべてリセット" : "Reset all"}</button>
                 </div>
               )}
             </div>
@@ -1430,12 +1435,11 @@ function HomeInner() {
               <div style={{ padding: "8px 22px 8px" }}>
                 <h2 className="font-display" style={{ margin: "0 0 10px", fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{lang === "ja" ? "ダッシュボード" : "Dashboard"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}> Dashboard</span>}</h2>
 
-                {/* stats: met / reviews / bookings */}
+                {/* stats: met / reviews */}
                 <div style={{ display: "flex", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 18, padding: "14px 8px", boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)", marginBottom: 10 }}>
                   {([
                     [profileMetCount, lang === "ja" ? "出会った人" : "Met"],
                     [profileReviewCount, lang === "ja" ? "レビュー" : "Reviews"],
-                    [upcomingBookingsCount, lang === "ja" ? "予約" : "Bookings"],
                   ] as const).map(([n, label], i) => (
                     <div key={label} style={{ flex: 1, textAlign: "center", borderLeft: i === 0 ? "none" : "1px solid #f4ead7" }}>
                       <div className="font-display" style={{ fontSize: 24, fontWeight: 900, color: "#2b1d1a", lineHeight: 1 }}>{n}</div>
@@ -1487,44 +1491,36 @@ function HomeInner() {
                     <input value={exploreQ} onChange={(e) => setExploreQ(e.target.value)} placeholder={lang === "ja" ? "名前・国・興味で検索" : "Search travelers"} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
                     {exploreQ && <button onClick={() => setExploreQ("")} aria-label={lang === "ja" ? "クリア" : "Clear"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#b09a86", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>}
                   </div>
-                  {(() => { const n = exploreTags.length + exploreDays.length + exploreLangs.length + (exploreGender ? 1 : 0) + (exploreStudent ? 1 : 0); return (
+                  {(() => { const n = exploreTags.length + exploreDays.length + exploreLangs.length + (exploreGender ? 1 : 0) + (exploreAgeMin !== "" || exploreAgeMax !== "" ? 1 : 0); return (
                     <button onClick={() => setTravelerFiltersOpen((v) => !v)} style={{ flex: "none", background: travelerFiltersOpen || n > 0 ? "#ad001c" : "#fff", color: travelerFiltersOpen || n > 0 ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "9px 13px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🎛{n > 0 ? ` ${n}` : ""}</button>
                   ); })()}
                 </div>
 
                 {travelerFiltersOpen && (
-                  <div style={{ margin: "0 22px 10px", background: "#fff", border: "1px solid #f0e3cf", borderRadius: 16, padding: 14 }}>
-                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
-                    <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
-                      {([["", lang === "ja" ? "指定なし" : "Any"], ["male", "♂"], ["female", "♀"], ["other", lang === "ja" ? "その他" : "Other"]] as const).map(([v, l]) => (
-                        <button key={v || "any"} onClick={() => setExploreGender(v)} style={{ border: exploreGender === v ? "none" : "1px solid #e8d8c0", background: exploreGender === v ? "#ad001c" : "#fff", color: exploreGender === v ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
-                      ))}
+                  <div style={{ margin: "0 22px 10px", background: "#fff", border: "1px solid #ecdcc4", borderRadius: 14, padding: 12 }}>
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動可能日" : "Available days"}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                      {FILTER_DAY_OPTIONS.map((d) => (<button key={d.code} onClick={() => setExploreDays(exploreDays.includes(d.code) ? exploreDays.filter((x) => x !== d.code) : [...exploreDays, d.code])} style={fchip(exploreDays.includes(d.code), "#2e8b57")}>{lang === "ja" ? d.ja : d.en}</button>))}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 800, color: "#2b1d1a" }}>{lang === "ja" ? "学生のみ" : "Students only"}</span>
-                      <button onClick={() => setExploreStudent((v) => !v)} aria-label={lang === "ja" ? "学生のみ切替" : "Toggle students only"} style={{ width: 42, height: 24, borderRadius: 12, border: "none", background: exploreStudent ? "#2e8b57" : "#e3d2bb", position: "relative", cursor: "pointer", padding: 0 }}><span style={{ position: "absolute", top: 2, left: exploreStudent ? 20 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left .15s" }} /></button>
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                      {FILTER_TAG_OPTIONS.map((tg) => (<button key={tg} onClick={() => setExploreTags(exploreTags.includes(tg) ? exploreTags.filter((x) => x !== tg) : [...exploreTags, tg])} style={fchip(exploreTags.includes(tg))}>{tg}</button>))}
                     </div>
-                    {(() => { const opts = [...new Set(travelersList.flatMap((tt) => [...(tt.interests ?? []), ...(tt.hobbies ?? [])]))].slice(0, 20); return opts.length > 0 ? (
-                      <>
-                        <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                          {opts.map((tg) => { const on = exploreTags.includes(tg); return (<button key={tg} onClick={() => setExploreTags(on ? exploreTags.filter((x) => x !== tg) : [...exploreTags, tg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{tg}</button>); })}
-                        </div>
-                      </>
-                    ) : null; })()}
-                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "会える曜日" : "Available days"}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                      {([["mon", "月"], ["tue", "火"], ["wed", "水"], ["thu", "木"], ["fri", "金"], ["sat", "土"], ["sun", "日"]] as const).map(([code, jaL]) => { const on = exploreDays.includes(code); return (<button key={code} onClick={() => setExploreDays(on ? exploreDays.filter((x) => x !== code) : [...exploreDays, code])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#2e8b57" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minWidth: 34 }}>{lang === "ja" ? jaL : code.charAt(0).toUpperCase() + code.slice(1)}</button>); })}
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+                      {FILTER_LANG_OPTIONS.map((l) => (<button key={l} onClick={() => setExploreLangs(exploreLangs.includes(l) ? exploreLangs.filter((x) => x !== l) : [...exploreLangs, l])} style={fchip(exploreLangs.includes(l), "#2e8b57")}>{l}</button>))}
                     </div>
-                    {(() => { const opts = [...new Set(travelersList.flatMap((tt) => tt.languages ?? []))].slice(0, 14); return opts.length > 0 ? (
-                      <>
-                        <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
-                          {opts.map((lg) => { const on = exploreLangs.includes(lg); return (<button key={lg} onClick={() => setExploreLangs(on ? exploreLangs.filter((x) => x !== lg) : [...exploreLangs, lg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{lg}</button>); })}
-                        </div>
-                      </>
-                    ) : null; })()}
-                    <button onClick={() => { setExploreGender(""); setExploreStudent(false); setExploreTags([]); setExploreDays([]); setExploreLangs([]); }} style={{ marginTop: 6, width: "100%", background: "transparent", border: "1px solid #e8d8c0", color: "#9a8a7c", borderRadius: 12, padding: 9, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "条件をクリア" : "Clear filters"}</button>
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
+                    <select value={exploreGender} onChange={(e) => setExploreGender(e.target.value)} style={{ ...finput, padding: "8px 10px", marginBottom: 12 }}>
+                      {FILTER_GENDER_OPTIONS.map((g) => <option key={g.value} value={g.value}>{lang === "ja" ? g.ja : g.en}</option>)}
+                    </select>
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "年齢" : "Age"}</div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+                      <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最小" : "Min"} value={exploreAgeMin} onChange={(e) => setExploreAgeMin(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...finput, padding: "8px 10px" }} />
+                      <span style={{ color: "#8a7560", fontWeight: 800 }}>〜</span>
+                      <input type="number" min={16} max={99} placeholder={lang === "ja" ? "最大" : "Max"} value={exploreAgeMax} onChange={(e) => setExploreAgeMax(e.target.value === "" ? "" : Number(e.target.value))} style={{ ...finput, padding: "8px 10px" }} />
+                    </div>
+                    <button onClick={() => { setExploreDays([]); setExploreTags([]); setExploreLangs([]); setExploreGender(""); setExploreAgeMin(""); setExploreAgeMax(""); }} style={{ width: "100%", background: "#fff", color: "#8a7560", border: "1px solid #ecdcc4", borderRadius: 12, padding: 8, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "すべてリセット" : "Reset all"}</button>
                   </div>
                 )}
 
@@ -1665,10 +1661,6 @@ function HomeInner() {
                         return <button key={v} onClick={() => setHomeModeFilter(v)} style={{ border: "none", borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", background: active ? "#fff" : "transparent", color: active ? (v === "free" ? "#2e8b57" : v === "paid" ? "#ad001c" : "#2b1d1a") : "#9a8a7c", boxShadow: active ? "0 2px 6px rgba(120,50,20,.12)" : "none" }}>{label}</button>;
                       })}
                     </div>
-                    <button onClick={() => setHomeInstant((x) => !x)} style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto", border: "none", background: "transparent", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: homeInstant ? "#2e8b57" : "#9a8a7c", whiteSpace: "nowrap" }}>{lang === "ja" ? "今すぐ予約可" : "Instant book"}</span>
-                      <span style={{ width: 38, height: 22, borderRadius: 11, background: homeInstant ? "#2e8b57" : "#e3d2bb", position: "relative", transition: "background .15s" }}><span style={{ position: "absolute", top: 2, left: homeInstant ? 18 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} /></span>
-                    </button>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {visibleGuides.map((g) => {
@@ -1885,7 +1877,7 @@ function HomeInner() {
               <div style={{ height: isOwn ? 40 : 110 }} />
             </div>
 
-            {/* sticky CTA (モック: 価格 + メッセージ + 予約) — 自分以外 */}
+            {/* sticky CTA (価格 + メッセージ) — 自分以外 */}
             {!isOwn && (
               <div style={{ position: "sticky", bottom: 0, zIndex: 5, display: "flex", alignItems: "center", gap: 12, padding: "14px 20px 22px", background: "linear-gradient(180deg, rgba(255,248,236,0) 0%, #fff8ec 26%)" }}>
                 {!isFree && (
@@ -1906,9 +1898,6 @@ function HomeInner() {
                   <Link href={`/chat-request/${selectedGuide.id}/new`} className="font-display" style={{ flex: 1, height: 52, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "#ad001c", color: "#fff", borderRadius: 16, fontSize: 15, fontWeight: 700, textDecoration: "none", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2}><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 20.5l1.5-5.2A8.4 8.4 0 1 1 21 11.5z"/></svg>{t("send_btn", lang)}
                   </Link>
-                )}
-                {currentUserId && selectedGuide.user_id && !isFree && (
-                  <Link href={`/bookings/new?guide=${selectedGuide.id}`} className="font-display" style={{ flex: "none", height: 52, display: "grid", placeItems: "center", padding: "0 18px", background: "#2e8b57", color: "#fff", borderRadius: 16, fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 10px 22px -8px rgba(46,139,87,.5)" }}>{lang === "ja" ? "予約" : "Book"}</Link>
                 )}
               </div>
             )}
