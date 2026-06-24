@@ -31,8 +31,10 @@ type Props = {
   traveler: TravelerProfileData;
   currentUserId: string | null;
   isOwn: boolean;
-  /** 閲覧者が local モードか。local→traveler は課金、traveler→traveler は無課金チャット。 */
+  /** 閲覧者が local モードか。local→traveler は1日20件まで無料、超過は課金。 */
   viewerIsLocal: boolean;
+  /** local の本日残り無料メッセージ枠。 */
+  freeRemaining: number;
 };
 
 function ageFromBirthYear(y: number | null): number | null {
@@ -49,7 +51,7 @@ function formatSlotShort(s: string): string {
   return `${map[day] ?? day} ${fmt(start ?? "")}-${fmt(end ?? "")}`;
 }
 
-export default function TravelerProfileTinder({ traveler, currentUserId, isOwn, viewerIsLocal }: Props) {
+export default function TravelerProfileTinder({ traveler, currentUserId, isOwn, viewerIsLocal, freeRemaining }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
   const [showSuperLike, setShowSuperLike] = useState(false);
   const [lang] = useLang();
@@ -242,16 +244,22 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn, 
                 <Link href={`/login?next=/travelers/${traveler.user_id}`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   {t("login_to_message", lang)}
                 </Link>
-              ) : viewerIsLocal ? (
-                <button onClick={() => setShowSuperLike(true)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", cursor: "pointer", boxSizing: "border-box", fontFamily: "inherit", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.1}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  {lang === "ja" ? `${traveler.name}さんにメッセージを送る` : `Message ${traveler.name}`}
-                </button>
+              ) : viewerIsLocal && freeRemaining <= 0 ? (
+                <div style={{ flex: 1 }}>
+                  <button onClick={() => setShowSuperLike(true)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", cursor: "pointer", boxSizing: "border-box", fontFamily: "inherit", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.1}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {lang === "ja" ? "¥300で今すぐ送る（リクエスト免除）" : "Pay ¥300 — message now"}
+                  </button>
+                  <div style={{ fontSize: 10.5, color: "#9a8a7c", fontWeight: 700, textAlign: "center", marginTop: 5 }}>{lang === "ja" ? "本日の無料メッセージ枠（20件）を使い切りました" : "Daily free quota (20) used up"}</div>
+                </div>
               ) : (
-                <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.1}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  {lang === "ja" ? `${traveler.name}さんにメッセージを送る` : `Message ${traveler.name}`}
-                </Link>
+                <div style={{ flex: 1 }}>
+                  <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.1}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {lang === "ja" ? `${traveler.name}さんにメッセージを送る` : `Message ${traveler.name}`}
+                  </Link>
+                  {viewerIsLocal && <div style={{ fontSize: 10.5, color: "#9a8a7c", fontWeight: 700, textAlign: "center", marginTop: 5 }}>{lang === "ja" ? `本日の無料メッセージ 残り ${freeRemaining}/20` : `Free messages left today: ${freeRemaining}/20`}</div>}
+                </div>
               )}
             </div>
             {viewerIsLocal && showSuperLike && (

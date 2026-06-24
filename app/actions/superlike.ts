@@ -5,7 +5,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { stripe } from "@/app/lib/stripe";
 
 // local が traveler にメッセージを送る「スーパーライク」料金（プラットフォーム収益）。調整可。
-const SUPERLIKE_FEE_YEN = 500;
+const SUPERLIKE_FEE_YEN = 300;
 
 function adminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";

@@ -28,6 +28,19 @@ export default async function TravelerProfilePage({ params }: Props) {
     viewerIsLocal = settings?.app_mode === "local";
   }
 
+  // local の本日無料メッセージ枠 (1日20件)。超過分は課金。
+  let freeRemaining = 20;
+  if (viewerIsLocal && user) {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("chat_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("traveler_id", user.id)
+      .gte("created_at", startOfDay.toISOString());
+    freeRemaining = Math.max(0, 20 - (count ?? 0));
+  }
+
   const { data } = await supabase
     .from("travelers")
     .select(
@@ -62,6 +75,7 @@ export default async function TravelerProfilePage({ params }: Props) {
       currentUserId={user?.id ?? null}
       isOwn={!!user && user.id === traveler.user_id}
       viewerIsLocal={viewerIsLocal}
+      freeRemaining={freeRemaining}
     />
   );
 }

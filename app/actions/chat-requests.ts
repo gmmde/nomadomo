@@ -56,6 +56,20 @@ export async function createChatRequest(
     };
   }
 
+  // 1日20件の無料メッセージ枠（超過は課金で送信）。バックストップ。
+  {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("chat_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("traveler_id", user.id)
+      .gte("created_at", startOfDay.toISOString());
+    if ((count ?? 0) >= 20) {
+      return { error: (formData.get("lang") === "ja" ? "本日の無料メッセージ枠（20件）を使い切りました。プロフィールから課金で続けて送れます。" : "Daily free message quota (20) reached. You can keep messaging with a paid message from the profile.") };
+    }
+  }
+
   const { error } = await supabase.from("chat_requests").insert({
     traveler_id: user.id,
     guide_user_id: guideUserId,

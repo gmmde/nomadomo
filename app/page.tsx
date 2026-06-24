@@ -75,6 +75,10 @@ type TravelerRow = {
   trip_period: string | null;
   interests: string[];
   hobbies: string[];
+  gender: string | null;
+  languages: string[];
+  available_slots: string[];
+  birth_year: number | null;
 };
 
 type TravelerProfile = {
@@ -188,6 +192,12 @@ function HomeInner() {
   const [exploreQ, setExploreQ] = useState("");
   const [exploreCat, setExploreCat] = useState<string | null>(null);
   const [exploreSort, setExploreSort] = useState<"new" | "name">("new");
+  const [exploreGender, setExploreGender] = useState("");
+  const [exploreStudent, setExploreStudent] = useState(false);
+  const [exploreTags, setExploreTags] = useState<string[]>([]);
+  const [exploreDays, setExploreDays] = useState<string[]>([]);
+  const [exploreLangs, setExploreLangs] = useState<string[]>([]);
+  const [travelerFiltersOpen, setTravelerFiltersOpen] = useState(false);
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
   const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
   const [homeInstant, setHomeInstant] = useState(false);
@@ -475,7 +485,7 @@ function HomeInner() {
     }
     supabase
       .from("travelers")
-      .select("id, user_id, name, country, bio, avatar_path, emoji, nationality, occupation, trip_period, interests, hobbies")
+      .select("id, user_id, name, country, bio, avatar_path, emoji, nationality, occupation, trip_period, interests, hobbies, gender, languages, available_slots, birth_year")
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data }) => {
@@ -492,6 +502,10 @@ function HomeInner() {
           trip_period: (t.trip_period as string | null) ?? null,
           interests: (t.interests as string[] | null) ?? [],
           hobbies: (t.hobbies as string[] | null) ?? [],
+          gender: (t.gender as string | null) ?? null,
+          languages: (t.languages as string[] | null) ?? [],
+          available_slots: (t.available_slots as string[] | null) ?? [],
+          birth_year: (t.birth_year as number | null) ?? null,
         }));
         setTravelersList(rows);
       });
@@ -1128,6 +1142,20 @@ function HomeInner() {
     return active.filter((g) => g.tags.includes(kw));
   })();
 
+  const visibleTravelers = (() => {
+    const q = exploreQ.trim().toLowerCase();
+    const catKw = exploreCat ? exploreCat.toLowerCase() : null;
+    let rs = travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id));
+    if (q) rs = rs.filter((tv) => [tv.name, tv.country, tv.occupation ?? "", tv.nationality ?? "", tv.bio, ...(tv.interests ?? []), ...(tv.hobbies ?? [])].join(" ").toLowerCase().includes(q));
+    if (catKw) rs = rs.filter((tv) => [...(tv.interests ?? []), ...(tv.hobbies ?? []), tv.bio].join(" ").toLowerCase().includes(catKw));
+    if (exploreGender) rs = rs.filter((tv) => tv.gender === exploreGender);
+    if (exploreStudent) rs = rs.filter((tv) => /student|学生/i.test(tv.occupation ?? ""));
+    if (exploreTags.length > 0) rs = rs.filter((tv) => { const tg = [...(tv.interests ?? []), ...(tv.hobbies ?? [])].map((x) => x.toLowerCase()); return exploreTags.every((t) => tg.includes(t.toLowerCase())); });
+    if (exploreDays.length > 0) rs = rs.filter((tv) => (tv.available_slots ?? []).some((sl) => exploreDays.includes(sl.split(":")[0])));
+    if (exploreLangs.length > 0) rs = rs.filter((tv) => exploreLangs.every((l) => (tv.languages ?? []).includes(l)));
+    return [...rs].sort((a, b) => (exploreSort === "name" ? a.name.localeCompare(b.name, lang === "ja" ? "ja" : "en") : b.id - a.id));
+  })();
+
   const sendMessage = async () => {
     if (!input.trim() || !currentUserId || !chatPeer?.id) return;
     const body = input.trim();
@@ -1395,12 +1423,99 @@ function HomeInner() {
             )}
 
             {appMode === "local" ? (
-              /* Local: go explore travelers */
-              <div style={{ padding: "10px 22px 4px" }}>
-                <button data-tutorial="home-list" onClick={() => setScreen("explore")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 18, padding: "18px 16px", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 12px 26px -10px rgba(173,0,28,.6)" }}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                  {lang === "ja" ? "travelerを探しに行く" : "Find travelers"}
-                </button>
+              <div data-tutorial="home-list" style={{ padding: "2px 0 0" }}>
+                <div style={{ padding: "4px 22px 8px", display: "flex", gap: 8, alignItems: "center" }}>
+                  <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 9, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 16, padding: "11px 14px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    <input value={exploreQ} onChange={(e) => setExploreQ(e.target.value)} placeholder={lang === "ja" ? "名前・国・興味で検索" : "Search travelers"} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
+                    {exploreQ && <button onClick={() => setExploreQ("")} aria-label={lang === "ja" ? "クリア" : "Clear"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#b09a86", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>}
+                  </div>
+                  {(() => { const n = exploreTags.length + exploreDays.length + exploreLangs.length + (exploreGender ? 1 : 0) + (exploreStudent ? 1 : 0); return (
+                    <button onClick={() => setTravelerFiltersOpen((v) => !v)} style={{ flex: "none", background: travelerFiltersOpen || n > 0 ? "#ad001c" : "#fff", color: travelerFiltersOpen || n > 0 ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "9px 13px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🎛{n > 0 ? ` ${n}` : ""}</button>
+                  ); })()}
+                </div>
+
+                {travelerFiltersOpen && (
+                  <div style={{ margin: "0 22px 10px", background: "#fff", border: "1px solid #f0e3cf", borderRadius: 16, padding: 14 }}>
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+                      {([["", lang === "ja" ? "指定なし" : "Any"], ["male", "♂"], ["female", "♀"], ["other", lang === "ja" ? "その他" : "Other"]] as const).map(([v, l]) => (
+                        <button key={v || "any"} onClick={() => setExploreGender(v)} style={{ border: exploreGender === v ? "none" : "1px solid #e8d8c0", background: exploreGender === v ? "#ad001c" : "#fff", color: exploreGender === v ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 800, color: "#2b1d1a" }}>{lang === "ja" ? "学生のみ" : "Students only"}</span>
+                      <button onClick={() => setExploreStudent((v) => !v)} aria-label={lang === "ja" ? "学生のみ切替" : "Toggle students only"} style={{ width: 42, height: 24, borderRadius: 12, border: "none", background: exploreStudent ? "#2e8b57" : "#e3d2bb", position: "relative", cursor: "pointer", padding: 0 }}><span style={{ position: "absolute", top: 2, left: exploreStudent ? 20 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left .15s" }} /></button>
+                    </div>
+                    {(() => { const opts = [...new Set(travelersList.flatMap((tt) => [...(tt.interests ?? []), ...(tt.hobbies ?? [])]))].slice(0, 20); return opts.length > 0 ? (
+                      <>
+                        <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                          {opts.map((tg) => { const on = exploreTags.includes(tg); return (<button key={tg} onClick={() => setExploreTags(on ? exploreTags.filter((x) => x !== tg) : [...exploreTags, tg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{tg}</button>); })}
+                        </div>
+                      </>
+                    ) : null; })()}
+                    <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "会える曜日" : "Available days"}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                      {([["mon", "月"], ["tue", "火"], ["wed", "水"], ["thu", "木"], ["fri", "金"], ["sat", "土"], ["sun", "日"]] as const).map(([code, jaL]) => { const on = exploreDays.includes(code); return (<button key={code} onClick={() => setExploreDays(on ? exploreDays.filter((x) => x !== code) : [...exploreDays, code])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#2e8b57" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minWidth: 34 }}>{lang === "ja" ? jaL : code.charAt(0).toUpperCase() + code.slice(1)}</button>); })}
+                    </div>
+                    {(() => { const opts = [...new Set(travelersList.flatMap((tt) => tt.languages ?? []))].slice(0, 14); return opts.length > 0 ? (
+                      <>
+                        <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                          {opts.map((lg) => { const on = exploreLangs.includes(lg); return (<button key={lg} onClick={() => setExploreLangs(on ? exploreLangs.filter((x) => x !== lg) : [...exploreLangs, lg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{lg}</button>); })}
+                        </div>
+                      </>
+                    ) : null; })()}
+                    <button onClick={() => { setExploreGender(""); setExploreStudent(false); setExploreTags([]); setExploreDays([]); setExploreLangs([]); }} style={{ marginTop: 6, width: "100%", background: "transparent", border: "1px solid #e8d8c0", color: "#9a8a7c", borderRadius: 12, padding: 9, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "条件をクリア" : "Clear filters"}</button>
+                  </div>
+                )}
+
+                <div style={{ padding: "0 22px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <span style={{ fontSize: 12, color: "#9a8a7c", fontWeight: 700 }}>{visibleTravelers.length}{lang === "ja" ? "人の旅行者" : " travelers"}</span>
+                  <div style={{ display: "flex", background: "#f1e6d4", borderRadius: 11, padding: 3 }}>
+                    {(["new", "name"] as const).map((v) => { const on = exploreSort === v; const label = v === "new" ? (lang === "ja" ? "新着" : "New") : (lang === "ja" ? "名前" : "A–Z"); return <button key={v} onClick={() => setExploreSort(v)} style={{ border: "none", borderRadius: 9, padding: "6px 12px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", background: on ? "#fff" : "transparent", color: on ? "#ad001c" : "#9a8a7c", boxShadow: on ? "0 2px 6px rgba(120,50,20,.12)" : "none" }}>{label}</button>; })}
+                  </div>
+                </div>
+
+                {visibleTravelers.length > 0 && (
+                  <div style={{ padding: "2px 0 4px" }}>
+                    <div style={{ padding: "0 22px 10px" }}>
+                      <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "おすすめの旅行者 " : "Recommended"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Recommended</span>}</h2>
+                    </div>
+                    <div style={{ display: "flex", gap: 14, overflowX: "auto", padding: "2px 22px 8px" }}>
+                      {visibleTravelers.slice(0, 8).map((tv) => { const av = tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? travelerAvatarUrls[tv.avatar_path] : null; const age = tv.birth_year ? new Date().getFullYear() - tv.birth_year : null; return (
+                        <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ flex: "none", width: 156, background: "#fff", borderRadius: 22, overflow: "hidden", boxShadow: "0 14px 34px -16px rgba(120,50,20,.32)", border: "1px solid #f3e8d6", textDecoration: "none", color: "inherit" }}>
+                          <div style={{ position: "relative", height: 130, display: "grid", placeItems: "center", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "linear-gradient(150deg,#9fd39a,#2e6b46)" }) }}>
+                            {!av && <span style={{ fontSize: 50 }}>{tv.emoji ?? "🧑"}</span>}
+                            <span style={{ position: "absolute", top: 10, left: 10, fontSize: 10, fontWeight: 800, color: "#fff", padding: "3px 9px", borderRadius: 30, background: "#2e8b57" }}>TRAVELER</span>
+                          </div>
+                          <div style={{ padding: "10px 12px 12px" }}>
+                            <div className="font-display" style={{ fontWeight: 700, fontSize: 15, color: "#2b1d1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tv.name}</div>
+                            <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600, marginTop: 2 }}>✈️ {tv.country}{age != null ? ` · ${age}` : ""}</div>
+                          </div>
+                        </Link>
+                      ); })}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ padding: "4px 22px 0" }}>
+                  <h2 className="font-display" style={{ margin: "0 0 12px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "旅行者一覧" : "All travelers"}</h2>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {visibleTravelers.map((tv) => { const av = tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? travelerAvatarUrls[tv.avatar_path] : null; return (
+                      <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", alignItems: "center", gap: 13, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, display: "grid", placeItems: "center", fontSize: 26, flex: "none", overflow: "hidden", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!av && (tv.emoji ?? "🧑")}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="font-display" style={{ fontSize: 15.5, fontWeight: 700, color: "#2b1d1a" }}>{tv.name}</div>
+                          <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600 }}>✈️ From {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</div>
+                        </div>
+                        <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
+                      </Link>
+                    ); })}
+                    {visibleTravelers.length === 0 && <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{travelersList.length === 0 ? t("no_travelers", lang) : (lang === "ja" ? "条件に合う旅行者がいません" : "No travelers match these filters")}</div>}
+                  </div>
+                </div>
               </div>
             ) : (
               <>
@@ -1530,94 +1645,6 @@ function HomeInner() {
         )}
         {/* bottom nav は screen-enter の外側で描画 (transform で position:fixed が壊れるのを回避) */}
         {screen === "home" && renderBottomNav("home")}
-        {screen === "explore" && (
-          <div className="screen-enter" style={{ background: "#fff8ec", minHeight: "100vh", paddingBottom: 100 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 20px 6px" }}>
-              <button onClick={goBack} aria-label={lang === "ja" ? "戻る" : "Back"} style={{ width: 40, height: 40, borderRadius: "50%", border: "1px solid #f0e3cf", background: "#fff", display: "grid", placeItems: "center", cursor: "pointer", flex: "none" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.2}><path d="M15 18l-6-6 6-6"/></svg>
-              </button>
-              <div>
-                <h1 className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 21, color: "#2b1d1a" }}>{lang === "ja" ? "travelerを探す" : "Find travelers"}</h1>
-                <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "#9a8a7c", fontWeight: 600 }}>{lang === "ja" ? "気になる旅行者にメッセージを送ろう" : "Reach out to travelers you like"}</p>
-              </div>
-            </div>
-            <div style={{ padding: "14px 22px 6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 18, padding: "13px 16px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                <input value={exploreQ} onChange={(e) => setExploreQ(e.target.value)} placeholder={lang === "ja" ? "名前・国・興味で検索" : "Search by name, country, interest"} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
-                {exploreQ && <button onClick={() => setExploreQ("")} aria-label={lang === "ja" ? "クリア" : "Clear"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#b09a86", fontSize: 20, lineHeight: 1, padding: 0 }}>×</button>}
-              </div>
-            </div>
-            <div style={{ padding: "12px 0 4px" }}>
-              <div style={{ padding: "0 22px 10px" }}>
-                <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "興味から探す " : "By interest"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>By interest</span>}</h2>
-              </div>
-              <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 22px 6px" }}>
-                {[
-                  { f: "Food", path: "M4 3v6a2 2 0 0 0 4 0V3M6 9v12M16 3c2 2 2 6 0 8v10", ja: "食べ歩き", en: "Foodie" },
-                  { f: "Nightlife", path: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z", ja: "夜遊び", en: "Nightlife" },
-                  { f: "Culture", path: "M3 9l9-5 9 5M5 9v9M9 9v9M12 9v9M15 9v9M19 9v9M3 20h18", ja: "文化", en: "Culture" },
-                  { f: "Nature", path: "M12 22V11M12 11C12 7 9 4 5 4c0 4 3 7 7 7zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z", ja: "自然", en: "Nature" },
-                  { f: "Art", path: "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.2 0-1.1.9-2 2-2h1.5A3.5 3.5 0 0 0 20 11c0-4.4-3.6-8-8-8z", ja: "アート", en: "Art" },
-                  { f: "Hidden", path: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16 8l-2.5 5.5L8 16l2.5-5.5z", ja: "穴場", en: "Hidden" },
-                ].map((v) => {
-                  const on = exploreCat === v.f;
-                  return (
-                    <button key={v.f} onClick={() => setExploreCat(on ? null : v.f)} style={{ flex: "none", width: 78, border: "none", background: "transparent", padding: "4px 2px", cursor: "pointer", textAlign: "center", fontFamily: "inherit" }}>
-                      <span style={{ display: "grid", placeItems: "center", width: 60, height: 60, margin: "0 auto 6px", borderRadius: 20, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e3cf", boxShadow: "0 3px 9px rgba(120,80,40,.08)" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={on ? "#fff" : "#ad001c"} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round"><path d={v.path}/></svg></span>
-                      <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap" }}>{lang === "ja" ? v.ja : v.en}</span>
-                      <span style={{ display: "block", fontSize: 9.5, color: "#b6a48f", whiteSpace: "nowrap" }}>{lang === "ja" ? v.en : ""}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div style={{ padding: "10px 22px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-              <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "旅行者" : "Travelers"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}> Travelers</span>}</h2>
-              <div style={{ display: "flex", background: "#f1e6d4", borderRadius: 11, padding: 3, flex: "none" }}>
-                {(["new", "name"] as const).map((v) => {
-                  const on = exploreSort === v;
-                  const label = v === "new" ? (lang === "ja" ? "新着" : "New") : (lang === "ja" ? "名前" : "A–Z");
-                  return <button key={v} onClick={() => setExploreSort(v)} style={{ border: "none", borderRadius: 9, padding: "6px 12px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", background: on ? "#fff" : "transparent", color: on ? "#ad001c" : "#9a8a7c", boxShadow: on ? "0 2px 6px rgba(120,50,20,.12)" : "none" }}>{label}</button>;
-                })}
-              </div>
-            </div>
-              <div style={{ padding: "4px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>
-                {(() => {
-                  const q = exploreQ.trim().toLowerCase();
-                  const catKw = exploreCat ? exploreCat.toLowerCase() : null;
-                  const filtered = travelersList
-                    .filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id))
-                    .filter((tv) => {
-                      if (q) {
-                        const hay = [tv.name, tv.country, tv.occupation ?? "", tv.nationality ?? "", tv.bio, ...(tv.interests ?? []), ...(tv.hobbies ?? [])].join(" ").toLowerCase();
-                        if (!hay.includes(q)) return false;
-                      }
-                      if (catKw) {
-                        const tags = [...(tv.interests ?? []), ...(tv.hobbies ?? []), tv.bio].join(" ").toLowerCase();
-                        if (!tags.includes(catKw)) return false;
-                      }
-                      return true;
-                    })
-                    .sort((a, b) => exploreSort === "name" ? a.name.localeCompare(b.name, lang === "ja" ? "ja" : "en") : (b.id - a.id));
-                  if (filtered.length === 0) {
-                    return <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{travelersList.length === 0 ? t("no_travelers", lang) : (lang === "ja" ? "条件に合う旅行者がいません" : "No travelers match these filters")}</div>;
-                  }
-                  return filtered.map((tv) => (
-                    <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", alignItems: "center", gap: 13, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
-                      <div style={{ width: 56, height: 56, borderRadius: 16, display: "grid", placeItems: "center", fontSize: 26, flex: "none", overflow: "hidden", ...(tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? { backgroundImage: `url("${travelerAvatarUrls[tv.avatar_path]}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!(tv.avatar_path && travelerAvatarUrls[tv.avatar_path]) && (tv.emoji ?? "🧑")}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="font-display" style={{ fontSize: 15.5, fontWeight: 700, color: "#2b1d1a" }}>{tv.name}</div>
-                        <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600 }}>✈️ From {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</div>
-                      </div>
-                      <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
-                    </Link>
-                  ));
-                })()}
-              </div>
-          </div>
-        )}
-        {screen === "explore" && renderBottomNav("home")}
 
         {/* GUIDE PROFILE (Tinder 風) */}
         {screen === "profile" && selectedGuide && (() => {
