@@ -7,6 +7,7 @@ import { useLang, t } from "../lib/i18n";
 import { useTranslate } from "../lib/use-translate";
 import ReviewsSection from "./reviews-section";
 import ProfileActionsMenu from "./profile-actions-menu";
+import SuperLikeModal from "./superlike-modal";
 
 export type TravelerProfileData = {
   user_id: string;
@@ -48,6 +49,7 @@ function formatSlotShort(s: string): string {
 
 export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
+  const [showSuperLike, setShowSuperLike] = useState(false);
   const [lang] = useLang();
   const tr = useTranslate();
 
@@ -261,12 +263,20 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
                   {t("login_to_message", lang)}
                 </Link>
               ) : (
-                <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
-                  {t("send_btn", lang)}
-                </Link>
+                <button onClick={() => setShowSuperLike(true)} style={{ flex: 1, background: "linear-gradient(135deg,#ad001c,#d4145a)", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", cursor: "pointer", boxSizing: "border-box", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <span>⭐</span>{lang === "ja" ? "スーパーライクで話す" : "Super Like to chat"}
+                </button>
               )}
             </div>
-
+            {showSuperLike && (
+              <SuperLikeModal
+                travelerUserId={traveler.user_id}
+                travelerName={traveler.name}
+                travelerEmoji={traveler.emoji}
+                onClose={() => setShowSuperLike(false)}
+                onUnlocked={() => { window.location.href = `/?chat=${traveler.user_id}`; }}
+              />
+            )}
           </>
         )}
       </div>

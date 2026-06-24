@@ -320,6 +320,27 @@ function HomeInner() {
     router.replace("/", { scroll: false });
   }, [searchParams, currentUserId, lang, router]);
 
+  // ?chat=<userId> で来たら そのユーザーとチャットを開く (スーパーライク決済後など)
+  useEffect(() => {
+    const cid = searchParams.get("chat");
+    if (!cid || !currentUserId) return;
+    let cancelled = false;
+    (async () => {
+      const [{ data: tv }, { data: gd }] = await Promise.all([
+        supabase.from("travelers").select("name, emoji").eq("user_id", cid).maybeSingle(),
+        supabase.from("guides").select("name, emoji").eq("user_id", cid).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const name = (tv?.name as string | undefined) ?? (gd?.name as string | undefined) ?? (lang === "ja" ? "ユーザー" : "User");
+      const emoji = (tv?.emoji as string | undefined) ?? (gd?.emoji as string | undefined) ?? "🧑";
+      setChatPeer({ id: cid, name, emoji });
+      setChatOrigin("inbox");
+      setScreen("chat");
+      router.replace("/", { scroll: false });
+    })();
+    return () => { cancelled = true; };
+  }, [searchParams, currentUserId, lang, supabase, router]);
+
   // ?guide=ID で来たら該当ガイドのプロフィール画面に飛ぶ (例: /guides/all 経由)
   useEffect(() => {
     const gid = searchParams.get("guide");
@@ -1266,7 +1287,9 @@ function HomeInner() {
             {/* greeting + hero */}
             <div style={{ padding: "12px 22px 4px" }}>
               <p style={{ margin: 0, fontSize: 13, color: "#9a8a7c", fontWeight: 500 }}>{lang === "ja" ? `こんにちは、${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "ゲスト")} さん 👋` : `Hi, ${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "there")} 👋`}</p>
-              {appMode !== "local" && (
+              {appMode === "local" ? (
+                <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>まだ見ぬ<span style={{ color: "#ad001c" }}>友達</span>に<br/>会いに行こう。</>) : (<>Your next <span style={{ color: "#ad001c" }}>friend</span><br/>is waiting.</>)}</h1>
+              ) : (
                 <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</>) : (<>Meet a real <span style={{ color: "#ad001c" }}>local</span>,<br/>not a tour guide.</>)}</h1>
               )}
             </div>
