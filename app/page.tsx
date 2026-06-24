@@ -41,6 +41,7 @@ type Guide = {
   uni: string;
   tags: string[];
   languages: string[];
+  gender: string | null;
   rate: string;       // 表示用フォーマット (free なら "Free")
   ratePerDay: number | null;
   mode: "free" | "paid";
@@ -198,6 +199,12 @@ function HomeInner() {
   const [exploreDays, setExploreDays] = useState<string[]>([]);
   const [exploreLangs, setExploreLangs] = useState<string[]>([]);
   const [travelerFiltersOpen, setTravelerFiltersOpen] = useState(false);
+  const [guideFiltersOpen, setGuideFiltersOpen] = useState(false);
+  const [guideGender, setGuideGender] = useState("");
+  const [guideStudent, setGuideStudent] = useState(false);
+  const [guideTags, setGuideTags] = useState<string[]>([]);
+  const [guideDays, setGuideDays] = useState<string[]>([]);
+  const [guideLangs, setGuideLangs] = useState<string[]>([]);
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
   const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
   const [homeInstant, setHomeInstant] = useState(false);
@@ -817,7 +824,7 @@ function HomeInner() {
       try {
         const { data, error } = await supabase
         .from("guides")
-        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year, stripe_onboarded, paused")
+        .select("id, name, emoji, university, tags, languages, rate_per_day, mode, rating, bio, tour_count, user_id, image_paths, avatar_path, areas, nationality, occupation, hobbies, available_slots, birth_year, gender, stripe_onboarded, paused")
         .order("rating", { ascending: false });
 
       if (error) {
@@ -856,6 +863,7 @@ function HomeInner() {
         user_id: (g.user_id as string | null) ?? null,
         tags: g.tags ?? [],
         languages: g.languages ?? [],
+        gender: (g.gender as string | null) ?? null,
         rate: g.mode === "free"
           ? "Free"
           : g.rate_per_day != null
@@ -1131,11 +1139,19 @@ function HomeInner() {
   const visibleGuides = (() => {
     const notBlocked = guides.filter((g) => !g.user_id || !blockedUserIds.has(g.user_id));
     let active = notBlocked.filter((g) => !g.paused || g.user_id === currentUserId);
+    const hq = exploreQ.trim().toLowerCase();
+    if (hq) active = active.filter((g) => [g.name, g.uni, g.bio, g.occupation ?? "", g.areas.join(" "), ...(g.tags ?? []), ...(g.hobbies ?? []), ...(g.languages ?? [])].join(" ").toLowerCase().includes(hq));
     // mode filter (Available now の隣の Free/Pro トグル)
     if (homeModeFilter === "free") active = active.filter((g) => g.mode === "free");
     else if (homeModeFilter === "paid") active = active.filter((g) => g.mode === "paid");
     // area filter
     if (homeAreaFilter) active = active.filter((g) => g.areas.includes(homeAreaFilter));
+    // 詳細フィルタ (🎛)
+    if (guideGender) active = active.filter((g) => g.gender === guideGender);
+    if (guideStudent) active = active.filter((g) => /student|学生/i.test(g.occupation ?? ""));
+    if (guideTags.length > 0) active = active.filter((g) => { const tg = [...g.tags, ...g.hobbies, ...g.languages].map((x) => x.toLowerCase()); return guideTags.every((t) => tg.includes(t.toLowerCase())); });
+    if (guideDays.length > 0) active = active.filter((g) => (g.availableSlots ?? []).some((sl) => guideDays.includes(sl.split(":")[0])));
+    if (guideLangs.length > 0) active = active.filter((g) => guideLangs.every((l) => (g.languages ?? []).includes(l)));
     // tag filter (既存)
     if (activeFilter === "All") return active;
     const kw = filterKeyword[activeFilter] ?? "";
@@ -1329,14 +1345,55 @@ function HomeInner() {
               )}
             </div>
 
-            {/* search (traveler home only; local moves it into the explore screen) */}
+            {/* search + filters (traveler home) */}
             {appMode === "traveler" && (
             <div style={{ padding: "14px 22px 6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 18, padding: "13px 16px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                <input value={exploreQ} onChange={(e) => setExploreQ(e.target.value)} placeholder={lang === "ja" ? "名前・国・興味で検索" : "Search by name, country, interest"} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
-                {exploreQ && <button onClick={() => setExploreQ("")} aria-label={lang === "ja" ? "クリア" : "Clear"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#b09a86", fontSize: 20, lineHeight: 1, padding: 0 }}>×</button>}
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 9, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 16, padding: "11px 14px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                  <input value={exploreQ} onChange={(e) => setExploreQ(e.target.value)} placeholder={lang === "ja" ? "名前・大学・タグで検索" : "Search guides"} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
+                  {exploreQ && <button onClick={() => setExploreQ("")} aria-label={lang === "ja" ? "クリア" : "Clear"} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#b09a86", fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>}
+                </div>
+                {(() => { const n = guideTags.length + guideDays.length + guideLangs.length + (guideGender ? 1 : 0) + (guideStudent ? 1 : 0); return (
+                  <button onClick={() => setGuideFiltersOpen((v) => !v)} style={{ flex: "none", background: guideFiltersOpen || n > 0 ? "#ad001c" : "#fff", color: guideFiltersOpen || n > 0 ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "9px 13px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🎛{n > 0 ? ` ${n}` : ""}</button>
+                ); })()}
               </div>
+
+              {guideFiltersOpen && (
+                <div style={{ marginTop: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 16, padding: 14 }}>
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "性別" : "Gender"}</div>
+                  <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+                    {([["", lang === "ja" ? "指定なし" : "Any"], ["male", "♂"], ["female", "♀"], ["other", lang === "ja" ? "その他" : "Other"]] as const).map(([v, l]) => (
+                      <button key={v || "any"} onClick={() => setGuideGender(v)} style={{ border: guideGender === v ? "none" : "1px solid #e8d8c0", background: guideGender === v ? "#ad001c" : "#fff", color: guideGender === v ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "6px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: "#2b1d1a" }}>{lang === "ja" ? "学生のみ" : "Students only"}</span>
+                    <button onClick={() => setGuideStudent((v) => !v)} aria-label={lang === "ja" ? "学生のみ切替" : "Toggle students only"} style={{ width: 42, height: 24, borderRadius: 12, border: "none", background: guideStudent ? "#2e8b57" : "#e3d2bb", position: "relative", cursor: "pointer", padding: 0 }}><span style={{ position: "absolute", top: 2, left: guideStudent ? 20 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left .15s" }} /></button>
+                  </div>
+                  {(() => { const opts = [...new Set(guides.flatMap((gg) => [...(gg.tags ?? []), ...(gg.hobbies ?? [])]))].slice(0, 20); return opts.length > 0 ? (
+                    <>
+                      <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                        {opts.map((tg) => { const on = guideTags.includes(tg); return (<button key={tg} onClick={() => setGuideTags(on ? guideTags.filter((x) => x !== tg) : [...guideTags, tg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{tg}</button>); })}
+                      </div>
+                    </>
+                  ) : null; })()}
+                  <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "会える曜日" : "Available days"}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                    {([["mon", "月"], ["tue", "火"], ["wed", "水"], ["thu", "木"], ["fri", "金"], ["sat", "土"], ["sun", "日"]] as const).map(([code, jaL]) => { const on = guideDays.includes(code); return (<button key={code} onClick={() => setGuideDays(on ? guideDays.filter((x) => x !== code) : [...guideDays, code])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#2e8b57" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minWidth: 34 }}>{lang === "ja" ? jaL : code.charAt(0).toUpperCase() + code.slice(1)}</button>); })}
+                  </div>
+                  {(() => { const opts = [...new Set(guides.flatMap((gg) => gg.languages ?? []))].slice(0, 14); return opts.length > 0 ? (
+                    <>
+                      <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "言語" : "Languages"}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                        {opts.map((lg) => { const on = guideLangs.includes(lg); return (<button key={lg} onClick={() => setGuideLangs(on ? guideLangs.filter((x) => x !== lg) : [...guideLangs, lg])} style={{ border: on ? "none" : "1px solid #e8d8c0", background: on ? "#ad001c" : "#fff", color: on ? "#fff" : "#7a6a5c", borderRadius: 12, padding: "5px 11px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{lg}</button>); })}
+                      </div>
+                    </>
+                  ) : null; })()}
+                  <button onClick={() => { setGuideGender(""); setGuideStudent(false); setGuideTags([]); setGuideDays([]); setGuideLangs([]); }} style={{ marginTop: 6, width: "100%", background: "transparent", border: "1px solid #e8d8c0", color: "#9a8a7c", borderRadius: 12, padding: 9, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>{lang === "ja" ? "条件をクリア" : "Clear filters"}</button>
+                </div>
+              )}
             </div>
             )}
 
@@ -1480,39 +1537,67 @@ function HomeInner() {
 
                 {visibleTravelers.length > 0 && (
                   <div style={{ padding: "2px 0 4px" }}>
-                    <div style={{ padding: "0 22px 10px" }}>
-                      <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "おすすめの旅行者 " : "Recommended"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Recommended</span>}</h2>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 22px 12px" }}>
+                      <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -2 }} />{lang === "ja" ? "おすすめの旅行者 " : "For you"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>For you</span>}</h2>
                     </div>
-                    <div style={{ display: "flex", gap: 14, overflowX: "auto", padding: "2px 22px 8px" }}>
-                      {visibleTravelers.slice(0, 8).map((tv) => { const av = tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? travelerAvatarUrls[tv.avatar_path] : null; const age = tv.birth_year ? new Date().getFullYear() - tv.birth_year : null; return (
-                        <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ flex: "none", width: 156, background: "#fff", borderRadius: 22, overflow: "hidden", boxShadow: "0 14px 34px -16px rgba(120,50,20,.32)", border: "1px solid #f3e8d6", textDecoration: "none", color: "inherit" }}>
-                          <div style={{ position: "relative", height: 130, display: "grid", placeItems: "center", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "linear-gradient(150deg,#9fd39a,#2e6b46)" }) }}>
-                            {!av && <span style={{ fontSize: 50 }}>{tv.emoji ?? "🧑"}</span>}
-                            <span style={{ position: "absolute", top: 10, left: 10, fontSize: 10, fontWeight: 800, color: "#fff", padding: "3px 9px", borderRadius: 30, background: "#2e8b57" }}>TRAVELER</span>
-                          </div>
-                          <div style={{ padding: "10px 12px 12px" }}>
-                            <div className="font-display" style={{ fontWeight: 700, fontSize: 15, color: "#2b1d1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tv.name}</div>
-                            <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600, marginTop: 2 }}>✈️ {tv.country}{age != null ? ` · ${age}` : ""}</div>
-                          </div>
-                        </Link>
-                      ); })}
+                    <div style={{ display: "flex", gap: 16, overflowX: "auto", padding: "2px 22px 10px" }}>
+                      {visibleTravelers.slice(0, 8).map((tv) => {
+                        const av = tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? travelerAvatarUrls[tv.avatar_path] : null;
+                        const age = tv.birth_year ? new Date().getFullYear() - tv.birth_year : null;
+                        const tvTags = [...new Set([...(tv.hobbies ?? []), ...(tv.interests ?? []), ...(tv.languages ?? [])])].slice(0, 3);
+                        return (
+                          <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ flex: "none", width: 236, background: "#fff", borderRadius: 24, overflow: "hidden", boxShadow: "0 14px 34px -16px rgba(120,50,20,.32)", border: "1px solid #f3e8d6", textDecoration: "none", color: "inherit" }}>
+                            <div style={{ position: "relative", height: 176, display: "grid", placeItems: "center", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "linear-gradient(150deg,#9fd39a,#2e6b46)" }) }}>
+                              {!av && <span style={{ fontSize: 62, filter: "drop-shadow(0 3px 6px rgba(0,0,0,.2))" }}>{tv.emoji ?? "🧑"}</span>}
+                              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 42%, rgba(20,8,5,.62) 100%)" }} />
+                              <span style={{ position: "absolute", top: 12, left: 12, fontSize: 11, fontWeight: 800, color: "#fff", padding: "4px 10px", borderRadius: 30, background: "#2e8b57", boxShadow: "0 2px 6px rgba(0,0,0,.2)" }}>TRAVELER</span>
+                              {age != null && <span style={{ position: "absolute", top: 12, right: 12, fontSize: 12, fontWeight: 700, color: "#2b1d1a", background: "rgba(255,255,255,.92)", padding: "4px 9px", borderRadius: 30 }}>{age}{lang === "ja" ? "歳" : ""}</span>}
+                              <div style={{ position: "absolute", left: 14, bottom: 11, right: 14 }}>
+                                <p className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 18, color: "#fff" }}>{tv.name}</p>
+                                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(255,255,255,.88)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>✈️ {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</p>
+                              </div>
+                            </div>
+                            <div style={{ padding: "12px 14px 14px" }}>
+                              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 11, minHeight: 22, overflow: "hidden" }}>
+                                {tvTags.map((tag) => <span key={tag} style={{ background: "#f6efe2", color: "#7a6a5c", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 8, whiteSpace: "nowrap" }}>{tag}</span>)}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                                <span className="font-display" style={{ fontSize: 12, fontWeight: 700, color: "#8a7a6c", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tv.trip_period ? `📅 ${tv.trip_period}` : `🌐 ${tv.nationality ?? tv.country}`}</span>
+                                <span className="font-display" style={{ flex: "none", background: "#ad001c", color: "#fff", fontWeight: 700, fontSize: 12.5, padding: "8px 16px", borderRadius: 12, boxShadow: "0 6px 14px -6px rgba(173,0,28,.7)" }}>{lang === "ja" ? "メッセージ" : "Message"}</span>
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
-                <div style={{ padding: "4px 22px 0" }}>
-                  <h2 className="font-display" style={{ margin: "0 0 12px", fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "旅行者一覧" : "All travelers"}</h2>
+                <div style={{ padding: "8px 22px 0" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 17, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 16, borderRadius: 3, background: "#2e8b57", marginRight: 8, verticalAlign: -2 }} />{lang === "ja" ? "旅行者一覧 " : "All travelers"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Travelers</span>}</h2>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#2e8b57", whiteSpace: "nowrap" }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "#2e8b57" }} />{visibleTravelers.length}{lang === "ja" ? "人" : ""}</span>
+                  </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {visibleTravelers.map((tv) => { const av = tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? travelerAvatarUrls[tv.avatar_path] : null; return (
-                      <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", alignItems: "center", gap: 13, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
-                        <div style={{ width: 56, height: 56, borderRadius: 16, display: "grid", placeItems: "center", fontSize: 26, flex: "none", overflow: "hidden", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!av && (tv.emoji ?? "🧑")}</div>
+                    {visibleTravelers.map((tv) => {
+                      const av = tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? travelerAvatarUrls[tv.avatar_path] : null;
+                      const age = tv.birth_year ? new Date().getFullYear() - tv.birth_year : null;
+                      const tvTags = [...new Set([...(tv.hobbies ?? []), ...(tv.interests ?? [])])].slice(0, 2);
+                      return (
+                      <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", gap: 13, alignItems: "center", background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
+                        <div style={{ width: 62, height: 62, borderRadius: 16, flex: "none", display: "grid", placeItems: "center", fontSize: 30, overflow: "hidden", ...(av ? { backgroundImage: `url("${av}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!av && (tv.emoji ?? "🧑")}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="font-display" style={{ fontSize: 15.5, fontWeight: 700, color: "#2b1d1a" }}>{tv.name}</div>
-                          <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600 }}>✈️ From {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                            <span className="font-display" style={{ fontWeight: 700, fontSize: 15.5, color: "#2b1d1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tv.name}</span>
+                            <span style={{ flex: "none", fontSize: 9.5, fontWeight: 800, color: "#fff", padding: "2px 7px", borderRadius: 20, background: "#2e8b57" }}>TRAVELER</span>
+                          </div>
+                          <p style={{ margin: "2px 0 0", fontSize: 11, color: "#b09a86", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>✈️ {tv.country}{age != null ? ` · ${age}${lang === "ja" ? "歳" : ""}` : ""}{tv.occupation ? ` · ${tv.occupation}` : ""}</p>
+                          {tvTags.length > 0 && <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 5 }}>{tvTags.map((tag) => <span key={tag} style={{ background: "#f6efe2", color: "#7a6a5c", fontSize: 9.5, fontWeight: 700, padding: "2px 7px", borderRadius: 7 }}>{tag}</span>)}</div>}
                         </div>
-                        <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
+                        <div style={{ flex: "none", display: "grid", placeItems: "center", width: 38, height: 38, borderRadius: 12, background: "#ffefd5", fontSize: 17 }}>💬</div>
                       </Link>
-                    ); })}
+                      );
+                    })}
                     {visibleTravelers.length === 0 && <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{travelersList.length === 0 ? t("no_travelers", lang) : (lang === "ja" ? "条件に合う旅行者がいません" : "No travelers match these filters")}</div>}
                   </div>
                 </div>
