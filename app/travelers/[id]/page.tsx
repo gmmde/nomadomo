@@ -17,6 +17,17 @@ export default async function TravelerProfilePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 閲覧者が local モードか判定（local→traveler は課金 / traveler→traveler は無課金）
+  let viewerIsLocal = false;
+  if (user) {
+    const { data: settings } = await supabase
+      .from("user_settings")
+      .select("app_mode")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    viewerIsLocal = settings?.app_mode === "local";
+  }
+
   const { data } = await supabase
     .from("travelers")
     .select(
@@ -50,6 +61,7 @@ export default async function TravelerProfilePage({ params }: Props) {
       traveler={traveler}
       currentUserId={user?.id ?? null}
       isOwn={!!user && user.id === traveler.user_id}
+      viewerIsLocal={viewerIsLocal}
     />
   );
 }

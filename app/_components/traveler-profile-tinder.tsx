@@ -31,6 +31,8 @@ type Props = {
   traveler: TravelerProfileData;
   currentUserId: string | null;
   isOwn: boolean;
+  /** 閲覧者が local モードか。local→traveler は課金、traveler→traveler は無課金チャット。 */
+  viewerIsLocal: boolean;
 };
 
 function ageFromBirthYear(y: number | null): number | null {
@@ -47,7 +49,7 @@ function formatSlotShort(s: string): string {
   return `${map[day] ?? day} ${fmt(start ?? "")}-${fmt(end ?? "")}`;
 }
 
-export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }: Props) {
+export default function TravelerProfileTinder({ traveler, currentUserId, isOwn, viewerIsLocal }: Props) {
   const [imgIdx, setImgIdx] = useState(0);
   const [showSuperLike, setShowSuperLike] = useState(false);
   const [lang] = useLang();
@@ -152,8 +154,8 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
           </div>
         </div>
 
-        {/* INFO (クリーム地) */}
-        <div style={{ padding: "0 22px", flex: 1 }}>
+        {/* INFO (クリーム地) — position:relative + zIndex で写真レイヤーより前面に描画（ピル等が写真に隠れる paint-order バグ回避） */}
+        <div style={{ padding: "0 22px", flex: 1, position: "relative", zIndex: 2 }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginTop: -6 }}>
             <div style={{ minWidth: 0 }}>
               <h1 className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 26, color: "#2b1d1a" }}>{traveler.name} <span style={{ fontSize: 19 }}>✈️</span></h1>
@@ -240,14 +242,19 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
                 <Link href={`/login?next=/travelers/${traveler.user_id}`} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box" }}>
                   {t("login_to_message", lang)}
                 </Link>
-              ) : (
+              ) : viewerIsLocal ? (
                 <button onClick={() => setShowSuperLike(true)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", cursor: "pointer", boxSizing: "border-box", fontFamily: "inherit", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.1}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   {lang === "ja" ? `${traveler.name}さんにメッセージを送る` : `Message ${traveler.name}`}
                 </button>
+              ) : (
+                <Link href={`/chat-request/u/${traveler.user_id}/new?kind=simple`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", textDecoration: "none", boxSizing: "border-box", boxShadow: "0 10px 22px -8px rgba(173,0,28,.6)" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.1}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  {lang === "ja" ? `${traveler.name}さんにメッセージを送る` : `Message ${traveler.name}`}
+                </Link>
               )}
             </div>
-            {showSuperLike && (
+            {viewerIsLocal && showSuperLike && (
               <SuperLikeModal
                 travelerUserId={traveler.user_id}
                 travelerName={traveler.name}

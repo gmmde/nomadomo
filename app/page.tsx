@@ -187,6 +187,7 @@ function HomeInner() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [exploreQ, setExploreQ] = useState("");
   const [exploreCat, setExploreCat] = useState<string | null>(null);
+  const [exploreSort, setExploreSort] = useState<"new" | "name">("new");
   const [homeModeFilter, setHomeModeFilter] = useState<"all" | "free" | "paid">("all");
   const [homeAreaFilter, setHomeAreaFilter] = useState<string | null>(null);
   const [homeInstant, setHomeInstant] = useState(false);
@@ -1571,8 +1572,15 @@ function HomeInner() {
                 })}
               </div>
             </div>
-            <div style={{ padding: "10px 22px 6px" }}>
+            <div style={{ padding: "10px 22px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
               <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "旅行者" : "Travelers"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}> Travelers</span>}</h2>
+              <div style={{ display: "flex", background: "#f1e6d4", borderRadius: 11, padding: 3, flex: "none" }}>
+                {(["new", "name"] as const).map((v) => {
+                  const on = exploreSort === v;
+                  const label = v === "new" ? (lang === "ja" ? "新着" : "New") : (lang === "ja" ? "名前" : "A–Z");
+                  return <button key={v} onClick={() => setExploreSort(v)} style={{ border: "none", borderRadius: 9, padding: "6px 12px", fontSize: 11.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", background: on ? "#fff" : "transparent", color: on ? "#ad001c" : "#9a8a7c", boxShadow: on ? "0 2px 6px rgba(120,50,20,.12)" : "none" }}>{label}</button>;
+                })}
+              </div>
             </div>
               <div style={{ padding: "4px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>
                 {(() => {
@@ -1590,7 +1598,8 @@ function HomeInner() {
                         if (!tags.includes(catKw)) return false;
                       }
                       return true;
-                    });
+                    })
+                    .sort((a, b) => exploreSort === "name" ? a.name.localeCompare(b.name, lang === "ja" ? "ja" : "en") : (b.id - a.id));
                   if (filtered.length === 0) {
                     return <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{travelersList.length === 0 ? t("no_travelers", lang) : (lang === "ja" ? "条件に合う旅行者がいません" : "No travelers match these filters")}</div>;
                   }
@@ -1664,8 +1673,8 @@ function HomeInner() {
               </div>
             </div>
 
-            {/* INFO (クリーム地) */}
-            <div style={{ padding: "0 22px", flex: 1 }}>
+            {/* INFO (クリーム地) — position:relative + zIndex で写真レイヤーより前面に描画 */}
+            <div style={{ padding: "0 22px", flex: 1, position: "relative", zIndex: 2 }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginTop: -6 }}>
                 <div style={{ minWidth: 0 }}>
                   <h1 className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 26, color: "#2b1d1a" }}>{selectedGuide.name}</h1>
