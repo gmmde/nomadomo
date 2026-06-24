@@ -1294,7 +1294,8 @@ function HomeInner() {
               )}
             </div>
 
-            {/* search */}
+            {/* search (traveler home only; local moves it into the explore screen) */}
+            {appMode === "traveler" && (
             <div style={{ padding: "14px 22px 6px" }}>
               <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const q = String(fd.get("q") ?? "").trim(); router.push(`/guides/all${q ? `?q=${encodeURIComponent(q)}` : ""}`); }}
                 style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 18, padding: "13px 16px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
@@ -1305,8 +1306,10 @@ function HomeInner() {
                 </button>
               </form>
             </div>
+            )}
 
-            {/* categories */}
+            {/* categories (traveler home only) */}
+            {appMode === "traveler" && (
             <div style={{ padding: "12px 0 4px" }}>
               <div style={{ padding: "0 22px 10px" }}>
                 <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "体験から探す " : "Explore by vibe"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Explore by vibe</span>}</h2>
@@ -1331,6 +1334,7 @@ function HomeInner() {
                 })}
               </div>
             </div>
+            )}
 
             {/* LOCAL DASHBOARD (Local モードのみ) */}
             {appMode === "local" && currentUserId && (
@@ -1387,19 +1391,12 @@ function HomeInner() {
             )}
 
             {appMode === "local" ? (
-              /* Local: travelers list */
-              <div data-tutorial="home-list" style={{ padding: "4px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>
-                {travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id)).map((tv) => (
-                  <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", alignItems: "center", gap: 13, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
-                    <div style={{ width: 56, height: 56, borderRadius: 16, display: "grid", placeItems: "center", fontSize: 26, flex: "none", overflow: "hidden", ...(tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? { backgroundImage: `url("${travelerAvatarUrls[tv.avatar_path]}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!(tv.avatar_path && travelerAvatarUrls[tv.avatar_path]) && (tv.emoji ?? "🧑")}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="font-display" style={{ fontSize: 15.5, fontWeight: 700, color: "#2b1d1a" }}>{tv.name}</div>
-                      <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600 }}>✈️ From {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</div>
-                    </div>
-                    <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
-                  </Link>
-                ))}
-                {travelersList.length === 0 && <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("no_travelers", lang)}</div>}
+              /* Local: go explore travelers */
+              <div style={{ padding: "10px 22px 4px" }}>
+                <button data-tutorial="home-list" onClick={() => setScreen("explore")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", background: "#ad001c", color: "#fff", border: "none", borderRadius: 18, padding: "18px 16px", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 12px 26px -10px rgba(173,0,28,.6)" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                  {lang === "ja" ? "travelerを探しに行く" : "Find travelers"}
+                </button>
               </div>
             ) : (
               <>
@@ -1529,6 +1526,70 @@ function HomeInner() {
         )}
         {/* bottom nav は screen-enter の外側で描画 (transform で position:fixed が壊れるのを回避) */}
         {screen === "home" && renderBottomNav("home")}
+        {screen === "explore" && (
+          <div className="screen-enter" style={{ background: "#fff8ec", minHeight: "100vh", paddingBottom: 100 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 20px 6px" }}>
+              <button onClick={goBack} aria-label={lang === "ja" ? "戻る" : "Back"} style={{ width: 40, height: 40, borderRadius: "50%", border: "1px solid #f0e3cf", background: "#fff", display: "grid", placeItems: "center", cursor: "pointer", flex: "none" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2b1d1a" strokeWidth={2.2}><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <div>
+                <h1 className="font-display" style={{ margin: 0, fontWeight: 900, fontSize: 21, color: "#2b1d1a" }}>{lang === "ja" ? "travelerを探す" : "Find travelers"}</h1>
+                <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "#9a8a7c", fontWeight: 600 }}>{lang === "ja" ? "気になる旅行者にメッセージを送ろう" : "Reach out to travelers you like"}</p>
+              </div>
+            </div>
+            <div style={{ padding: "14px 22px 6px" }}>
+              <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const q = String(fd.get("q") ?? "").trim(); router.push(`/guides/all${q ? `?q=${encodeURIComponent(q)}` : ""}`); }}
+                style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1px solid #f0e3cf", borderRadius: 18, padding: "13px 16px", boxShadow: "0 6px 18px -8px rgba(140,70,30,.18)" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input name="q" placeholder={t("search_placeholder", lang)} style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "none", fontSize: 14, color: "#2b1d1a", fontFamily: "inherit" }} />
+                <button type="submit" aria-label={t("search_button", lang)} style={{ display: "grid", placeItems: "center", width: 34, height: 34, minWidth: 34, borderRadius: 12, background: "#ad001c", border: "none", cursor: "pointer" }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2.2}><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+                </button>
+              </form>
+            </div>
+            <div style={{ padding: "12px 0 4px" }}>
+              <div style={{ padding: "0 22px 10px" }}>
+                <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "体験から探す " : "Explore by vibe"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}>Explore by vibe</span>}</h2>
+              </div>
+              <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 22px 6px" }}>
+                {[
+                  { f: "🍜 Food", path: "M4 3v6a2 2 0 0 0 4 0V3M6 9v12M16 3c2 2 2 6 0 8v10", ja: "食べ歩き", en: "Foodie" },
+                  { f: "🌙 Nightlife", path: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z", ja: "夜遊び", en: "Nightlife" },
+                  { f: "🎭 Culture", path: "M3 9l9-5 9 5M5 9v9M9 9v9M12 9v9M15 9v9M19 9v9M3 20h18", ja: "文化", en: "Culture" },
+                  { f: "🌿 Nature", path: "M12 22V11M12 11C12 7 9 4 5 4c0 4 3 7 7 7zM12 11c0-4 3-7 7-7 0 4-3 7-7 7z", ja: "自然", en: "Nature" },
+                  { f: "🎨 Art", path: "M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.2 0-1.1.9-2 2-2h1.5A3.5 3.5 0 0 0 20 11c0-4.4-3.6-8-8-8z", ja: "アート", en: "Art" },
+                  { f: "🚲 Hidden spots", path: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16 8l-2.5 5.5L8 16l2.5-5.5z", ja: "穴場", en: "Hidden" },
+                ].map((v) => {
+                  const on = activeFilter === v.f;
+                  return (
+                    <button key={v.f} onClick={() => setActiveFilter(on ? "All" : v.f)} style={{ flex: "none", width: 78, border: "none", background: "transparent", padding: "4px 2px", cursor: "pointer", textAlign: "center", fontFamily: "inherit" }}>
+                      <span style={{ display: "grid", placeItems: "center", width: 60, height: 60, margin: "0 auto 6px", borderRadius: 20, background: on ? "#ad001c" : "#fff", border: on ? "none" : "1px solid #f0e3cf", boxShadow: "0 3px 9px rgba(120,80,40,.08)" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={on ? "#fff" : "#ad001c"} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round"><path d={v.path}/></svg></span>
+                      <span className="font-display" style={{ display: "block", fontWeight: 700, fontSize: 12.5, color: "#2b1d1a", whiteSpace: "nowrap" }}>{lang === "ja" ? v.ja : v.en}</span>
+                      <span style={{ display: "block", fontSize: 9.5, color: "#b6a48f", whiteSpace: "nowrap" }}>{lang === "ja" ? v.en : ""}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ padding: "10px 22px 6px" }}>
+              <h2 className="font-display" style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}><span style={{ display: "inline-block", width: 4, height: 15, borderRadius: 3, background: "#ad001c", marginRight: 8, verticalAlign: -1 }} />{lang === "ja" ? "旅行者" : "Travelers"}{lang === "ja" && <span style={{ fontSize: 11, color: "#b6a48f", fontWeight: 500 }}> Travelers</span>}</h2>
+            </div>
+              <div style={{ padding: "4px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+                {travelersList.filter((tv) => !tv.user_id || !blockedUserIds.has(tv.user_id)).map((tv) => (
+                  <Link key={tv.id} href={`/travelers/${tv.id}`} style={{ display: "flex", alignItems: "center", gap: 13, background: "#fff", border: "1px solid #f3e8d6", borderRadius: 20, padding: 12, textDecoration: "none", color: "inherit", boxShadow: "0 8px 20px -14px rgba(120,50,20,.3)" }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 16, display: "grid", placeItems: "center", fontSize: 26, flex: "none", overflow: "hidden", ...(tv.avatar_path && travelerAvatarUrls[tv.avatar_path] ? { backgroundImage: `url("${travelerAvatarUrls[tv.avatar_path]}")`, backgroundSize: "cover", backgroundPosition: "center" } : { background: "#ffefd5" }) }}>{!(tv.avatar_path && travelerAvatarUrls[tv.avatar_path]) && (tv.emoji ?? "🧑")}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="font-display" style={{ fontSize: 15.5, fontWeight: 700, color: "#2b1d1a" }}>{tv.name}</div>
+                      <div style={{ fontSize: 11, color: "#b09a86", fontWeight: 600 }}>✈️ From {tv.country}{tv.occupation ? ` · ${tv.occupation}` : ""}</div>
+                    </div>
+                    <div style={{ fontSize: 20, color: "#ad001c" }}>💬</div>
+                  </Link>
+                ))}
+                {travelersList.length === 0 && <div style={{ padding: "40px 20px", textAlign: "center", color: "#b09a86", fontWeight: 700 }}>{t("no_travelers", lang)}</div>}
+              </div>
+          </div>
+        )}
+        {screen === "explore" && renderBottomNav("home")}
 
         {/* GUIDE PROFILE (Tinder 風) */}
         {screen === "profile" && selectedGuide && (() => {

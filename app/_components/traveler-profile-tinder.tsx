@@ -263,8 +263,8 @@ export default function TravelerProfileTinder({ traveler, currentUserId, isOwn }
                   {t("login_to_message", lang)}
                 </Link>
               ) : (
-                <button onClick={() => setShowSuperLike(true)} style={{ flex: 1, background: "linear-gradient(135deg,#ad001c,#d4145a)", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", cursor: "pointer", boxSizing: "border-box", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  <span>⭐</span>{lang === "ja" ? "スーパーライクで話す" : "Super Like to chat"}
+                <button onClick={() => setShowSuperLike(true)} style={{ flex: 1, background: "#ad001c", color: "#fff", border: "none", borderRadius: 16, padding: 14, fontSize: 15, fontWeight: 900, textAlign: "center", cursor: "pointer", boxSizing: "border-box", fontFamily: "inherit" }}>
+                  {lang === "ja" ? `${traveler.name}さんにメッセージを送る` : `Message ${traveler.name}`}
                 </button>
               )}
             </div>

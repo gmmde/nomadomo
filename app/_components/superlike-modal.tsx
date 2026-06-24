@@ -50,6 +50,7 @@ export default function SuperLikeModal({ travelerUserId, travelerName, travelerE
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [amountYen, setAmountYen] = useState<number | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,23 +97,36 @@ export default function SuperLikeModal({ travelerUserId, travelerName, travelerE
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
           <div style={{ width: 46, height: 46, borderRadius: 14, background: "#ffefd5", border: "1px solid #f0e3cf", display: "grid", placeItems: "center", fontSize: 22 }}>{travelerEmoji}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".05em" }}>⭐ {lang === "ja" ? "スーパーライク" : "Super Like"}</div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "メッセージ" : "Message"}</div>
             <div className="font-display" style={{ fontSize: 15.5, fontWeight: 800, color: "#2b1d1a" }}>{travelerName}</div>
           </div>
         </div>
 
-        {amountYen != null && (
-          <div style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 14, padding: 14, marginBottom: 12, textAlign: "center" }}>
-            <div style={{ fontSize: 26, fontWeight: 900, color: "#2b1d1a", lineHeight: 1.1 }}>¥{amountYen.toLocaleString()}</div>
-            <div style={{ fontSize: 11.5, color: "#7a6a5c", fontWeight: 700, marginTop: 4 }}>
-              {lang === "ja" ? "支払うとリクエスト不要で今すぐチャット開設" : "Pay to open a chat instantly — no request needed"}
+        {!confirmed ? (
+          <>
+            <div style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 14, padding: 16, marginBottom: 14, textAlign: "center" }}>
+              <div style={{ fontSize: 13, color: "#2b1d1a", fontWeight: 700, lineHeight: 1.6 }}>
+                {lang === "ja"
+                  ? <>{travelerName}さんにメッセージを送るには<br />お支払いが必要です。</>
+                  : <>Messaging {travelerName} requires<br />a one-time payment.</>}
+              </div>
+              {amountYen != null && (
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#2b1d1a", lineHeight: 1.1, marginTop: 10 }}>¥{amountYen.toLocaleString()}</div>
+              )}
+              <div style={{ fontSize: 11, color: "#7a6a5c", fontWeight: 700, marginTop: 4 }}>
+                {lang === "ja" ? "支払うとリクエスト不要で今すぐチャット開設" : "Chat opens instantly — no request needed"}
+              </div>
             </div>
-          </div>
+            <button type="button" onClick={() => setConfirmed(true)} style={btnPrimary}>
+              {lang === "ja" ? "メッセージする" : "Send message"}
+            </button>
+            <button type="button" onClick={onClose} style={btnSecondary}>{lang === "ja" ? "キャンセル" : "Cancel"}</button>
+          </>
+        ) : (
+          <Elements stripe={getStripe()} options={{ clientSecret, appearance: { theme: "flat" } }}>
+            <PayForm travelerUserId={travelerUserId} paymentIntentId={paymentIntentId} onUnlocked={onUnlocked} onCancel={onClose} lang={lang} />
+          </Elements>
         )}
-
-        <Elements stripe={getStripe()} options={{ clientSecret, appearance: { theme: "flat" } }}>
-          <PayForm travelerUserId={travelerUserId} paymentIntentId={paymentIntentId} onUnlocked={onUnlocked} onCancel={onClose} lang={lang} />
-        </Elements>
       </div>
     </div>
   );
@@ -152,7 +166,7 @@ function PayForm({ travelerUserId, paymentIntentId, onUnlocked, onCancel, lang }
       <PaymentElement />
       {err && <div style={{ fontSize: 12, color: "#ad001c", fontWeight: 700, marginTop: 10, marginBottom: 4 }}>{err}</div>}
       <button type="submit" disabled={!stripe || submitting} style={{ ...btnPrimary, marginTop: 14, opacity: submitting ? 0.6 : 1, cursor: submitting ? "not-allowed" : "pointer" }}>
-        {submitting ? (lang === "ja" ? "処理中…" : "Processing…") : (lang === "ja" ? "⭐ 支払ってチャット開設" : "⭐ Pay & open chat")}
+        {submitting ? (lang === "ja" ? "処理中…" : "Processing…") : (lang === "ja" ? "支払ってメッセージを始める" : "Pay & start chat")}
       </button>
       <button type="button" onClick={onCancel} disabled={submitting} style={btnSecondary}>{lang === "ja" ? "キャンセル" : "Cancel"}</button>
     </form>
