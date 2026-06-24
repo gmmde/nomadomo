@@ -25,11 +25,15 @@ export type GuideRow = {
   birth_year: number | null;
   avatar_path: string | null;
   areas: string[];
+  available_slots: string[];
   created_at: string;
 };
 
 type SortKey = "recommended" | "newest" | "price_asc" | "price_desc";
 
+const DAY_OPTIONS: Array<{ code: string; ja: string; en: string }> = [
+  { code: "mon", ja: "月", en: "Mon" }, { code: "tue", ja: "火", en: "Tue" }, { code: "wed", ja: "水", en: "Wed" }, { code: "thu", ja: "木", en: "Thu" }, { code: "fri", ja: "金", en: "Fri" }, { code: "sat", ja: "土", en: "Sat" }, { code: "sun", ja: "日", en: "Sun" },
+];
 const TAG_OPTIONS = ["Food", "Temples", "Nightlife", "Hidden", "Art", "Anime", "Drive", "Nature", "Culture", "History", "Deep", "Music"];
 const LANG_OPTIONS = ["EN", "JP", "ZH", "KR", "ES", "FR", "DE", "PT", "IT", "RU", "AR", "HI", "ID", "TH", "VI", "TR", "NL", "PL"];
 const GENDER_OPTIONS: Array<{ value: string; ja: string; en: string }> = [
@@ -69,6 +73,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
   const [sort, setSort] = useState<SortKey>("recommended");
   const [tags, setTags] = useState<string[]>([]);
   const [langs, setLangs] = useState<string[]>([]);
+  const [days, setDays] = useState<string[]>([]);
   const [gender, setGender] = useState("");
   const [ageMin, setAgeMin] = useState<number | "">("");
   const [ageMax, setAgeMax] = useState<number | "">("");
@@ -98,6 +103,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
     }
     if (tags.length > 0) rs = rs.filter((g) => tags.every((t) => g.tags.includes(t)));
     if (langs.length > 0) rs = rs.filter((g) => langs.every((l) => g.languages.includes(l)));
+    if (days.length > 0) rs = rs.filter((g) => (g.available_slots ?? []).some((sl) => days.includes(sl.split(":")[0])));
     if (gender) rs = rs.filter((g) => g.gender === gender);
     if (ageMin !== "" || ageMax !== "") {
       rs = rs.filter((g) => {
@@ -125,13 +131,14 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
         break;
     }
     return rs;
-  }, [guides, query, sort, tags, langs, gender, ageMin, ageMax, modeFilter, areas]);
+  }, [guides, query, sort, tags, langs, days, gender, ageMin, ageMax, modeFilter, areas]);
 
   function clearAll() {
     setQuery("");
     setSort("recommended");
     setTags([]);
     setLangs([]);
+    setDays([]);
     setGender("");
     setAgeMin("");
     setAgeMax("");
@@ -180,7 +187,7 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             onClick={() => setFiltersOpen((v) => !v)}
             style={{ background: filtersOpen ? "#ad001c" : "#fff", color: filtersOpen ? "#fff" : "#ad001c", border: "2px solid #ad001c", borderRadius: 14, padding: "8px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
           >
-            {lang === "ja" ? "🎛 絞り込み" : "🎛 Filters"}{tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length > 0 ? ` (${tags.length + langs.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length})` : ""}
+            {lang === "ja" ? "🎛 絞り込み" : "🎛 Filters"}{tags.length + langs.length + days.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length > 0 ? ` (${tags.length + langs.length + days.length + (gender ? 1 : 0) + (ageMin !== "" || ageMax !== "" ? 1 : 0) + (modeFilter !== "all" ? 1 : 0) + areas.length})` : ""}
           </button>
         </div>
 
@@ -203,6 +210,12 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
               {sortedAreas.map((a) => (
                 <button key={a.value} onClick={() => toggleArr(areas, setAreas, a.value)} style={chip(areas.includes(a.value), "#2e8b57")}>📍 {a.label}</button>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動可能日" : "Available days"}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+              {DAY_OPTIONS.map((d) => (
+                <button key={d.code} onClick={() => toggleArr(days, setDays, d.code)} style={chip(days.includes(d.code), "#2e8b57")}>{lang === "ja" ? d.ja : d.en}</button>
               ))}
             </div>
             <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "タグ" : "Tags"}</div>

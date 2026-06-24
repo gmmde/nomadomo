@@ -92,14 +92,14 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
     return <div style={{ padding: 12, fontSize: 12, color: "#8a7560", fontWeight: 700 }}>…</div>;
   }
   if (count === 0) {
-    return <div style={{ padding: 12, fontSize: 12, color: "#8a7560", fontWeight: 700, textAlign: "center" }}>{t("reviews_empty", lang)}</div>;
+    return <div style={{ padding: 12, fontSize: 12, color: "#9a8a7c", fontWeight: 600, textAlign: "center" }}>{t("reviews_empty", lang)}</div>;
   }
 
   const visible = reviews.filter((r) => r.comment && r.comment.trim().length > 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: "#8a7560", textTransform: "uppercase" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#ad001c", textTransform: "uppercase", letterSpacing: ".05em" }}>
         {t("reviews_avg_star", lang)} {avgRating.toFixed(1)} · {count} {t("items_unit", lang)}
       </div>
       {visible.length === 0 ? (
@@ -109,20 +109,20 @@ export default function ReviewsSection({ reviewedUserId, lang: langProp }: Props
           const meta = metaById[r.id];
           const date = meta?.metAt ? new Date(meta.metAt).toLocaleDateString(dateLocale, { year: "numeric", month: "short", day: "numeric" }) : "";
           return (
-            <div key={r.id} style={{ background: "#fff9f0", border: "1.5px solid #e8c99a", borderRadius: 12, padding: 12 }}>
+            <div key={r.id} style={{ background: "#fff", border: "1px solid #f3e8d6", borderRadius: 14, padding: 13, boxShadow: "0 8px 20px -16px rgba(120,50,20,.3)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <div style={{ fontSize: 13, fontWeight: 900 }}>
+                <div className="font-display" style={{ fontSize: 13.5, fontWeight: 800, color: "#2b1d1a" }}>
                   {meta?.reviewer.name ?? "—"}
                   {meta?.reviewer.nationality && (
-                    <span style={{ fontSize: 11, color: "#8a7560", fontWeight: 700, marginLeft: 6 }}>· 🌐 {meta.reviewer.nationality}</span>
+                    <span style={{ fontSize: 11, color: "#9a8a7c", fontWeight: 600, marginLeft: 6 }}>· 🌐 {meta.reviewer.nationality}</span>
                   )}
                 </div>
                 <div style={{ fontSize: 12, color: "#f5c649", fontWeight: 900 }}>
-                  {"★".repeat(r.rating)}<span style={{ color: "#e8c99a" }}>{"★".repeat(5 - r.rating)}</span>
+                  {"★".repeat(r.rating)}<span style={{ color: "#f0e3cf" }}>{"★".repeat(5 - r.rating)}</span>
                 </div>
               </div>
-              {date && <div style={{ fontSize: 10, color: "#8a7560", fontWeight: 700, marginBottom: 6 }}>📅 {date}</div>}
-              {r.comment && <div style={{ fontSize: 13, color: "#1a1008", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{r.comment}</div>}
+              {date && <div style={{ fontSize: 10, color: "#9a8a7c", fontWeight: 600, marginBottom: 6 }}>📅 {date}</div>}
+              {r.comment && <div style={{ fontSize: 13, color: "#2b1d1a", lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{r.comment}</div>}
             </div>
           );
         })

@@ -8,7 +8,7 @@ export default async function AllGuidesPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("guides")
-    .select("id, name, emoji, university, bio, tags, languages, rate_per_day, mode, rating, tour_count, user_id, image_paths, gender, birth_year, avatar_path, areas, created_at")
+    .select("id, name, emoji, university, bio, tags, languages, rate_per_day, mode, rating, tour_count, user_id, image_paths, gender, birth_year, avatar_path, areas, available_slots, created_at")
     .or("paused.is.null,paused.eq.false")
     .order("rating", { ascending: false });
 
@@ -43,6 +43,7 @@ export default async function AllGuidesPage() {
     birth_year: (g.birth_year as number | null) ?? null,
     avatar_path: (g.avatar_path as string | null) ?? null,
     areas: (g.areas as string[]) ?? ["Japan"],
+    available_slots: (g.available_slots as string[]) ?? [],
     created_at: g.created_at as string,
   }));
 

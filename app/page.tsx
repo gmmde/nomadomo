@@ -990,7 +990,7 @@ function HomeInner() {
         .from("meetings")
         .select("id, user_a_id, user_b_id, status, started_at")
         .or(`and(user_a_id.eq.${currentUserId},user_b_id.eq.${peerId}),and(user_a_id.eq.${peerId},user_b_id.eq.${currentUserId})`)
-        .in("status", ["pending_a", "pending_b", "active", "completed"])
+        .in("status", ["pending_a", "pending_b", "active"]) // completed は除外: 評価後はMeet前(none)に戻りMeetボタン再出現 (#13)
         .order("id", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -1266,7 +1266,9 @@ function HomeInner() {
             {/* greeting + hero */}
             <div style={{ padding: "12px 22px 4px" }}>
               <p style={{ margin: 0, fontSize: 13, color: "#9a8a7c", fontWeight: 500 }}>{lang === "ja" ? `こんにちは、${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "ゲスト")} さん 👋` : `Hi, ${travelerProfile?.name ?? ownGuide?.name ?? (userEmail ? userEmail.split("@")[0] : "there")} 👋`}</p>
-              <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</>) : (<>Meet a real <span style={{ color: "#ad001c" }}>local</span>,<br/>not a tour guide.</>)}</h1>
+              {appMode !== "local" && (
+                <h1 className="font-display" style={{ margin: "4px 0 0", fontWeight: 900, fontSize: 27, lineHeight: 1.25, color: "#2b1d1a", letterSpacing: "-.01em" }}>{lang === "ja" ? (<>本物の<span style={{ color: "#ad001c" }}>ローカル</span>と<br/>出会おう。</>) : (<>Meet a real <span style={{ color: "#ad001c" }}>local</span>,<br/>not a tour guide.</>)}</h1>
+              )}
             </div>
 
             {/* search */}
