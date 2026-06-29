@@ -46,7 +46,7 @@ function TermsJA() {
       <p style={p}>本サービスは、法人ではなく個人により運営されています。</p>
       <ul style={{ paddingLeft: 20, fontSize: 14 }}>
         <li>運営者：殿井 賢太</li>
-        <li>所在地：〒606-8315 京都府京都市左京区吉田近衛町69 京都大学吉田寮</li>
+        <li>所在地：個人運営のため非公開。請求があった場合は遅滞なく開示します。</li>
         <li>連絡先：<a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a></li>
       </ul>
       <p style={p}>有料取引に関する詳細は、<Link href="/tokushoho" style={{ color: "#ad001c", textDecoration: "underline" }}>特定商取引法に基づく表記</Link>をご確認ください。</p>
@@ -126,7 +126,7 @@ function TermsEN() {
       <p style={p}>The Service is operated by an individual, not a corporation.</p>
       <ul style={{ paddingLeft: 20, fontSize: 14 }}>
         <li>Operator: Kenta Tonoi</li>
-        <li>Address: Kyoto University Yoshida Dormitory, 69 Yoshida-Konoe-cho, Sakyo-ku, Kyoto 606-8315, Japan</li>
+        <li>Address: Not published (individual operator). Disclosed without delay upon request.</li>
         <li>Contact: <a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a></li>
       </ul>
       <p style={p}>For details on paid transactions, please see the <Link href="/tokushoho" style={{ color: "#ad001c", textDecoration: "underline" }}>Commercial Transactions Act Disclosure</Link>.</p>

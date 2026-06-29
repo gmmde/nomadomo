@@ -44,7 +44,7 @@ function TokushohoJA() {
     <div>
       <Row label="事業者名（販売業者）">殿井 賢太（個人事業）</Row>
       <Row label="運営統括責任者">殿井 賢太</Row>
-      <Row label="所在地">〒606-8315 京都府京都市左京区吉田近衛町69 京都大学吉田寮</Row>
+      <Row label="所在地">個人運営のため非公開としています。<br /><span style={{ fontSize: 11.5, color: "#8a7560" }}>※請求があった場合は、下記連絡先より遅滞なく開示します。</span></Row>
       <Row label="連絡先">
         メール：<a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a>
         <br /><span style={{ fontSize: 11.5, color: "#8a7560" }}>※電話番号は請求があった場合に遅滞なく開示します。お問い合わせはメールまたはアプリ内「開発者に問い合わせる」よりお願いします。</span>
@@ -85,7 +85,7 @@ function TokushohoEN() {
     <div>
       <Row label="Seller / Operator">Kenta Tonoi (sole proprietor / individual)</Row>
       <Row label="Operations manager">Kenta Tonoi</Row>
-      <Row label="Address">Kyoto University Yoshida Dormitory, 69 Yoshida-Konoe-cho, Sakyo-ku, Kyoto 606-8315, Japan</Row>
+      <Row label="Address">Not published (individual operator).<br /><span style={{ fontSize: 11.5, color: "#8a7560" }}>Disclosed without delay upon request to the contact below.</span></Row>
       <Row label="Contact">
         Email: <a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a>
         <br /><span style={{ fontSize: 11.5, color: "#8a7560" }}>A phone number will be disclosed without delay upon request. Please contact us by email or via the in-app &quot;Contact developer&quot; feature.</span>
