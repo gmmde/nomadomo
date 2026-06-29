@@ -88,9 +88,14 @@ export default function SignupPage() {
                 <label style={labelStyle} htmlFor="email">Email</label>
                 <input id="email" name="email" type="email" required style={inputStyle} placeholder="you@example.com" />
               </div>
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle} htmlFor="password">{t("password_label", lang)}</label>
                 <input id="password" name="password" type="password" required minLength={8} style={inputStyle} placeholder={t("password_placeholder", lang)} />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={labelStyle} htmlFor="dob">{t("dob_label", lang)}</label>
+                <input id="dob" name="dob" type="date" required max={new Date().toISOString().slice(0, 10)} style={inputStyle} />
+                <div style={{ fontSize: 11, color: "#8a7560", fontWeight: 600, marginTop: 6, lineHeight: 1.5 }}>{t("dob_hint", lang)}</div>
               </div>
 
               {(state?.errorCode || state?.error) && (

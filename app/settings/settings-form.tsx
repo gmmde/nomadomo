@@ -229,6 +229,7 @@ export default function SettingsForm({ userEmail, initial, blockedList }: { user
           <Row d={IC.help} jp="ヘルプセンター" en="Help center" chevron onClick={() => alert(lang === "ja" ? "ヘルプセンターは準備中よ" : "Help center is coming soon")} />
           <Row d={IC.doc} jp="利用規約" en="Terms of service" chevron onClick={() => router.push("/terms")} />
           <Row d={IC.shield} jp="プライバシーポリシー" en="Privacy policy" chevron onClick={() => router.push("/privacy")} />
+          <Row d={IC.doc} jp="特定商取引法に基づく表記" en="Commercial transactions disclosure" chevron onClick={() => router.push("/tokushoho")} />
           <Row d={IC.info} jp="このアプリについて" en="About NomaDomo" right={<Val>v0.5</Val>} last />
         </Group>
 

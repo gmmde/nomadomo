@@ -6,5 +6,5 @@
 //   - 条文追加・削除・利用者の権利義務に影響 → bump 必須
 //   - 日付形式 YYYY-MM-DD
 
-export const CURRENT_TERMS_VERSION   = "2026-06-20";
-export const CURRENT_PRIVACY_VERSION = "2026-06-20";
+export const CURRENT_TERMS_VERSION   = "2026-06-30";
+export const CURRENT_PRIVACY_VERSION = "2026-06-30";

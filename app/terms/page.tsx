@@ -39,8 +39,17 @@ function TermsJA() {
   return (
     <div>
       <p style={p}>
-        この利用規約（以下「本規約」）は、NomaDomo サービス提供者（以下「当方」）が提供するウェブアプリケーション「NomaDomo」（以下「本サービス」）の利用条件を定めるものです。本サービスを利用される方（以下「ユーザー」）は、本規約に同意の上、本サービスを利用するものとします。
+        この利用規約（以下「本規約」）は、下記の運営者（以下「当方」）が提供するウェブアプリケーション「NomaDomo」（以下「本サービス」）の利用条件を定めるものです。本サービスを利用される方（以下「ユーザー」）は、本規約に同意の上、本サービスを利用するものとします。
       </p>
+
+      <h2 style={h2}>運営者情報</h2>
+      <p style={p}>本サービスは、法人ではなく個人により運営されています。</p>
+      <ul style={{ paddingLeft: 20, fontSize: 14 }}>
+        <li>運営者：殿井 賢太</li>
+        <li>所在地：〒606-8315 京都府京都市左京区吉田近衛町69 京都大学吉田寮</li>
+        <li>連絡先：<a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a></li>
+      </ul>
+      <p style={p}>有料取引に関する詳細は、<Link href="/tokushoho" style={{ color: "#ad001c", textDecoration: "underline" }}>特定商取引法に基づく表記</Link>をご確認ください。</p>
 
       <h2 style={h2}>第1条（適用範囲）</h2>
       <p style={p}>本規約は、ユーザーと当方との間の本サービスの利用に関わる一切の関係に適用されます。</p>
@@ -69,7 +78,7 @@ function TermsJA() {
         <li>未成年者との不適切な接触の試み</li>
         <li>他人になりすます行為、虚偽の登録</li>
         <li>本サービスの運営を妨害する行為</li>
-        <li>当方の事前の許可なく本サービスを商業利用する行為</li>
+        <li>本サービスが提供する有料ガイド（Pro）機能の正当な利用を除き、当方の事前の許可なく本サービスを商業利用する行為</li>
         <li>本サービス内で取得した他ユーザーの個人情報を本サービス外で利用する行為</li>
         <li>その他、当方が不適切と判断する行為</li>
       </ol>
@@ -111,7 +120,16 @@ function TermsJA() {
 function TermsEN() {
   return (
     <div>
-      <p style={p}>These Terms of Service (&quot;Terms&quot;) govern your use of the NomaDomo web application (the &quot;Service&quot;) operated by the NomaDomo service provider (&quot;we&quot;, &quot;us&quot;). By using the Service, you agree to be bound by these Terms.</p>
+      <p style={p}>These Terms of Service (&quot;Terms&quot;) govern your use of the NomaDomo web application (the &quot;Service&quot;) operated by the individual operator identified below (&quot;we&quot;, &quot;us&quot;). By using the Service, you agree to be bound by these Terms.</p>
+
+      <h2 style={h2}>Operator</h2>
+      <p style={p}>The Service is operated by an individual, not a corporation.</p>
+      <ul style={{ paddingLeft: 20, fontSize: 14 }}>
+        <li>Operator: Kenta Tonoi</li>
+        <li>Address: Kyoto University Yoshida Dormitory, 69 Yoshida-Konoe-cho, Sakyo-ku, Kyoto 606-8315, Japan</li>
+        <li>Contact: <a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a></li>
+      </ul>
+      <p style={p}>For details on paid transactions, please see the <Link href="/tokushoho" style={{ color: "#ad001c", textDecoration: "underline" }}>Commercial Transactions Act Disclosure</Link>.</p>
 
       <h2 style={h2}>1. Scope</h2>
       <p style={p}>These Terms apply to all aspects of your use of the Service.</p>
@@ -139,7 +157,7 @@ function TermsEN() {
         <li>Attempt to contact minors inappropriately;</li>
         <li>Impersonate others or provide false registration information;</li>
         <li>Interfere with the operation of the Service;</li>
-        <li>Use the Service for commercial purposes without prior written permission;</li>
+        <li>Use the Service for commercial purposes without prior written permission, except for the legitimate use of the paid (Pro) guide features provided by the Service;</li>
         <li>Use other users&apos; personal information obtained through the Service outside of the Service;</li>
         <li>Engage in any conduct we deem inappropriate.</li>
       </ol>

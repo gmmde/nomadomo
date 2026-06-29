@@ -1,6 +1,6 @@
 # NomaDomo - AI 引き継ぎレポート
 
-> 最終更新: 2026-06-15
+> 最終更新: 2026-06-30
 > オーナー: gmmde (tonoikenta@icloud.com / tonoikenta@gmail.com)
 > リポジトリ: https://github.com/gmmde/nomadomo
 > 本番 URL: https://nomadomo.vercel.app
@@ -476,6 +476,38 @@ public/
 ### Realtime チャット届かない
 - Supabase project が INACTIVE になっていないか (`mcp__3c675608-…__list_projects` で確認、必要なら `restore_project`)
 - 自動 7-14 日アクセス無しで free tier が pause する
+
+---
+
+## 2026-06-30: 法務ページ整備 + サインアップ年齢確認
+
+有料取引の本格化に向けた法務まわりと、サインアップの年齢確認を実装。
+
+### 利用規約 (`/terms`)
+- 冒頭に「運営者情報」セクションを追加（個人運営である旨 + 連絡先 `nomadomojp@gmail.com`）。運営者氏名・住所は `[運営者氏名]` `[住所]` プレースホルダー（本人が後で記載）。
+- 第6条8項（商業利用禁止）に「本サービスが提供する有料ガイド（Pro）機能の正当な利用を除き」の除外文言を追加し、Pro ガイドとの矛盾を解消。JA/EN 両対応。
+- `app/lib/legal.ts` の `CURRENT_TERMS_VERSION` / `CURRENT_PRIVACY_VERSION` を `2026-06-30` に bump（既存ユーザに同意モーダル再表示）。
+
+### 特定商取引法に基づく表記 (`/tokushoho`) — 新規
+- `app/tokushoho/page.tsx` を新規作成（JA/EN）。事業者名/責任者/所在地/連絡先/販売価格（ガイドが個別設定）/プラットフォーム手数料（**10%**）/支払方法（Stripe）/支払時期/役務提供時期/返金・キャンセル/動作環境を記載。氏名・住所はプレースホルダー。
+
+### プライバシーポリシー (`/privacy`)
+- 既存ページは網羅的だったため、問い合わせ欄に運営者（個人運営 + `[運営者氏名]`）を追記。
+
+### フッターリンク
+- ホーム末尾に footer を追加（利用規約 / プライバシーポリシー / 特定商取引法に基づく表記）。
+- `/settings` のサポート群にも「特定商取引法に基づく表記」行を追加。
+
+### サインアップ年齢確認 (`/signup` + `app/actions/auth.ts`)
+- フォームに **生年月日 (date)** 入力欄を追加（`required`、`max=今日`）。
+- サーバ側 `signup` で 18 歳未満をブロック（errorCode `auth_err_under_18`）、未入力は `auth_err_dob_required`。
+- 既存の「18歳以上」「規約・PP同意」チェックは維持（両方チェックで送信可）。
+- **DB 記録**: `apply_migration` で `user_settings` に `date_of_birth date` / `terms_agreed_at timestamptz` を追加。signUp 成功後に **service-role**（`SUPABASE_SERVICE_ROLE_KEY`）で `user_settings` に `date_of_birth` / `terms_agreed_at` / `terms_version` / `privacy_version` / `age_confirmed_at` を upsert（メール確認待ちでも `data.user.id` は発行されるため記録可能）。
+- i18n キー追加: `auth_err_dob_required` / `auth_err_under_18` / `dob_label` / `dob_hint`。
+
+### 注意 / TODO
+- 法務文面は**ドラフト**。本番課金前に弁護士レビュー必須。プレースホルダー `[運営者氏名]` `[住所]` を運営者が記載すること。
+- 本作業時、サンドボックス VM が一時ダウンしており `tsc`・git push は VM 復旧後に実施（要フォロー）。
 
 ### メール届かない
 - Resend のセットアップ完了確認 (`RESEND_API_KEY` 等)

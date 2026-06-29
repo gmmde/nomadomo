@@ -108,7 +108,8 @@ function PrivacyJA() {
       <p style={p}>当方は、必要に応じて本ポリシーを変更することがあります。重要な変更がある場合は、本サービス上で告知し、必要に応じて再度の同意を求めます。</p>
 
       <h2 style={h2}>12. お問い合わせ</h2>
-      <p style={p}>個人情報の取扱いに関するお問い合わせは、以下までお願いします。</p>
+      <p style={p}>本サービスは個人により運営されています。個人情報の取扱いに関するお問い合わせ（開示・訂正・削除等のご請求を含む）は、以下までお願いします。</p>
+      <p style={p}>運営者：殿井 賢太（個人運営）</p>
       <p style={p}><a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a></p>
 
       <div style={{ marginTop: 30, fontSize: 11, color: "#8a7560" }}>
@@ -182,6 +183,8 @@ function PrivacyEN() {
       <p style={p}>We may update this Policy. Material changes will be announced in the Service, and we may request renewed consent.</p>
 
       <h2 style={h2}>12. Contact</h2>
+      <p style={p}>The Service is operated by an individual. For any inquiry regarding personal data (including requests for access, correction, or deletion), please contact:</p>
+      <p style={p}>Operator: Kenta Tonoi (individual operator)</p>
       <p style={p}><a href="mailto:nomadomojp@gmail.com" style={{ color: "#ad001c" }}>nomadomojp@gmail.com</a></p>
 
       <div style={{ marginTop: 30, fontSize: 11, color: "#8a7560" }}>

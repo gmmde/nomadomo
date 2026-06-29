@@ -1694,6 +1694,18 @@ function HomeInner() {
               </>
             )}
 
+            {/* footer: legal links */}
+            <footer style={{ padding: "18px 22px 6px", borderTop: "1px solid #f0e3cf", marginTop: 8 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", marginBottom: 8 }}>
+                <Link href="/terms" style={{ fontSize: 12, fontWeight: 700, color: "#8a7560", textDecoration: "none" }}>{lang === "ja" ? "利用規約" : "Terms"}</Link>
+                <span style={{ color: "#d8c4ad" }}>·</span>
+                <Link href="/privacy" style={{ fontSize: 12, fontWeight: 700, color: "#8a7560", textDecoration: "none" }}>{lang === "ja" ? "プライバシーポリシー" : "Privacy"}</Link>
+                <span style={{ color: "#d8c4ad" }}>·</span>
+                <Link href="/tokushoho" style={{ fontSize: 12, fontWeight: 700, color: "#8a7560", textDecoration: "none" }}>{lang === "ja" ? "特定商取引法に基づく表記" : "Commercial disclosure"}</Link>
+              </div>
+              <div style={{ textAlign: "center", fontSize: 10.5, color: "#b6a48f", fontWeight: 600 }}>© NomaDomo</div>
+            </footer>
+
             <div style={{ height: 100 }} />
 
             {/* area picker sheet */}
