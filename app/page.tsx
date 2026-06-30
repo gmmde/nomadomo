@@ -1372,7 +1372,7 @@ function HomeInner() {
                   </div>
                   <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動域" : "Areas"}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
-                    {getSortedAreas(lang).map((a) => (<button key={a.value} onClick={() => setGuideAreas(guideAreas.includes(a.value) ? guideAreas.filter((x) => x !== a.value) : [...guideAreas, a.value])} style={fchip(guideAreas.includes(a.value), "#2e8b57")}>📍 {a.label}</button>))}
+                    {getSortedAreas(lang).map((a) => { const avail = a.value === "Kyoto"; return (<button key={a.value} disabled={!avail} title={avail ? undefined : (lang === "ja" ? "近日対応予定" : "Coming soon")} onClick={() => { if (!avail) return; setGuideAreas(guideAreas.includes(a.value) ? guideAreas.filter((x) => x !== a.value) : [...guideAreas, a.value]); }} style={{ ...fchip(guideAreas.includes(a.value), "#2e8b57"), opacity: avail ? 1 : 0.5, cursor: avail ? "pointer" : "not-allowed" }}>📍 {a.label}{avail ? "" : (lang === "ja" ? "・近日" : " · soon")}</button>); })}
                   </div>
                   <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動可能日" : "Available days"}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
@@ -1718,14 +1718,18 @@ function HomeInner() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     <button onClick={autoDetectArea} disabled={geoBusy} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: "#fff", border: "1px solid #f0e3cf", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontWeight: 700, color: geoBusy ? "#b09a86" : "#2e8b57", cursor: geoBusy ? "wait" : "pointer", fontFamily: "inherit" }}>📍 {geoBusy ? (lang === "ja" ? "検出中…" : "Detecting…") : (lang === "ja" ? "現在地から自動選択" : "Use my location")}</button>
                     <button onClick={() => { setHomeAreaFilter(null); setAreaPickerOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: homeAreaFilter === null ? "#e8f4ec" : "#fff", border: `1px solid ${homeAreaFilter === null ? "#2e8b57" : "#f0e3cf"}`, borderRadius: 14, padding: "12px 14px", cursor: "pointer", fontFamily: "inherit" }}><span className="font-display" style={{ fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{lang === "ja" ? "日本全国" : "All Japan"}</span></button>
-                    {getSortedAreas(lang).map((a) => (
-                      <button key={a.value} onClick={() => { setHomeAreaFilter(a.value); setAreaPickerOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: homeAreaFilter === a.value ? "#e8f4ec" : "#fff", border: `1px solid ${homeAreaFilter === a.value ? "#2e8b57" : "#f0e3cf"}`, borderRadius: 14, padding: "12px 14px", cursor: "pointer", fontFamily: "inherit" }}>
+                    {getSortedAreas(lang).map((a) => {
+                      const avail = a.value === "Kyoto";
+                      return (
+                      <button key={a.value} disabled={!avail} title={avail ? undefined : (lang === "ja" ? "近日対応予定" : "Coming soon")} onClick={() => { if (!avail) return; setHomeAreaFilter(a.value); setAreaPickerOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: homeAreaFilter === a.value ? "#e8f4ec" : "#fff", border: `1px solid ${homeAreaFilter === a.value ? "#2e8b57" : "#f0e3cf"}`, borderRadius: 14, padding: "12px 14px", cursor: avail ? "pointer" : "not-allowed", fontFamily: "inherit", opacity: avail ? 1 : 0.55 }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ad001c" strokeWidth={2.2}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
                           <span className="font-display" style={{ fontWeight: 700, fontSize: 16, color: "#2b1d1a" }}>{a.label}</span>
                         </span>
+                        {!avail && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#b6a48f", background: "#f1e6d4", padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap" }}>{lang === "ja" ? "近日対応" : "Coming soon"}</span>}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>

@@ -208,9 +208,9 @@ function AllGuidesViewInner({ guides }: { guides: GuideRow[] }) {
             </div>
             <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動域" : "Areas"}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
-              {sortedAreas.map((a) => (
-                <button key={a.value} onClick={() => toggleArr(areas, setAreas, a.value)} style={chip(areas.includes(a.value), "#2e8b57")}>📍 {a.label}</button>
-              ))}
+              {sortedAreas.map((a) => { const avail = a.value === "Kyoto"; return (
+                <button key={a.value} disabled={!avail} title={avail ? undefined : (lang === "ja" ? "近日対応予定" : "Coming soon")} onClick={() => { if (!avail) return; toggleArr(areas, setAreas, a.value); }} style={{ ...chip(areas.includes(a.value), "#2e8b57"), opacity: avail ? 1 : 0.5, cursor: avail ? "pointer" : "not-allowed" }}>📍 {a.label}{avail ? "" : (lang === "ja" ? "・近日" : " · soon")}</button>
+              ); })}
             </div>
             <div style={{ fontSize: 11, color: "#ad001c", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>{lang === "ja" ? "活動可能日" : "Available days"}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
